@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "BaseStatComponent.h"
+#include "DamageComponent.h"
 #include "BaseActor.generated.h"
 
 UCLASS()
@@ -21,5 +22,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UBaseStatComponent* BaseStatComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UDamageComponent* DamageComponent;
 
 };
