@@ -4,7 +4,7 @@
 #include "GameFramework/GameState.h"
 #include "GameStatePlay.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnPlayerHpChangedSignature, int32, NewHp, int32, MaxHp, int32, OldHp);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnPlayerHpChangedSignature, int32, NewHp, int32, MaxHp, int32, OldHp);
 
 UCLASS()
 class CH03PROJECT_API AGameStatePlay : public AGameState
@@ -17,41 +17,42 @@ public:
 	AGameStatePlay();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	int PlayerHp;
+	int32 PlayerHp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	int PlayerMaxHp;
+	int32 PlayerMaxHp;
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	void SetPlayerHealth(int NewValHp, int NewValMaxHp);
+	void SetPlayerHealth(int32 NewValHp, int32 NewValMaxHp);
 
-	UPROPERTY(BlueprintAssignable, Category = "UI|Events")
-	FOnPlayerHpChangedSignature OnPlayerHpChanged;
-
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	int Score;
-
-	void SetScore(int NewScore);
-	void AddScore(int Points);
+	//UPROPERTY(BlueprintAssignable, Category = "UI|Events")
+	//FOnPlayerHpChangedSignature OnPlayerHpChanged;
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	int CurrentAmmo;
+	int32 Score;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	TArray<FString> MissionTexts;
+	void SetScore(int32 NewScore);
+	void AddScore(int32 Points);
 	
-	void SetMissionText(const FString& Text, int MissionIndex);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	int EnemyBossHp;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	int EnemyBossMaxHp;
-
+	int32 CurrentAmmo;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	TArray<int> ItemCounts;	//퀵슬롯 수 만큼 늘려서 사용하면 될 것 같은 느낌적인 느낌?
+	TArray<FString> MissionTexts; //0 서브 1 히든
 
-	void AddItemCount(int Point, int SlotIndex);
+	void SetMissionText(const FString& Text, int32 MissionIndex);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	int32 EnemyBossHp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	int32 EnemyBossMaxHp;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	TArray<int32> ItemCounts;	//0 힐템 1 아드 2 키 3 고양이
+
+
+	void AddItemCount(int32 Point, int32 SlotIndex);
 
 };

@@ -10,31 +10,31 @@ AGameStatePlay::AGameStatePlay()
 }
 
 
-void AGameStatePlay::SetScore(int NewScore)
+void AGameStatePlay::SetScore(int32 NewScore)
 {
     Score = NewScore;
 }
 
-void AGameStatePlay::AddScore(int Points)
+void AGameStatePlay::AddScore(int32 Points)
 {
     Score += Points;
 }
 
 
-void AGameStatePlay::SetPlayerHealth(int NewValHp, int NewValMaxHp)
+void AGameStatePlay::SetPlayerHealth(int32 NewValHp, int32 NewValMaxHp)
 {
-    int OldHpBeforeChange = PlayerHp;
+    int32 OldHpBeforeChange = PlayerHp;
 
     //PlayerHp = FMath::Clamp(NewValHp, 0, NewValMaxHp);
     PlayerHp = NewValHp;
     PlayerMaxHp = NewValMaxHp;
 
-    OnPlayerHpChanged.Broadcast(PlayerHp, PlayerMaxHp, OldHpBeforeChange);
+    //OnPlayerHpChanged.Broadcast(PlayerHp, PlayerMaxHp, OldHpBeforeChange);
 }
 
 
 
-void AGameStatePlay::SetMissionText(const FString& Text, int MissionIndex)
+void AGameStatePlay::SetMissionText(const FString& Text, int32 MissionIndex)
 {
     if (MissionIndex >= 0 && MissionIndex < MissionTexts.Num())
     {
@@ -46,7 +46,7 @@ void AGameStatePlay::SetMissionText(const FString& Text, int MissionIndex)
 
 
 
-void AGameStatePlay::AddItemCount(int Point, int SlotIndex)
+void AGameStatePlay::AddItemCount(int32 Point, int32 SlotIndex)
 {
     if (ItemCounts.Num() > SlotIndex)
     {
