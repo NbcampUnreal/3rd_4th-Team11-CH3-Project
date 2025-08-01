@@ -24,7 +24,7 @@ void AQuestTypeA::StartQuest()
 	UE_LOG(LogTemp, Warning, TEXT("퀘스트가 시작되었습니다."));
 	DoorCount++;
 	//텍스트0 인스턴스로 전달 - 예상 텍스트(문을 열고 나아가라? -> 열쇠를 찾아라)
-	GameModePlays->SetMissionText(QuestTexts[0].ToString(), 0);
+	GameModePlays->SetMissionText(QuestTexts[0].ToString(), 1);
 }
 
 
@@ -34,7 +34,7 @@ void AQuestTypeA::CheckQuestDoor()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("1구역 문 열림"));
 		DoorCount++;
-		GameModePlays->SetMissionText(QuestTexts[1].ToString(), 0);
+		GameModePlays->SetMissionText(QuestTexts[1].ToString(), 1);
 		//문 열림 처리 필요
 		//공간을 지나가면 닫힘 필요
 	}
@@ -64,7 +64,7 @@ void AQuestTypeA::DoorCountCheck()
 	{
 		GetWorldTimerManager().ClearTimer(TimerHandle);
 		DoorOpenCount = 0;
-		GameModePlays->SetMissionText(QuestTexts[4].ToString(), 0);
+		GameModePlays->SetMissionText(QuestTexts[4].ToString(), 1);
 	}
 }
 
@@ -75,7 +75,7 @@ void AQuestTypeA::SpawnEnemy()
 {
 	UE_LOG(LogTemp, Warning, TEXT("몬스터가 소환이 시작되었습니다."));
 
-	GameModePlays->SetMissionText(QuestTexts[2].ToString(), 0);
+	GameModePlays->SetMissionText(QuestTexts[2].ToString(), 1);
 
 	// 스폰 위치에서 몬스터 소환
 	int32 MaxSpawnCount = FMath::Min(SpawnLocation.Num(), SpawnDataArray.Num());

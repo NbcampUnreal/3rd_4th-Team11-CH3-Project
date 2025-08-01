@@ -11,6 +11,7 @@ UBaseStatComponent::UBaseStatComponent()
 void UBaseStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	OnHpChangedEvent.Broadcast(Hp, MaxHp, GetOwner());
 }
 
 
@@ -31,6 +32,10 @@ void UBaseStatComponent::AddHp(int Point)
 
 	Hp += Point;
 	Hp = FMath::Clamp(Hp, 0, MaxHp);
+
+	//캐릭터와 보스	
+	OnHpChangedEvent.Broadcast(Hp, MaxHp, GetOwner());
+
 	if (Hp <= 0)
 	{
 		OnDeath();

@@ -5,9 +5,11 @@
 #include "GameStatePlay.h"
 #include "QuestTypeA.h"
 #include "Kismet/GameplayStatics.h"
+#include "BaseActor.h"
 
 AGameModePlay::AGameModePlay()
 {
+
 }
 
 void AGameModePlay::BeginPlay()
@@ -31,37 +33,55 @@ void AGameModePlay::BeginPlay()
 			}
 		}
 	}*/
+
+	//테스트용
+	ABaseActor* BaseActor = Cast<ABaseActor>(UGameplayStatics::GetActorOfClass(GetWorld(), ABaseActor::StaticClass()));
+	if (BaseActor)
+	{
+		UBaseStatComponent* BaseStatComp = BaseActor->FindComponentByClass<UBaseStatComponent>();
+		if (BaseStatComp)
+		{
+			BaseStatComp->OnHpChangedEvent.AddUObject(this, &AGameModePlay::HandlePlayerHpChanged);
+		}
+	}
+
 }
 
-void AGameModePlay::HandlePlayerHpChanged(int NewHp, int MaxHp, AActor* OwnerActor)
+void AGameModePlay::HandlePlayerHpChanged(int32 NewHp, int32 MaxHp, AActor* OwnerActor)
 {
 	if (APawn* PlayerPawn = Cast<APawn>(OwnerActor))
 	{
 		if (APlayerController* PlayerController = PlayerPawn->GetController<APlayerController>())
 		{
 			GameStatePlays->SetPlayerHealth(NewHp, MaxHp);
+
+			//HUDWidget->UpdateHealth(NewHp, MaxHp);
 		}
 	}
 }
 
 
-void AGameModePlay::AddScore(int Points)//진짜 쓸모없다..
+void AGameModePlay::AddScore(int32 Points)//진짜 쓸모없다..
 {
 	GameStatePlays->AddScore(Points);
+	//HUDWidget->UpdateScore(GameStatePlays->Score);
 }
 
 
-void AGameModePlay::SetMissionText(const FString& Text, int MissionIndex)
+void AGameModePlay::SetMissionText(const FString& Text, int32 MissionIndex)
 {
 	GameStatePlays->SetMissionText(Text, MissionIndex);
+	
 }
 
 
-void AGameModePlay::AddItemCount(int Point, int SlotIndex)
+void AGameModePlay::AddItemCount(int32 Point, int32 SlotIndex)
 {
 	GameStatePlays->AddItemCount(Point, SlotIndex);
+	//타이머 0.1f float로
 }
 
+//타이머 호출 void 아이템 쿨타임 끝()
 
 void AGameModePlay::OpenDoor()
 {
