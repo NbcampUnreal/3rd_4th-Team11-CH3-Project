@@ -1,0 +1,73 @@
+﻿#include "BaseStatComponent.h"
+
+
+UBaseStatComponent::UBaseStatComponent()
+{
+	PrimaryComponentTick.bCanEverTick = false;
+	ImmuneToDamageTime = 0.1f;
+}
+
+
+void UBaseStatComponent::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+
+
+//void UBaseStatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+//{
+//	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+//}
+
+void UBaseStatComponent::AddHp(int Point)
+{
+	if (Point < 0)
+	{
+		ImmuneToDamageSet();
+		Point = FMath::Max(Point + Armor, 0);
+	}
+
+
+	Hp += Point;
+	Hp = FMath::Clamp(Hp, 0, MaxHp);
+	if (Hp <= 0)
+	{
+		OnDeath();
+	}
+}
+
+void UBaseStatComponent::AddMaxHp(int Point)
+{
+	MaxHp += Point;
+	MaxHp = FMath::Max(0, MaxHp);
+	Hp = FMath::Min(Hp, MaxHp);
+
+	//현재 체력도 같은 포인트 늘려줄지 고민해봐야한다.
+}
+
+void UBaseStatComponent::AddArmor(int Point)
+{
+	Armor += Point;
+	Armor = FMath::Max(0, Armor);	//방어가 0이하로 내려갈 수 있게?
+}
+
+
+void UBaseStatComponent::ImmuneToDamageSet()
+{
+	bIsImmuneToDamage = true;
+	//타이머를 이용하여 time후에 ImmuneToDamageEnd를 호출
+	
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UBaseStatComponent::ImmuneToDamageEnd, ImmuneToDamageTime, false);
+}
+
+void UBaseStatComponent::ImmuneToDamageEnd()
+{
+	bIsImmuneToDamage = false;
+}
+
+void UBaseStatComponent::OnDeath()
+{
+
+}
