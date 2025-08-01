@@ -28,6 +28,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetTileText(bool bIsGameOver);
 
+	UFUNCTION(BlueprintCallable)
+	void SetScoreNumText(bool bIsGameOver);
+
+	UFUNCTION(BlueprintCallable)
+	void SetScoreText(bool bIsGameOver);
+
 protected:
 	UPROPERTY(meta = (BindWidget))
 	UButton* StartButton;
@@ -40,4 +46,10 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* FPSGameText;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ScoreNumText;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ScoreText;
 };
