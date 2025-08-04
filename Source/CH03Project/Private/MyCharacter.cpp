@@ -27,6 +27,7 @@ AMyCharacter::AMyCharacter()
 	FireMontage = nullptr;
 
 	CharacterState = ECharacterState::Idle;
+	WeaponState = EWeaponState::Base;
 
 	NormalSpeed = 600.0f;
 	RunSpeedMultiplier = 1.7f;
@@ -273,12 +274,9 @@ void AMyCharacter::Look(const FInputActionValue& value)
 
 void AMyCharacter::StartAim(const FInputActionValue& value)
 {
-	if (CharacterState != ECharacterState::Running)
+	if (value.Get<bool>())
 	{
-		if (value.Get<bool>())
-		{
-			CharacterState = ECharacterState::Aiming;
-		}
+		WeaponState = EWeaponState::Aiming;
 	}
 }
 
@@ -286,7 +284,7 @@ void AMyCharacter::StopAim(const FInputActionValue& value)
 {
 	if (!value.Get<bool>())
 	{
-		CharacterState = ECharacterState::Idle;
+		WeaponState = EWeaponState::Base;
 	}
 }
 

@@ -16,15 +16,9 @@ enum class ECharacterState : uint8
 	Crouchinging    UMETA(DisplayName = "Crouching"),
 	Jumping			UMETA(DisplayName = "Jumping"),
 	Cling			UMETA(DisplayName = "Cling"),
+	Aiming			UMETA(DisplayName = "Aiming"),
 	Shooting		UMETA(DisplayName = "Shooting"),
 	Dead			UMETA(DisplayName = "Dead")
-};
-
-UENUM(BlueprintType)
-enum class EWeaponState : uint8
-{
-	Base            UMETA(DisplayName = "Base"),
-	Aiming			UMETA(DisplayName = "Aiming")
 };
 
 UCLASS()
@@ -54,8 +48,6 @@ protected:
 	// 상태 관리 EnumClass 변수
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	ECharacterState CharacterState;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	EWeaponState WeaponState;
 
 	// 일반 변수
 	float NormalSpeed;
