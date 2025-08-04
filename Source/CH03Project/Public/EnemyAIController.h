@@ -14,6 +14,9 @@ class UBlackboardComponent;
 class UBehaviorTreeComponent;
 class ABaseEnemy;
 class AActor;
+class UAISenseConfig_Sight;
+class UAISenseConfig_Hearing;
+class UAISenseConfig_Damage;
 
 UCLASS()
 class CH03PROJECT_API AEnemyAIController : public AAIController
@@ -37,6 +40,15 @@ protected:
 	UPROPERTY()
 	ABaseEnemy* ControlledEnemy;
 
+	UPROPERTY()
+	UAISenseConfig_Sight* SightConfig;
+
+	UPROPERTY()
+	UAISenseConfig_Hearing* HearingConfig;
+
+	UPROPERTY()
+	UAISenseConfig_Damage* DamageConfig;
+
 protected:
 	UFUNCTION()
 	void OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
@@ -56,19 +68,19 @@ public:
 	void SetStateAsInvestigating(const FVector& Location);
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName TargetActorKey = TEXT("TargetActorKey");
+	FName TargetActorKey = TEXT("TargetActor");
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName StateKey = TEXT("StateKey");
+	FName StateKey = TEXT("State");
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName InterestKey = TEXT("InterestKey");
+	FName InterestKey = TEXT("PointOfInterest");
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName AttackRadiusKey = TEXT("AttackRadiusKey");
+	FName AttackRadiusKey = TEXT("AttackRadius");
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName DefendRadiusKey = TEXT("DefendRadiusKey");
+	FName DefendRadiusKey = TEXT("DefendRadius");
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AIBlackboard")
 	AActor* TargetActor;

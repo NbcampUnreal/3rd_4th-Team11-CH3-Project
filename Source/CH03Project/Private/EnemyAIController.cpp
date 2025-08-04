@@ -7,6 +7,9 @@
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
 #include "Perception/AISense_Damage.h"
+#include "Perception/AISenseConfig_Sight.h"
+#include "Perception/AISenseConfig_Hearing.h"
+#include "Perception/AISenseConfig_Damage.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BaseEnemy.h"
@@ -20,6 +23,28 @@ AEnemyAIController::AEnemyAIController()
 
 	BB = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 	BT = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
+
+	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
+	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("HearingConfig"));
+	DamageConfig = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("DamageConfig"));
+
+	SightConfig->SightRadius = 800.0f;
+	SightConfig->LoseSightRadius = 1200.0f;
+	SightConfig->PeripheralVisionAngleDegrees = 70.0f;
+	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
+	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
+	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+
+	HearingConfig->HearingRange = 600.0f;
+	HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
+	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
+	HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
+
+	AIPerception->ConfigureSense(*SightConfig);
+	AIPerception->ConfigureSense(*HearingConfig);
+	AIPerception->ConfigureSense(*DamageConfig);
+
+	AIPerception->SetDominantSense(SightConfig->GetSenseImplementation());
 }
 
 void AEnemyAIController::BeginPlay()
@@ -46,17 +71,20 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 		{
 			RunBehaviorTree(ControlledEnemy->BehaviorTree);
 
-			SetStateAsPassive();
-
 			if (BB)
 			{
 				float AttackRadius = 0.0f;
 				float DefendRadius = 0.0f;
-				ControlledEnemy->GetIdealRadius(AttackRadius, DefendRadius);
+				if (ControlledEnemy->GetClass()->ImplementsInterface(UEnemyActionInterface::StaticClass()))
+				{
+					IEnemyActionInterface::Execute_GetIdealRadius(ControlledEnemy, AttackRadius, DefendRadius);
+				}
 
 				BB->SetValueAsFloat(AttackRadiusKey, AttackRadius);
 				BB->SetValueAsFloat(DefendRadiusKey, DefendRadius);
 			}
+
+			SetStateAsPassive();
 		}
 	}
 }
