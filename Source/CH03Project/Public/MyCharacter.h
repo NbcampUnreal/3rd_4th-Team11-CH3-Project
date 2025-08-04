@@ -18,9 +18,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	USceneComponent* SceneComp;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
-	USkeletalMeshComponent* SkeletalMeshComp;
+	USkeletalMeshComponent* SkeletalMeshComp1;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComp;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	USkeletalMeshComponent* SkeletalMeshComp2;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* StaticMeshComp;
 
 	// 포인터 변수
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
