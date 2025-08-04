@@ -28,8 +28,8 @@ AMyCharacter::AMyCharacter()
 
 	CharacterState = ECharacterState::Idle;
 
-	NormalSpeed = 600.0f;
-	RunSpeedMultiplier = 1.7f;
+	NormalSpeed = 400.0f;
+	RunSpeedMultiplier = 2.0f;
 	RunSpeed = NormalSpeed * RunSpeedMultiplier;
 }
 
