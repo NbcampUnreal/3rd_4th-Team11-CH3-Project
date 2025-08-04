@@ -11,7 +11,7 @@ class CH03PROJECT_API UDamageWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION(BlueprintImplementableEvent, Category = "Damage") 
+	UFUNCTION(BlueprintCallable, Category = "Damage") 
 	void SetDamageText(int32 DamageAmount);
 
 	void SetScreenPosition(const FVector2D& ScreenPos);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "BaseActor.h"
 #include "MyCharacter.generated.h"
 
 class UCameraComponent;
@@ -9,7 +9,7 @@ struct FInputActionValue;
 
 
 UCLASS()
-class CH03PROJECT_API AMyCharacter : public ACharacter
+class CH03PROJECT_API AMyCharacter : public ABaseActor
 {
 	GENERATED_BODY()
 
