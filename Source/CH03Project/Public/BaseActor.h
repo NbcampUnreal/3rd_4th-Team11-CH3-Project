@@ -2,16 +2,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
 #include "BaseActor.generated.h"
 
-class UCapsuleComponent;
-class USkeletalMeshComponent;
-class UCharacterMovementComponent;
 class UBaseStatComponent;
 class UDamageComponent;
 
 UCLASS()
-class CH03PROJECT_API ABaseActor : public AActor
+class CH03PROJECT_API ABaseActor : public ACharacter
 {
 	GENERATED_BODY()
 	
@@ -28,13 +26,4 @@ public:
 	UBaseStatComponent* BaseStatComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UDamageComponent* DamageComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
-	UCapsuleComponent* CapsuleComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
-	USkeletalMeshComponent* SkeletalMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
-	UCharacterMovementComponent* CharacterMovementComponent;
 };
