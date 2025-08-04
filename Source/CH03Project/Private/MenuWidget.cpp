@@ -18,7 +18,7 @@ void UMenuWidget::NativeConstruct()
 
 void UMenuWidget::OnStartClicked()
 {
-    UGameplayStatics::OpenLevel(GetWorld(), FName("GameMap"));
+    UGameplayStatics::OpenLevel(GetWorld(), FName("MainLevel"));
 }
 
 void UMenuWidget::OnQuitClicked()

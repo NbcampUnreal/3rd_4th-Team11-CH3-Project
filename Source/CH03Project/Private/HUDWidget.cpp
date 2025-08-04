@@ -1,4 +1,9 @@
 #include "HUDWidget.h"
+#include "DamageWidget.h"
+#include "MyPlayerController.h"
+#include "TimerManager.h"
+#include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
@@ -71,5 +76,62 @@ void UHUDWidget::UpdateHiddenQuest(bool bIsGetStatue, int32 StatueCount)
 	if (HiddenQuestOutline)
 	{
 		HiddenQuestOutline->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void UHUDWidget::ShowHitMarker()
+{
+	if (HitMarkerImage)
+	{
+		HitMarkerImage->SetVisibility(ESlateVisibility::Visible);
+
+		GetWorld()->GetTimerManager().ClearTimer(HitMarkerTimerHandle);
+		GetWorld()->GetTimerManager().SetTimer(
+			HitMarkerTimerHandle,
+			this,
+			&UHUDWidget::HideHitMarker,
+			0.3f,
+			false
+		);
+	}
+}
+
+void UHUDWidget::HideHitMarker()
+{
+	if (HitMarkerImage)
+	{
+		HitMarkerImage->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+void UHUDWidget::ShowDamageText(int32 DamageAmount, const FVector& WorldLocation)
+{
+	if (!DamageWidgetClass) return;
+
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (!PC) return;
+
+	FVector2D ScreenPosition;
+	if (PC->ProjectWorldLocationToScreen(WorldLocation, ScreenPosition))
+	{
+		UDamageWidget* DamageWidget = CreateWidget<UDamageWidget>(PC, DamageWidgetClass);
+		if (DamageWidget)
+		{
+			DamageWidget->AddToViewport();
+			DamageWidget->SetDamageText(DamageAmount);
+			DamageWidget->SetScreenPosition(ScreenPosition);
+
+			// 제거 타이머
+			FTimerHandle RemoveTimer;
+			FTimerDelegate RemoveDelegate = FTimerDelegate::CreateLambda([DamageWidget]()
+				{
+					if (DamageWidget)
+					{
+						DamageWidget->RemoveFromParent();
+					}
+				});
+
+			PC->GetWorldTimerManager().SetTimer(RemoveTimer, RemoveDelegate, 1.5f, false);
+		}
 	}
 }

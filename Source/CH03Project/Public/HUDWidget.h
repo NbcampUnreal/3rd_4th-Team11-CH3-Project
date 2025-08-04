@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "TimerManager.h"
+#include "Components/Image.h"
 #include "HUDWidget.generated.h"
 
 class UProgressBar;
@@ -23,10 +25,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateScore(int32 CurrentScore);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
+
 	void UpdateSubQuest(int32 QuestIndex, const TArray<FString>& MissionTexts);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateHiddenQuest(bool bIsGetStatue, int32 StatueCount);
 
+	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
+	void ShowHitMarker();
+	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
+	void ShowDamageText(int32 DamageAmount, const FVector& WorldLocation);
 
 
 protected:
@@ -52,4 +59,14 @@ protected:
 	UTextBlock* StatueNum;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* HiddenQuestText;
+	UPROPERTY(meta = (BindWidget))
+	UImage* HitMarkerImage;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UDamageWidget> DamageWidgetClass;
+
+private:
+	FTimerHandle HitMarkerTimerHandle;
+
+	void HideHitMarker();
 };
