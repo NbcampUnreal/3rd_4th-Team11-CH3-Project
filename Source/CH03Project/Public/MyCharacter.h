@@ -1,15 +1,34 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "BaseActor.h"
 #include "MyCharacter.generated.h"
 
 class UCameraComponent;
 struct FInputActionValue;
 
+UENUM(BlueprintType)
+enum class ECharacterState : uint8
+{
+	Idle            UMETA(DisplayName = "Idle"),
+	Walking         UMETA(DisplayName = "Walking"),
+	Running         UMETA(DisplayName = "Running"),
+	Crouchinging    UMETA(DisplayName = "Crouching"),
+	Jumping			UMETA(DisplayName = "Jumping"),
+	Cling			UMETA(DisplayName = "Cling"),
+	Shooting		UMETA(DisplayName = "Shooting"),
+	Dead			UMETA(DisplayName = "Dead")
+};
+
+UENUM(BlueprintType)
+enum class EWeaponState : uint8
+{
+	Base            UMETA(DisplayName = "Base"),
+	Aiming			UMETA(DisplayName = "Aiming")
+};
 
 UCLASS()
-class CH03PROJECT_API AMyCharacter : public ACharacter
+class CH03PROJECT_API AMyCharacter : public ABaseActor
 {
 	GENERATED_BODY()
 
@@ -18,20 +37,30 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	USceneComponent* SceneComp;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
-	USkeletalMeshComponent* SkeletalMeshComp;
+	USkeletalMeshComponent* SkeletalMeshComp1;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComp;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	USkeletalMeshComponent* SkeletalMeshComp2;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* StaticMeshComp;
 
-	// 포인터 변수
+	// 애니메이션 관련 변수
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimInstance* AnimInstance;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* FireMontage;
 
-	// 일반 변수
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
-	bool bIsShooting;
+	// 상태 관리 EnumClass 변수
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+	ECharacterState CharacterState;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+	EWeaponState WeaponState;
 
+	// 일반 변수
+	float NormalSpeed;
+	float RunSpeedMultiplier;
+	float RunSpeed;
 	// 타이머
 	FTimerHandle ShootTimerHandle;
 
@@ -41,8 +70,7 @@ public:
 	AMyCharacter();
 
 	// Getter, Setter
-	UFUNCTION(BlueprintCallable, Category = "State")
-	bool GetbIsShooting();
+
 
 	// 일반 함수
 	void Shoot();
@@ -59,7 +87,23 @@ public:
 
 	void Move(const FInputActionValue& value);
 
+	void StartRun(const FInputActionValue& value);
+
+	void StopRun(const FInputActionValue& value);
+
+	void StartJump(const FInputActionValue& value);
+
+	void StopJump(const FInputActionValue& value);
+
+	void Crouch(const FInputActionValue& value);
+
 	void Look(const FInputActionValue& value);
+
+	void StartAim(const FInputActionValue& value);
+
+	void StopAim(const FInputActionValue& value);
+
+	void Reload(const FInputActionValue& value);
 
 	void StartShoot(const FInputActionValue& value);
 

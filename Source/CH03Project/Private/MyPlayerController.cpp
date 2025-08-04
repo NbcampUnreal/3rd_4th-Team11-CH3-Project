@@ -5,12 +5,13 @@ AMyPlayerController::AMyPlayerController()
 {
 	IMC = nullptr;
 	MoveAction = nullptr;
+	RunAction = nullptr;
 	JumpAction = nullptr;
 	CrouchAction = nullptr;
 	LookAction = nullptr;
-	ShootAction = nullptr;
 	AimAction = nullptr;
 	ReloadAction = nullptr;
+	ShootAction = nullptr;
 	MyCharacter = nullptr;
 }
 

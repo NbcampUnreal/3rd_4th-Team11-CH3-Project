@@ -3,6 +3,7 @@
 #include "MyPlayerController.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -11,26 +12,52 @@ AMyCharacter::AMyCharacter()
 	SceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("Pivot"));
 	SceneComp->SetupAttachment(GetCapsuleComponent());
 
-	SkeletalMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterArms"));
-	SkeletalMeshComp->SetupAttachment(SceneComp);
+	SkeletalMeshComp1 = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterArms"));
+	SkeletalMeshComp1->SetupAttachment(SceneComp);
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	CameraComp->SetupAttachment(SkeletalMeshComp, TEXT("head"));
+	CameraComp->SetupAttachment(SkeletalMeshComp1, TEXT("head"));
 	CameraComp->SetRelativeLocation(FVector::ZeroVector);
+
+	SkeletalMeshComp2 = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
+
+	StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Magazine"));
 
 	AnimInstance = nullptr;
 	FireMontage = nullptr;
 
-	bIsShooting = false;
+	CharacterState = ECharacterState::Idle;
+	WeaponState = EWeaponState::Base;
+
+	NormalSpeed = 600.0f;
+	RunSpeedMultiplier = 1.7f;
+	RunSpeed = NormalSpeed * RunSpeedMultiplier;
 }
 
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (SkeletalMeshComp)
+	SkeletalMeshComp2->AttachToComponent(
+		SkeletalMeshComp1,
+		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+		TEXT("ik_hand_gun")
+	);
+
+	StaticMeshComp->AttachToComponent(
+		SkeletalMeshComp2,
+		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+		TEXT("magazine")
+	);
+
+	if (SkeletalMeshComp1)
 	{
-		AnimInstance = SkeletalMeshComp->GetAnimInstance();
+		AnimInstance = SkeletalMeshComp1->GetAnimInstance();
+	}
+
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 	}
 }
 
@@ -38,11 +65,6 @@ void AMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-}
-
-bool AMyCharacter::GetbIsShooting()
-{
-	return bIsShooting;
 }
 
 void AMyCharacter::Shoot()
@@ -71,6 +93,50 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 				);
 			}
 
+			if (PlayerController->RunAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->RunAction,
+					ETriggerEvent::Triggered,
+					this,
+					&AMyCharacter::StartRun
+				);
+
+				EnhancedInput->BindAction(
+					PlayerController->RunAction,
+					ETriggerEvent::Completed,
+					this,
+					&AMyCharacter::StopRun
+				);
+			}
+
+			if (PlayerController->JumpAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->JumpAction,
+					ETriggerEvent::Started,
+					this,
+					&AMyCharacter::StartJump
+				);
+
+				EnhancedInput->BindAction(
+					PlayerController->JumpAction,
+					ETriggerEvent::Completed,
+					this,
+					&AMyCharacter::StopJump
+				);
+			}
+
+			if (PlayerController->CrouchAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->CrouchAction,
+					ETriggerEvent::Started,
+					this,
+					&AMyCharacter::Crouch
+				);
+			}
+
 			if (PlayerController->LookAction)
 			{
 				EnhancedInput->BindAction(
@@ -78,6 +144,33 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					ETriggerEvent::Triggered,
 					this,
 					&AMyCharacter::Look
+				);
+			}
+
+			if (PlayerController->AimAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->AimAction,
+					ETriggerEvent::Started,
+					this,
+					&AMyCharacter::StartAim
+				);
+
+				EnhancedInput->BindAction(
+					PlayerController->AimAction,
+					ETriggerEvent::Completed,
+					this,
+					&AMyCharacter::StopAim
+				);
+			}
+
+			if (PlayerController->ReloadAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->ReloadAction,
+					ETriggerEvent::Started,
+					this,
+					&AMyCharacter::Reload
 				);
 			}
 
@@ -118,6 +211,50 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	}
 }
 
+void AMyCharacter::StartRun(const FInputActionValue& value)
+{
+	CharacterState = ECharacterState::Running;
+
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+	}
+}
+
+void AMyCharacter::StopRun(const FInputActionValue& value)
+{
+	CharacterState = ECharacterState::Idle;
+
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+	}
+}
+
+void AMyCharacter::StartJump(const FInputActionValue& value)
+{
+	if (value.Get<bool>())
+	{
+		Jump();
+	}
+}
+
+void AMyCharacter::StopJump(const FInputActionValue& value)
+{
+	if (!value.Get<bool>())
+	{
+		StopJumping();
+	}
+}
+
+void AMyCharacter::Crouch(const FInputActionValue& value)
+{
+	if (value.Get<bool>())
+	{
+
+	}
+}
+
 void AMyCharacter::Look(const FInputActionValue& value)
 {
 	FVector2D LookInput = value.Get<FVector2D>();
@@ -135,24 +272,53 @@ void AMyCharacter::Look(const FInputActionValue& value)
 	}
 }
 
+void AMyCharacter::StartAim(const FInputActionValue& value)
+{
+	if (value.Get<bool>())
+	{
+		WeaponState = EWeaponState::Aiming;
+	}
+}
+
+void AMyCharacter::StopAim(const FInputActionValue& value)
+{
+	if (!value.Get<bool>())
+	{
+		WeaponState = EWeaponState::Base;
+	}
+}
+
+void AMyCharacter::Reload(const FInputActionValue& value)
+{
+	if (value.Get<bool>())
+	{
+		
+	}
+}
+
 void AMyCharacter::StartShoot(const FInputActionValue& value)
 {
-	bIsShooting = value.Get<bool>();
+	if (CharacterState != ECharacterState::Running)
+	{
+		if (value.Get<bool>())
+		{
+			Shoot();
 
-	Shoot();
-
-	GetWorldTimerManager().SetTimer(
-		ShootTimerHandle,
-		this,
-		&AMyCharacter::Shoot,
-		0.2f,
-		true
-	);
+			GetWorldTimerManager().SetTimer(
+				ShootTimerHandle,
+				this,
+				&AMyCharacter::Shoot,
+				0.2f,
+				true
+			);
+		}
+	}
 }
 
 void AMyCharacter::StopShoot(const FInputActionValue& value)
 {
-	bIsShooting = value.Get<bool>();
-
-	GetWorldTimerManager().ClearTimer(ShootTimerHandle);
+	if (!value.Get<bool>())
+	{
+		GetWorldTimerManager().ClearTimer(ShootTimerHandle);
+	}
 }
