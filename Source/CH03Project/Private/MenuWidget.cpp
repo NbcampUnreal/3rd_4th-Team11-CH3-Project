@@ -44,3 +44,25 @@ void UMenuWidget::SetTileText(bool bIsGameOver)
         FPSGameText->SetText(FText::FromString(Label));
     }
 }
+
+void UMenuWidget::SetScoreNumText(bool bIsGameOver)
+{
+    if (bIsGameOver)
+    {
+        if (ScoreNumText)
+        {
+            ScoreNumText->SetVisibility(ESlateVisibility::Visible);
+        }
+    }
+}
+
+void UMenuWidget::SetScoreText(bool bIsGameOver)
+{
+    if (bIsGameOver)
+    {
+        if (ScoreText)
+        {
+            ScoreText->SetVisibility(ESlateVisibility::Visible);
+        }
+    }
+}

@@ -4,7 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "BaseStatComponent.generated.h"
 
-
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnHpChangedSignature, int, int, AActor*);
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CH03PROJECT_API UBaseStatComponent : public UActorComponent
 {
@@ -44,4 +44,6 @@ public:
 	void ImmuneToDamageEnd();
 
 	virtual void OnDeath();
+
+	FOnHpChangedSignature OnHpChangedEvent;
 };

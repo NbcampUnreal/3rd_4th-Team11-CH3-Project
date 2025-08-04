@@ -48,3 +48,11 @@ void UHUDWidget::UpdateBossHP(float CurrentBossHealth, float MaxBossHealth)
 		BossHealthBar->SetPercent(CurrentBossHealth / MaxBossHealth);
 	}
 }
+
+void UHUDWidget::UpdateScore(int32 CurrentScore)
+{
+	if (HUDScoreNum)
+	{
+		HUDScoreNum->SetText(FText::AsNumber(CurrentScore));
+	}
+}

@@ -19,6 +19,8 @@ public:
 	void UpdateBullet(int32 CurrentBullet);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateBossHP(float CurrentBossHealth, float MaxBossHealth);
+	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
+	void UpdateScore(int32 CurrentScore);
 
 
 protected:
@@ -32,5 +34,6 @@ protected:
 	UTextBlock* BulletText;
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* BossHealthBar;
-
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* HUDScoreNum;
 };
