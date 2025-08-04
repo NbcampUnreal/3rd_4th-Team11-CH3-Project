@@ -6,6 +6,7 @@
 
 class UProgressBar;
 class UTextBlock;
+class UImage;
 
 UCLASS()
 class CH03PROJECT_API UHUDWidget : public UUserWidget
@@ -21,6 +22,11 @@ public:
 	void UpdateBossHP(float CurrentBossHealth, float MaxBossHealth);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateScore(int32 CurrentScore);
+	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
+	void UpdateSubQuest(int32 QuestIndex, const TArray<FString>& MissionTexts);
+	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
+	void UpdateHiddenQuest(bool bIsGetStatue, int32 StatueCount);
+
 
 
 protected:
@@ -36,4 +42,14 @@ protected:
 	UProgressBar* BossHealthBar;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* HUDScoreNum;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* SubQuestText;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* QuestNumText;
+	UPROPERTY(meta = (BindWidget))
+	UImage* HiddenQuestOutline;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* StatueNum;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* HiddenQuestText;
 };
