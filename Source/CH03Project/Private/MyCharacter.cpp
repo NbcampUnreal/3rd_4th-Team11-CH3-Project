@@ -69,9 +69,12 @@ void AMyCharacter::Tick(float DeltaTime)
 
 void AMyCharacter::Shoot()
 {
-	if (AnimInstance && FireMontage)
+	if (CharacterState != ECharacterState::Running)
 	{
-		AnimInstance->Montage_Play(FireMontage, 1.0f);
+		if (AnimInstance && FireMontage)
+		{
+			AnimInstance->Montage_Play(FireMontage, 1.0f);
+		}
 	}
 }
 
@@ -151,7 +154,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 			{
 				EnhancedInput->BindAction(
 					PlayerController->AimAction,
-					ETriggerEvent::Started,
+					ETriggerEvent::Triggered,
 					this,
 					&AMyCharacter::StartAim
 				);
@@ -274,9 +277,12 @@ void AMyCharacter::Look(const FInputActionValue& value)
 
 void AMyCharacter::StartAim(const FInputActionValue& value)
 {
-	if (value.Get<bool>())
+	if (CharacterState != ECharacterState::Running)
 	{
-		WeaponState = EWeaponState::Aiming;
+		if (value.Get<bool>())
+		{
+			WeaponState = EWeaponState::Aiming;
+		}
 	}
 }
 
@@ -298,20 +304,17 @@ void AMyCharacter::Reload(const FInputActionValue& value)
 
 void AMyCharacter::StartShoot(const FInputActionValue& value)
 {
-	if (CharacterState != ECharacterState::Running)
+	if (value.Get<bool>())
 	{
-		if (value.Get<bool>())
-		{
-			Shoot();
+		Shoot();
 
-			GetWorldTimerManager().SetTimer(
-				ShootTimerHandle,
-				this,
-				&AMyCharacter::Shoot,
-				0.2f,
-				true
-			);
-		}
+		GetWorldTimerManager().SetTimer(
+			ShootTimerHandle,
+			this,
+			&AMyCharacter::Shoot,
+			0.2f,
+			true
+		);
 	}
 }
 
