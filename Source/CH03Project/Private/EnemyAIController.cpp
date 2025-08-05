@@ -36,7 +36,7 @@ AEnemyAIController::AEnemyAIController()
 
 	SightConfig->SightRadius = 800.0f;
 	SightConfig->LoseSightRadius = 1200.0f;
-	SightConfig->PeripheralVisionAngleDegrees = 70.0f;
+	SightConfig->PeripheralVisionAngleDegrees = 90.0f;
 	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
 	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
 	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
@@ -176,37 +176,42 @@ void AEnemyAIController::HandleSensedSight(AActor* Actor)
 {
 	if (!BB || !Actor) return;
 
-	DEBUG_MSG(-1, 2.f, FColor::Blue, "[Sight] Current State: %d", (uint8)GetCurrentState());
+	EEnemyState CurrentState = GetCurrentState();
 
-	BB->SetValueAsObject(TargetActorKey, Actor);
-	SetStateAsAttacking();
-	DEBUG_MSG(-1, 2.f, FColor::Green, "[Sight] TargetActor set to %s | State -> Attacking", *Actor->GetName());
+	if (CurrentState == EEnemyState::Passive || CurrentState == EEnemyState::Investigating)
+	{
+		if (Actor == GetWorld()->GetFirstPlayerController()->GetPawn())
+		{
+			SetStateAsAttacking(Actor);
+		}
+	}
 }
 
 void AEnemyAIController::HandleSensedSound(const FVector& Location)
 {
 	if (!BB) return;
 
-	DEBUG_MSG(-1, 2.f, FColor::Orange, "[Hearing] Location: %s", *Location.ToString());
-	BB->SetValueAsVector(InterestKey, Location);
-	SetStateAsInvestigating(Location);
+	EEnemyState CurrentState = GetCurrentState();
+
+	if (CurrentState == EEnemyState::Passive)
+	{
+		SetStateAsInvestigating(Location);
+	}
 }
 
 void AEnemyAIController::HandleSensedDamage(AActor* Actor)
 {
 	if (!BB || !Actor) return;
 
-	DEBUG_MSG(-1, 2.f, FColor::Magenta, "[Damage] Current State: %d", (uint8)GetCurrentState());
+	EEnemyState CurrentState = GetCurrentState();
 
-	if (GetCurrentState() == EEnemyState::Attacking)
+	if (CurrentState != EEnemyState::Attacking)
 	{
-		DEBUG_MSG(-1, 2.f, FColor::Red, "[Damage] Already Attacking - Ignored");
-		return;
+		if (Actor == GetWorld()->GetFirstPlayerController()->GetPawn())
+		{
+			SetStateAsAttacking(Actor);
+		}
 	}
-
-	BB->SetValueAsObject(TargetActorKey, Actor);
-	SetStateAsAttacking();
-	DEBUG_MSG(-1, 2.f, FColor::Green, "[Damage] TargetActor set to %s | State -> Attacking", *Actor->GetName());
 }
 
 void AEnemyAIController::SetStateAsPassive()
@@ -214,16 +219,20 @@ void AEnemyAIController::SetStateAsPassive()
 	if (BB)
 	{
 		BB->SetValueAsEnum(StateKey, static_cast<uint8>(EEnemyState::Passive));
-		DEBUG_MSG(-1, 1.5f, FColor::Cyan, "[State] -> Passive");
 	}
 }
 
-void AEnemyAIController::SetStateAsAttacking()
+void AEnemyAIController::SetStateAsAttacking(AActor* AttackTarget)
 {
 	if (BB)
 	{
+		if (AttackTarget)
+		{
+			BB->SetValueAsObject(TargetActorKey, AttackTarget);
+		}
+
 		BB->SetValueAsEnum(StateKey, static_cast<uint8>(EEnemyState::Attacking));
-		DEBUG_MSG(-1, 1.5f, FColor::Green, "[State] -> Attacking");
+		TargetActor = AttackTarget;
 	}
 }
 
@@ -233,7 +242,6 @@ void AEnemyAIController::SetStateAsInvestigating(const FVector& Location)
 	{
 		BB->SetValueAsEnum(StateKey, static_cast<uint8>(EEnemyState::Investigating));
 		BB->SetValueAsVector(InterestKey, Location);
-		DEBUG_MSG(-1, 1.5f, FColor::Yellow, "[State] -> Investigating");
 	}
 }
 

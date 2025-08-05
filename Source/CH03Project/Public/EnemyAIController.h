@@ -63,7 +63,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI|Blackboard")
 	void SetStateAsPassive();
 	UFUNCTION(BlueprintCallable, Category = "AI|Blackboard")
-	void SetStateAsAttacking();
+	void SetStateAsAttacking(AActor* AttackTarget);
 	UFUNCTION(BlueprintCallable, Category = "AI|Blackboard")
 	void SetStateAsInvestigating(const FVector& Location);
 
