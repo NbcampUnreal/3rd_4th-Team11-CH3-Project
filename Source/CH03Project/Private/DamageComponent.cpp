@@ -20,10 +20,14 @@ void UDamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 }
 
 
-void UDamageComponent::TransDamage(UBaseStatComponent* TargetStatComponent)
+void UDamageComponent::TransDamage(AActor* TargetActor)
 {
-	if (TargetStatComponent)
+	if (TargetActor)
 	{
-		TargetStatComponent->AddHp(-AttackDamage);
+		UBaseStatComponent* TargetStatComponent = TargetActor->FindComponentByClass<UBaseStatComponent>();
+		if (TargetStatComponent)
+		{
+			TargetStatComponent->AddHp(-AttackDamage);
+		}
 	}
 }
