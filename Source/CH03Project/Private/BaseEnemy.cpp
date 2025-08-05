@@ -14,7 +14,6 @@ ABaseEnemy::ABaseEnemy()
 
 	PatrolIndex = 0;
 	Direction = 1;
-	bIsWeildingWeapon = false;
 
 	AIControllerClass = AEnemyAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
@@ -106,16 +105,7 @@ void ABaseEnemy::GetIdealRadius_Implementation(float& OutAttackRadius, float& Ou
 	OutDefendRadius = 350.f;
 }
 
-void ABaseEnemy::EquipWeapon_Implementation()
-{
-	bIsWeildingWeapon = true;
-}
-
-void ABaseEnemy::UnequipWeapon_Implementation()
-{
-	bIsWeildingWeapon = false;
-}
-
 void ABaseEnemy::Attack_Implementation()
 {
+
 }

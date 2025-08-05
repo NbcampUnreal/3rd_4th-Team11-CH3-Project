@@ -28,11 +28,5 @@ public:
 	void GetIdealRadius(float& OutAttackRadius, float& OutDefendRadius);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Enemy|Combat")
-	void EquipWeapon();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Enemy|Combat")
-	void UnequipWeapon();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Enemy|Combat")
 	void Attack();
 };
