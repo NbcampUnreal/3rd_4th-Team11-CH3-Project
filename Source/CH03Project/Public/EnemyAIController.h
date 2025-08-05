@@ -53,7 +53,7 @@ protected:
 	UFUNCTION()
 	void OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 
-	bool CanSenseActor(ABaseEnemy* Enemy, AActor* Actor, const FAIStimulus& Stimulus, FName SenseName) const;
+	bool CanSenseActor(ABaseEnemy* Enemy, AActor* Actor, TSubclassOf<UAISense> SenseToCheck, TSubclassOf<UAISense>& OutSensedClass) const;
 
 	void HandleSensedSight(AActor* Actor);
 	void HandleSensedSound(const FVector& Location);
@@ -68,19 +68,19 @@ public:
 	void SetStateAsInvestigating(const FVector& Location);
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName TargetActorKey = TEXT("TargetActor");
+	FName TargetActorKey;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName StateKey = TEXT("State");
+	FName StateKey;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName InterestKey = TEXT("PointOfInterest");
+	FName InterestKey;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName AttackRadiusKey = TEXT("AttackRadius");
+	FName AttackRadiusKey;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName DefendRadiusKey = TEXT("DefendRadius");
+	FName DefendRadiusKey;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AIBlackboard")
 	AActor* TargetActor;
