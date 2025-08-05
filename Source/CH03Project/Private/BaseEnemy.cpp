@@ -107,5 +107,4 @@ void ABaseEnemy::GetIdealRadius_Implementation(float& OutAttackRadius, float& Ou
 
 void ABaseEnemy::Attack_Implementation()
 {
-
 }
