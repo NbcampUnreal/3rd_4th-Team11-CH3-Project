@@ -14,15 +14,10 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BaseEnemy.h"
 
-#include "Engine/Engine.h"
-
-#define DEBUG_MSG(Key, Time, Color, Format, ...) \
-if (GEngine) GEngine->AddOnScreenDebugMessage(Key, Time, Color, FString::Printf(TEXT(Format), ##__VA_ARGS__))
-
 
 AEnemyAIController::AEnemyAIController()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));
 	SetPerceptionComponent(*AIPerception);
@@ -66,7 +61,6 @@ void AEnemyAIController::BeginPlay()
 	if (AIPerception)
 	{
 		AIPerception->OnTargetPerceptionUpdated.AddDynamic(this, &AEnemyAIController::OnPerceptionUpdated);
-		DEBUG_MSG(-1, 3.f, FColor::Green, "[AIController] Perception bound successfully.");
 	}
 }
 
@@ -97,7 +91,6 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 			}
 
 			SetStateAsPassive();
-			DEBUG_MSG(-1, 3.f, FColor::Cyan, "[AIController] Initial State: %d (Passive=0)", (uint8)GetCurrentState());
 		}
 	}
 }
