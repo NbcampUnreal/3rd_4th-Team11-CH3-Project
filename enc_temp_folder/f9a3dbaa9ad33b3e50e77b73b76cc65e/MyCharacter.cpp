@@ -281,8 +281,6 @@ void AMyCharacter::StartAim(const FInputActionValue& value)
 	{
 		if (value.Get<bool>())
 		{
-			CameraComp->SetFieldOfView(80.0f);
-
 			WeaponState = EWeaponState::Aiming;
 		}
 	}
@@ -292,8 +290,6 @@ void AMyCharacter::StopAim(const FInputActionValue& value)
 {
 	if (!value.Get<bool>())
 	{
-		CameraComp->SetFieldOfView(100.0f);
-
 		WeaponState = EWeaponState::Base;
 	}
 }
