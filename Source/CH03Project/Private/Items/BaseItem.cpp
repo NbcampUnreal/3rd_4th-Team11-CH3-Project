@@ -107,12 +107,3 @@ void ABaseItem::OnItemEndOverlap(
 {
 	HideWidget(OtherActor);
 }
-
-/*
-UPrimitiveComponent* OverlappedComp : 오버랩이 발생한 자기 자신
-AActor* OtherActor : 부딪힌 액터
-UPrimitiveComponent* OtherComp : OtherActor에 붙어있고 1차적으로 충돌을 일으킨 원인 컴포넌트
-int32 OtherBodyIndex : 충돌한 다른 액터의 본체 인덱스 (본체가 여러 개인 경우)
-bool bFromSweep : 스위프트 충돌 여부 (충돌을 스위프트로 검출했는지 여부)
-const FHitResult& SweepResult : 충돌 정보를 제공하는 FHitResult 구조체
-*/
