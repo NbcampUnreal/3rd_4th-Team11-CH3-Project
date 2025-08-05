@@ -22,10 +22,10 @@ void UHUDWidget::UpdateHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Inst
 		HealthBar->SetPercent(static_cast<float>(CurrentHealth) / MaxHealth);
 	}
 
-	if (HealthText)
+	if (HealthNum)
 	{
 		FString HealthString = FString::Printf(TEXT("%d"), CurrentHealth);
-		HealthText->SetText(FText::FromString(HealthString));
+		HealthNum->SetText(FText::FromString(HealthString));
 	}
 }
 

@@ -46,7 +46,7 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* HealthBar;
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* HealthText;
+	UTextBlock* HealthNum;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* BulletText;
 	UPROPERTY(meta = (BindWidget))
