@@ -22,6 +22,8 @@ protected:
 	UFUNCTION()
 	void OnQuitClicked();
 
+	void SetMenuState(bool bIsGameOver);
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void SetStartButtonText(bool bIsGameOver);
