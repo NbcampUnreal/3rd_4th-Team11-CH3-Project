@@ -1,5 +1,8 @@
 #include "MyPlayerController.h"
 #include "EnhancedInputSubsystems.h"
+#include "MyCharacter.h"
+#include "HUDWidget.h"
+#include "BaseStatComponent.h"
 
 AMyPlayerController::AMyPlayerController()
 {
@@ -29,4 +32,24 @@ void AMyPlayerController::BeginPlay()
 			}
 		}
 	}
+
+    if (HUDWidgetClass)
+    {
+        UHUDWidget* MyHUDWidget = CreateWidget<UHUDWidget>(this, HUDWidgetClass);
+        if (MyHUDWidget)
+		{
+            MyHUDWidget->AddToViewport();
+            AMyCharacter* MyPlayerCharacter = Cast<AMyCharacter>(GetPawn());
+            if (MyPlayerCharacter)
+            {
+                UBaseStatComponent* StatComponent = MyPlayerCharacter->FindComponentByClass<UBaseStatComponent>();
+                if (StatComponent)
+                {
+                    StatComponent->OnHpChangedEvent.AddDynamic(MyHUDWidget, &UHUDWidget::UpdateHealth);
+
+                    MyHUDWidget->UpdateHealth(StatComponent->GetHp(), StatComponent->GetMaxHp(), GetPawn());
+                }
+            }
+        }
+    }
 }

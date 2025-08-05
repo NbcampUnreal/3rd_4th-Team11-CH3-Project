@@ -76,3 +76,18 @@ void UBaseStatComponent::OnDeath()
 {
 
 }
+
+int UBaseStatComponent::GetHp()
+{
+	return Hp;
+}
+
+int UBaseStatComponent::GetMaxHp()
+{
+	return MaxHp;
+}
+
+int UBaseStatComponent::GetArmor()
+{
+	return Armor;
+}
