@@ -6,11 +6,11 @@ void UDamageWidget::NativeConstruct()
     Super::NativeConstruct();
 }
 
-void UDamageWidget::SetDamageText(int32 Damage)
+void UDamageWidget::SetDamageText(int32 DamageAmount)
 {
     if (DamageText)
     {
-        DamageText->SetText(FText::FromString(FString::FromInt(Damage)));
+        DamageText->SetText(FText::FromString(FString::FromInt(DamageAmount)));
     }
 }
 

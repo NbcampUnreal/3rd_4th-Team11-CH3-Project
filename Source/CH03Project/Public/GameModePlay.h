@@ -23,7 +23,8 @@ public:
 	
 protected:
 	void BeginPlay();
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UUserWidget> MainMenuWidgetClass;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "UI")

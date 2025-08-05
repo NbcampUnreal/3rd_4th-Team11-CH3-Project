@@ -64,7 +64,7 @@ void AWayPointSpawner::GenerateWaypointVectorsForActor(ABaseEnemy* Enemy, TArray
                 continue;
 
             OutVectors.Add(NavLoc.Location);
-            DrawDebugSphere(GetWorld(), NavLoc.Location, 50.f, 12, FColor::Cyan, true, 10.f);
+            //DrawDebugSphere(GetWorld(), NavLoc.Location, 50.f, 12, FColor::Cyan, true, 10.f);
             Count++;
         }
     }

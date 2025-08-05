@@ -6,6 +6,8 @@
 #include "QuestTypeA.h"
 #include "Kismet/GameplayStatics.h"
 #include "BaseActor.h"
+#include "BaseStatComponent.h"
+#include "Blueprint/UserWidget.h"
 
 AGameModePlay::AGameModePlay()
 {
@@ -41,10 +43,18 @@ void AGameModePlay::BeginPlay()
 		UBaseStatComponent* BaseStatComp = BaseActor->FindComponentByClass<UBaseStatComponent>();
 		if (BaseStatComp)
 		{
-			BaseStatComp->OnHpChangedEvent.AddUObject(this, &AGameModePlay::HandlePlayerHpChanged);
+			BaseStatComp->OnHpChangedEvent.AddDynamic(this, &AGameModePlay::HandlePlayerHpChanged);
 		}
 	}
 
+	if (MainMenuWidgetClass)
+	{
+		UUserWidget* MainMenuWidget = CreateWidget(GetWorld(), MainMenuWidgetClass);
+		if (MainMenuWidget)
+		{
+			MainMenuWidget->AddToViewport();
+		}
+	}
 }
 
 void AGameModePlay::HandlePlayerHpChanged(int32 NewHp, int32 MaxHp, AActor* OwnerActor)

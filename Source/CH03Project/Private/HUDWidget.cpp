@@ -8,24 +8,27 @@
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 
+
+
 void UHUDWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
 }
-
-void UHUDWidget::UpdateHealth(float CurrentHealth, float MaxHealth)
+void UHUDWidget::UpdateHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Instigator)
 {
 	if (HealthBar)
 	{
-		HealthBar->SetPercent(CurrentHealth / MaxHealth);
+		HealthBar->SetPercent(static_cast<float>(CurrentHealth) / MaxHealth);
 	}
 
 	if (HealthText)
 	{
-		HealthText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), CurrentHealth)));
+		FString HealthString = FString::Printf(TEXT("%d"), CurrentHealth);
+		HealthText->SetText(FText::FromString(HealthString));
 	}
 }
+
 
 void UHUDWidget::UpdateBullet(int32 CurrentBullet)
 {
@@ -35,7 +38,7 @@ void UHUDWidget::UpdateBullet(int32 CurrentBullet)
 	}
 }
 
-void UHUDWidget::UpdateBossHP(float CurrentBossHealth, float MaxBossHealth)
+void UHUDWidget::UpdateBossHP(int CurrentBossHealth, int MaxBossHealth)
 {
 	if (BossHealthBar)
 	{
@@ -133,5 +136,13 @@ void UHUDWidget::ShowDamageText(int32 DamageAmount, const FVector& WorldLocation
 
 			PC->GetWorldTimerManager().SetTimer(RemoveTimer, RemoveDelegate, 1.5f, false);
 		}
+	}
+}
+
+void UHUDWidget::SetCrosshairVisible(bool bVisible)
+{
+	if (NormalCrossHair)
+	{
+		NormalCrossHair->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }

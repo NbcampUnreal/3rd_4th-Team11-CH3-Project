@@ -31,9 +31,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI")
 	int32 PatrolIndex;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	bool bIsWeildingWeapon;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	UBehaviorTree* BehaviorTree;
 
@@ -48,7 +45,5 @@ public:
 	virtual TArray<FVector> GetPatrolWaypoints_Implementation() override;
 	virtual void SetMovementSpeed_Implementation(ESpeedState SpeedState) override;
 	virtual void GetIdealRadius_Implementation(float& OutAttackRadius, float& OutDefendRadius) override;
-	virtual void EquipWeapon_Implementation() override;
-	virtual void UnequipWeapon_Implementation() override;
 	virtual void Attack_Implementation() override;
 };

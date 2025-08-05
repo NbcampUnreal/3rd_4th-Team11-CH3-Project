@@ -10,6 +10,7 @@ class UProgressBar;
 class UTextBlock;
 class UImage;
 
+
 UCLASS()
 class CH03PROJECT_API UHUDWidget : public UUserWidget
 {
@@ -17,11 +18,11 @@ class CH03PROJECT_API UHUDWidget : public UUserWidget
 	
 public:
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
-	void UpdateHealth(float CurrentHealth, float MaxHealth);
+	void UpdateHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Instigator);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateBullet(int32 CurrentBullet);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
-	void UpdateBossHP(float CurrentBossHealth, float MaxBossHealth);
+	void UpdateBossHP(int CurrentBossHealth, int MaxBossHealth);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateScore(int32 CurrentScore);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
@@ -34,6 +35,9 @@ public:
 	void ShowHitMarker();
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void ShowDamageText(int32 DamageAmount, const FVector& WorldLocation);
+
+	UFUNCTION(BlueprintCallable)
+	void SetCrosshairVisible(bool bVisible);
 
 
 protected:
@@ -61,6 +65,8 @@ protected:
 	UTextBlock* HiddenQuestText;
 	UPROPERTY(meta = (BindWidget))
 	UImage* HitMarkerImage;
+	UPROPERTY(meta = (BindWidget))
+	UImage* NormalCrossHair;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UDamageWidget> DamageWidgetClass;

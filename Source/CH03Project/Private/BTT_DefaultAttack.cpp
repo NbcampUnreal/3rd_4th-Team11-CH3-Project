@@ -2,6 +2,7 @@
 
 
 #include "BTT_DefaultAttack.h"
+#include "EnemyActionInterface.h"
 #include "AIController.h"
 #include "BaseEnemy.h"
 
@@ -31,7 +32,12 @@ EBTNodeResult::Type UBTT_DefaultAttack::ExecuteTask(UBehaviorTreeComponent& Owne
 		return EBTNodeResult::Failed;
 	}
 
-	Enemy->Attack_Implementation();
 
-	return EBTNodeResult::Succeeded;
+	if (Enemy->GetClass()->ImplementsInterface(UEnemyActionInterface::StaticClass()))
+	{
+		IEnemyActionInterface::Execute_Attack(Enemy);
+		return EBTNodeResult::Succeeded;
+	}
+
+	return EBTNodeResult::Failed;
 }
