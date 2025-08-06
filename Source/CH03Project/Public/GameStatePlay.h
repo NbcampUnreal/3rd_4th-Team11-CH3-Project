@@ -4,7 +4,8 @@
 #include "GameFramework/GameState.h"
 #include "GameStatePlay.generated.h"
 
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnPlayerHpChangedSignature, int32, NewHp, int32, MaxHp, int32, OldHp);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScoreChanged, int32, Score);
 
 UCLASS()
 class CH03PROJECT_API AGameStatePlay : public AGameState
@@ -15,8 +16,8 @@ class CH03PROJECT_API AGameStatePlay : public AGameState
 public:
 
 	AGameStatePlay();
-	
 
+	FOnScoreChanged OnScoreChanged;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	int32 Score;

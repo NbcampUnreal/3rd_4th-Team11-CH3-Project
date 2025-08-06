@@ -30,6 +30,11 @@ void UBaseStatComponent::BeginPlay()
 
 void UBaseStatComponent::AddHp(int Point)
 {
+	if (bIsImmuneToDamage)
+	{
+		return;
+	}
+
 	if (Point < 0)
 	{
 		ImmuneToDamageSet();

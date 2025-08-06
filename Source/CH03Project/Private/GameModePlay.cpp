@@ -7,7 +7,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "BaseActor.h"
 
-
 AGameModePlay::AGameModePlay()
 {
 
@@ -27,10 +26,9 @@ void AGameModePlay::BeginPlay()
 
 
 
-void AGameModePlay::AddScore(int32 Points)//진짜 쓸모없다..
+void AGameModePlay::AddScore(int32 Points)
 {
 	GameStatePlays->AddScore(Points);
-	//HUDWidget->UpdateScore(GameStatePlays->Score);
 }
 
 

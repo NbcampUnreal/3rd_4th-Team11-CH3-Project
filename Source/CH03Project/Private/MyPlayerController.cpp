@@ -1,10 +1,11 @@
-#include "MyPlayerController.h"
+﻿#include "MyPlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "MyCharacter.h"
 #include "HUDWidget.h"
 #include "BaseStatComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameStatePlay.h"
 
 AMyPlayerController::AMyPlayerController()
 {
@@ -67,6 +68,12 @@ void AMyPlayerController::BeginPlay()
 				{
 					StatComponent->OnHpChangedEvent.AddDynamic(HUDWidget, &UHUDWidget::UpdateHealth);
 					HUDWidget->UpdateHealth(StatComponent->GetHp(), StatComponent->GetMaxHp(), GetPawn());
+				}
+				AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
+				if (GameStatePlay)
+				{
+					GameStatePlay->OnScoreChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateScore);
+					HUDWidget->UpdateScore(GameStatePlay->Score);
 				}
 			}
 		}
