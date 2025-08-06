@@ -56,10 +56,10 @@ void AMyPlayerController::BeginPlay()
 	{
 		if (HUDWidgetClass)
 		{
-			HUDWidget = CreateWidget<UHUDWidget>(this, HUDWidgetClass);
-			if (HUDWidget)
+			UHUDWidget* MyHUDWidget = CreateWidget<UHUDWidget>(this, HUDWidgetClass);
+			if (MyHUDWidget)
 			{
-				HUDWidget->AddToViewport();
+				MyHUDWidget->AddToViewport();
 
 				AMyCharacter* MyPlayerCharacter = Cast<AMyCharacter>(GetPawn());
 				if (MyPlayerCharacter)
@@ -67,8 +67,8 @@ void AMyPlayerController::BeginPlay()
 					UBaseStatComponent* StatComponent = MyPlayerCharacter->FindComponentByClass<UBaseStatComponent>();
 					if (StatComponent)
 					{
-						StatComponent->OnHpChangedEvent.AddDynamic(HUDWidget, &UHUDWidget::UpdateHealth);
-						HUDWidget->UpdateHealth(StatComponent->GetHp(), StatComponent->GetMaxHp(), GetPawn());
+						StatComponent->OnHpChangedEvent.AddDynamic(MyHUDWidget, &UHUDWidget::UpdateHealth);
+						MyHUDWidget->UpdateHealth(StatComponent->GetHp(), StatComponent->GetMaxHp(), GetPawn());
 					}
 				}
 			}

@@ -19,7 +19,7 @@ void UHUDWidget::UpdateHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Inst
 {
 	if (HealthBar)
 	{
-		HealthBar->SetPercent(1-static_cast<float>(CurrentHealth) / MaxHealth);
+		HealthBar->SetPercent(static_cast<float>(CurrentHealth) / MaxHealth);
 	}
 
 	if (HealthNum)
