@@ -17,8 +17,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character")
 	AMyCharacter* MyCharacter;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
-	TSubclassOf<class UUserWidget> MainMenuWidgetClass;
+	
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
@@ -45,6 +44,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "UI")
 	UHUDWidget* HUDWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
+	TSubclassOf<class UUserWidget> MainMenuWidgetClass;
 
 
 public:

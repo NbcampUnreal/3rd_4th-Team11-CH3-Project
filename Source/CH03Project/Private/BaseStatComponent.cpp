@@ -1,4 +1,9 @@
 ﻿#include "BaseStatComponent.h"
+#include "MenuWidget.h"
+#include "GameFramework/PlayerController.h"
+#include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
+#include "MyPlayerController.h"
 #include "GameFramework/Character.h"
 #include "AIController.h"
 #include "BrainComponent.h"
@@ -107,6 +112,19 @@ void UBaseStatComponent::OnDeath()
 		if (AEnemyAIController* EnemyAICon = Cast<AEnemyAIController>(AICon))
 		{
 			EnemyAICon->SetStateAsDead();
+		}
+	}
+
+	AMyPlayerController* PC = Cast<AMyPlayerController>(OwnerCharacter->GetController());
+	if (PC && PC->MainMenuWidgetClass)
+	{
+		UMenuWidget* MenuWidget = CreateWidget<UMenuWidget>(PC, PC->MainMenuWidgetClass);
+		if (MenuWidget)
+		{
+			MenuWidget->AddToViewport();
+			MenuWidget->SetMenuState(true);
+			PC->SetInputMode(FInputModeUIOnly());
+			PC->bShowMouseCursor = true;
 		}
 	}
 }
