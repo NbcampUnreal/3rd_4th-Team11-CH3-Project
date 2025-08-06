@@ -31,3 +31,18 @@ void UDamageComponent::TransDamage(AActor* TargetActor)
 		}
 	}
 }
+
+bool UDamageComponent::StoreAttackToken(int32 Amount)
+{
+	if (AttackTokenCount >= Amount)
+	{
+		AttackTokenCount -= Amount;
+		return true;
+	}
+	return false;
+}
+
+void UDamageComponent::ReturnAttackToken(int32 Amount)
+{
+	AttackTokenCount += Amount;
+}
