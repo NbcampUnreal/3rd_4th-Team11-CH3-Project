@@ -21,16 +21,6 @@ void AGameStatePlay::AddScore(int32 Points)
 }
 
 
-void AGameStatePlay::SetPlayerHealth(int32 NewValHp, int32 NewValMaxHp)
-{
-    int32 OldHpBeforeChange = PlayerHp;
-
-    //PlayerHp = FMath::Clamp(NewValHp, 0, NewValMaxHp);
-    PlayerHp = NewValHp;
-    PlayerMaxHp = NewValMaxHp;
-
-    //OnPlayerHpChanged.Broadcast(PlayerHp, PlayerMaxHp, OldHpBeforeChange);
-}
 
 
 

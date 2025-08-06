@@ -16,16 +16,6 @@ public:
 
 	AGameStatePlay();
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	int32 PlayerHp;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	int32 PlayerMaxHp;
-
-	UFUNCTION(BlueprintCallable, Category = "UI")
-	void SetPlayerHealth(int32 NewValHp, int32 NewValMaxHp);
-
-	//UPROPERTY(BlueprintAssignable, Category = "UI|Events")
-	//FOnPlayerHpChangedSignature OnPlayerHpChanged;
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
