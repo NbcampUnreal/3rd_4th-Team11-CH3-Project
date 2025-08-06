@@ -6,6 +6,7 @@
 
 class UCameraComponent;
 struct FInputActionValue;
+class AMyPlayerController;
 
 UENUM(BlueprintType)
 enum class ECharacterState : uint8
@@ -33,7 +34,7 @@ class CH03PROJECT_API AMyCharacter : public ABaseActor
 	GENERATED_BODY()
 
 protected:
-	// 컴포넌트
+	// Component
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	USceneComponent* SceneComp;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
@@ -45,23 +46,32 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMeshComp;
 
-	// 애니메이션 관련 변수
+	// Animation Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimInstance* AnimInstance;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* FireMontage;
 
-	// 상태 관리 EnumClass 변수
+	// Effect Valiable
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	UParticleSystem* ShootHitEffect;
+
+	// State Management EnumClass Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	ECharacterState CharacterState;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	EWeaponState WeaponState;
 
-	// 일반 변수
+	// Pointer Valiable
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerController")
+	AMyPlayerController* PlayerController;
+
+	// General Valiable
 	float NormalSpeed;
 	float RunSpeedMultiplier;
 	float RunSpeed;
-	// 타이머
+
+	// Timer
 	FTimerHandle ShootTimerHandle;
 
 
@@ -72,7 +82,7 @@ public:
 	// Getter, Setter
 
 
-	// 일반 함수
+	// General Function
 	void Shoot();
 
 
@@ -80,7 +90,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-public:	
+	virtual void PossessedBy(AController* NewController) override;
+
+public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

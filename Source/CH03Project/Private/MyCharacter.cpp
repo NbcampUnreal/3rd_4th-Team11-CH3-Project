@@ -4,6 +4,7 @@
 #include "DamageComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AMyCharacter::AMyCharacter()
@@ -27,8 +28,12 @@ AMyCharacter::AMyCharacter()
 	AnimInstance = nullptr;
 	FireMontage = nullptr;
 
+	ShootHitEffect = nullptr;
+
 	CharacterState = ECharacterState::Idle;
 	WeaponState = EWeaponState::Base;
+
+	PlayerController = nullptr;
 
 	NormalSpeed = 600.0f;
 	RunSpeedMultiplier = 1.7f;
@@ -38,7 +43,7 @@ AMyCharacter::AMyCharacter()
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	SkeletalMeshComp2->AttachToComponent(
 		SkeletalMeshComp1,
 		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
@@ -62,6 +67,17 @@ void AMyCharacter::BeginPlay()
 	}
 }
 
+void AMyCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	AMyPlayerController* PC = Cast<AMyPlayerController>(NewController);
+	if (PC)
+	{
+		PlayerController = PC;
+	}
+}
+
 void AMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -76,6 +92,45 @@ void AMyCharacter::Shoot()
 		{
 			AnimInstance->Montage_Play(FireMontage, 1.0f);
 		}
+
+		if (!PlayerController) return;
+
+		FVector Location;
+		FRotator Rotation;
+		PlayerController->GetPlayerViewPoint(Location, Rotation);
+		FVector End = Location + (Rotation.Vector() * 10000.0f); // 10000.0f weapon shootdistance
+
+		FHitResult Hit;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		bool bHit = GetWorld()->LineTraceSingleByChannel(
+			Hit,
+			Location,
+			End,
+			ECC_GameTraceChannel2,
+			Params
+		);
+
+		if (ShootHitEffect)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				ShootHitEffect,
+				Hit.ImpactPoint,
+				Hit.ImpactNormal.Rotation()
+			);
+		}
+
+		if (bHit)
+		{
+			AActor* HitActor = Hit.GetActor();
+
+			if (HitActor && HitActor->ActorHasTag("Enemy"))
+			{
+				DamageComponent->TransDamage(HitActor);
+			}
+		}
 	}
 }
 
@@ -85,7 +140,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		if (AMyPlayerController* PlayerController = Cast<AMyPlayerController>(GetController()))
+		if (PlayerController)
 		{
 			if (PlayerController->MoveAction)
 			{
@@ -200,7 +255,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMyCharacter::Move(const FInputActionValue& value)
 {
-	if (!Controller) return;
+	if (!PlayerController) return;
 
 	const FVector2D MoveInput = value.Get<FVector2D>();
 
@@ -283,6 +338,7 @@ void AMyCharacter::StartAim(const FInputActionValue& value)
 		if (value.Get<bool>())
 		{
 			WeaponState = EWeaponState::Aiming;
+			CameraComp->SetFieldOfView(80.0f);
 		}
 	}
 }
@@ -292,6 +348,7 @@ void AMyCharacter::StopAim(const FInputActionValue& value)
 	if (!value.Get<bool>())
 	{
 		WeaponState = EWeaponState::Base;
+		CameraComp->SetFieldOfView(100.0f);
 	}
 }
 
@@ -299,7 +356,7 @@ void AMyCharacter::Reload(const FInputActionValue& value)
 {
 	if (value.Get<bool>())
 	{
-		
+
 	}
 }
 
@@ -326,6 +383,11 @@ void AMyCharacter::StopShoot(const FInputActionValue& value)
 		GetWorldTimerManager().ClearTimer(ShootTimerHandle);
 	}
 }
+
+
+
+
+
 
 bool AMyCharacter::StoreAttackToken(int32 Amount)
 {
