@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Items/ItemInterface.h"
+#include "ItemInterface.h"
 #include "ItemDataRow.h"
 #include "BaseItem.generated.h"
 
@@ -19,14 +19,13 @@ public:
 	ABaseItem();
 
 	// 아이템 데이터 테이블 참조 핸들
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Item Data")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Data")
 	FDataTableRowHandle ItemDataHandle;
 
 	// 아이템 인터페이스 함수
-	virtual void ShowWidget(AActor* InteractingActor) override;
-	virtual void HideWidget(AActor* InteractingActor) override;
-	virtual void Interact(AActor* InteractingActor) override;
-	virtual void Use(ACharacter* PlayerCharacter) override;
+	virtual void ShowWidget() override;
+	virtual void HideWidget() override;
+	virtual void Interact() override;
 	// 아이템 점수 반환
 	UFUNCTION(BlueprintCallable, Category="Item")
 	int32 GetItemScore() const;

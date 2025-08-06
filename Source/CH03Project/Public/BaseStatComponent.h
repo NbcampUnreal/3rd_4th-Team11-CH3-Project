@@ -5,6 +5,7 @@
 #include "BaseStatComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnHpChangedSignature, int32, OldHp, int32, NewHp, AActor*, Instigator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AActor*, DeadActor);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CH03PROJECT_API UBaseStatComponent : public UActorComponent
@@ -52,4 +53,7 @@ public:
 
 	UPROPERTY(BlueprintCallable)
 	FOnHpChangedSignature OnHpChangedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnDeath OnDeathEvent;
 };

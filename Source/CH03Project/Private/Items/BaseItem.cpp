@@ -1,7 +1,9 @@
 #include "Items/BaseItem.h"
+#include "Items/ItemDataRow.h"
 #include "Components/WidgetComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
+#include "GameStatePlay.h"
 
 ABaseItem::ABaseItem()
 {
@@ -32,14 +34,16 @@ ABaseItem::ABaseItem()
 // 아이템마다의 점수를 반환하는 함수
 int32 ABaseItem::GetItemScore() const
 {
+	// 데이터 테이블 핸들이 유효한지 확인
 	if(!ItemDataHandle.DataTable)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ItemDataHandle is null")); // 디버깅용
+		UE_LOG(LogTemp, Warning, TEXT("ItemDataHandle is Null"));
 		return 0;
 	}
 
 	const FItemDataRow* ItemRow = ItemDataHandle.GetRow<FItemDataRow>("GetItemScore");
 
+	// FItemDataRow를 정상적으로 오는지 확인
 	if(ItemRow)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Item Score: %d"), ItemRow->Score);
@@ -50,7 +54,7 @@ int32 ABaseItem::GetItemScore() const
 }
 
 // 오버랩 됐을 때 아이템 위에 상호작용 UI를 띄울 함수
-void ABaseItem::ShowWidget(AActor* InteractingActor)
+void ABaseItem::ShowWidget()
 {
 	if(InteractUI)
 	{
@@ -59,7 +63,7 @@ void ABaseItem::ShowWidget(AActor* InteractingActor)
 }
 
 // 오버랩이 끝났을 때 아이템 위에 상호작용 UI를 숨길 함수
-void ABaseItem::HideWidget(AActor* InteractingActor)
+void ABaseItem::HideWidget()
 {
 	if(InteractUI)
 	{
@@ -67,19 +71,47 @@ void ABaseItem::HideWidget(AActor* InteractingActor)
 	}
 }
 
-// 오버랩 상태일 때 E키를 누를 시 아이템을 퀵슬롯으로 들어오게 할 함수
-// 최대 스택 여부 확인해야함
-// 스택 가능한 아이템인지 확인해야함
-// 액터 소멸 처리 해야함
-void ABaseItem::Interact(AActor* InteractingActor)
+// 아이템과 오버랩 상태에서 E키를 누를때 해당 함수를 호출함
+void ABaseItem::Interact()
 {
+	// GameState 가져오기
+	AGameStatePlay* GameState = GetWorld()->GetGameState<AGameStatePlay>();
 
-}
+	// 데이터 테이블 핸들이 유효한지 확인
+	if (!ItemDataHandle.DataTable)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ItemDataHandle is Null"));
+		Destroy(); // 아이템 데이터를 찾을 수 없어도 상호작용은 완료된 것으로 처리
+		return;
+	}
 
-// Player가 아이템을 가지고 있을 때 퀵슬롯 번호를 눌러 사용하는 함수
-void ABaseItem::Use(ACharacter* PlayerCharacter)
-{
+	// 데이터 테이블에서 아이템 정보 가져오기
+	const FItemDataRow* ItemRow = ItemDataHandle.GetRow<FItemDataRow>("Interact");
 
+	// GameState와 ItemRow가 모두 유효한지 확인
+	if (GameState && ItemRow)
+	{
+		// ItemCounts 배열의 유효한 인덱스인지 확인
+		if (GameState->ItemCounts.IsValidIndex(ItemRow->ItemID))
+		{
+			// 해당 아이템 ID의 카운트 증가
+			GameState->ItemCounts[ItemRow->ItemID]++;
+			UE_LOG(LogTemp, Log, TEXT("Item ID: %d count is now %d"), ItemRow->ItemID, GameState->ItemCounts[ItemRow->ItemID]);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Item ID %d is not a valid index in ItemCounts array."), ItemRow->ItemID);
+		}
+	}
+	else
+	{
+		if(!GameState) UE_LOG(LogTemp, Warning, TEXT("GameStatePlay is not valid!"));
+		if(!ItemRow) UE_LOG(LogTemp, Warning, TEXT("ItemRow is not valid!"));
+	}
+
+	// 상호작용이 끝났으므로 UI를 숨기고 객체를 파괴
+	HideWidget();
+	Destroy();
 }
 
 // 오버랩 됐을 때 위젯을 표시
@@ -94,7 +126,7 @@ void ABaseItem::OnItemOverlap(
 	if(OtherActor && OtherActor->ActorHasTag("Player"))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("overlap")));
-		ShowWidget(OtherActor);
+		ShowWidget();
 	}
 }
 
@@ -105,14 +137,5 @@ void ABaseItem::OnItemEndOverlap(
 	UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex)
 {
-	HideWidget(OtherActor);
+	HideWidget();
 }
-
-/*
-UPrimitiveComponent* OverlappedComp : 오버랩이 발생한 자기 자신
-AActor* OtherActor : 부딪힌 액터
-UPrimitiveComponent* OtherComp : OtherActor에 붙어있고 1차적으로 충돌을 일으킨 원인 컴포넌트
-int32 OtherBodyIndex : 충돌한 다른 액터의 본체 인덱스 (본체가 여러 개인 경우)
-bool bFromSweep : 스위프트 충돌 여부 (충돌을 스위프트로 검출했는지 여부)
-const FHitResult& SweepResult : 충돌 정보를 제공하는 FHitResult 구조체
-*/

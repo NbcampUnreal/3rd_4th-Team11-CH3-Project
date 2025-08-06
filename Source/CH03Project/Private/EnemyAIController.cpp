@@ -238,6 +238,14 @@ void AEnemyAIController::SetStateAsInvestigating(const FVector& Location)
 	}
 }
 
+void AEnemyAIController::SetStateAsDead()
+{
+	if (BB)
+	{
+		BB->SetValueAsEnum(StateKey, static_cast<uint8>(EEnemyState::Dead));
+	}
+}
+
 EEnemyState AEnemyAIController::GetCurrentState() const
 {
 	if (BB)
