@@ -43,6 +43,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<class UHUDWidget> HUDWidgetClass;
 
+	UPROPERTY(BlueprintReadWrite, Category = "UI")
+	UHUDWidget* HUDWidget;
+
+
 public:
 	AMyPlayerController();
 

@@ -31,6 +31,7 @@ protected:
 
 	//대미지면역관리
 	bool bIsImmuneToDamage;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BaseStat")
 	float ImmuneToDamageTime;
 

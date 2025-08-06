@@ -54,25 +54,23 @@ void AMyPlayerController::BeginPlay()
 	}
 	else if (CurrentLevelName.Equals(TEXT("MainLevel")))
 	{
-		if (HUDWidgetClass)
+		HUDWidget = CreateWidget<UHUDWidget>(this, HUDWidgetClass);
+		if (HUDWidget)
 		{
-			UHUDWidget* MyHUDWidget = CreateWidget<UHUDWidget>(this, HUDWidgetClass);
-			if (MyHUDWidget)
-			{
-				MyHUDWidget->AddToViewport();
+			HUDWidget->AddToViewport();
 
-				AMyCharacter* MyPlayerCharacter = Cast<AMyCharacter>(GetPawn());
-				if (MyPlayerCharacter)
+			AMyCharacter* MyPlayerCharacter = Cast<AMyCharacter>(GetPawn());
+			if (MyPlayerCharacter)
+			{
+				UBaseStatComponent* StatComponent = MyPlayerCharacter->FindComponentByClass<UBaseStatComponent>();
+				if (StatComponent)
 				{
-					UBaseStatComponent* StatComponent = MyPlayerCharacter->FindComponentByClass<UBaseStatComponent>();
-					if (StatComponent)
-					{
-						StatComponent->OnHpChangedEvent.AddDynamic(MyHUDWidget, &UHUDWidget::UpdateHealth);
-						MyHUDWidget->UpdateHealth(StatComponent->GetHp(), StatComponent->GetMaxHp(), GetPawn());
-					}
+					StatComponent->OnHpChangedEvent.AddDynamic(HUDWidget, &UHUDWidget::UpdateHealth);
+					HUDWidget->UpdateHealth(StatComponent->GetHp(), StatComponent->GetMaxHp(), GetPawn());
 				}
 			}
 		}
+
 		SetInputMode(FInputModeGameOnly());
 		bShowMouseCursor = false;
 	}
