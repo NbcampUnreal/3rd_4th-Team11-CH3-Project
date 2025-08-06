@@ -10,6 +10,7 @@ UBaseStatComponent::UBaseStatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	ImmuneToDamageTime = 0.1f;
+	Bullet = 30;
 }
 
 
@@ -31,7 +32,7 @@ void UBaseStatComponent::AddHp(int Point)
 	if (Point < 0)
 	{
 		ImmuneToDamageSet();
-		Point = FMath::Max(Point + Armor, 0);
+		Point = FMath::Min(Point + Armor, 0);
 	}
 
 
