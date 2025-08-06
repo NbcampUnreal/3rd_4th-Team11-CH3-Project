@@ -57,4 +57,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnDeath OnDeathEvent;
+
+private:
+	bool bIsDead;
 };

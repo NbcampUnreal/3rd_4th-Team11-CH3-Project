@@ -10,6 +10,8 @@
 #include "BaseEnemy.h"
 #include "EnemyAIController.h"
 
+#include "Engine/Engine.h"
+
 
 UBaseStatComponent::UBaseStatComponent()
 {
@@ -17,6 +19,7 @@ UBaseStatComponent::UBaseStatComponent()
 	ImmuneToDamageTime = 0.1f;
 	MaxHp = 100;
 	Hp = MaxHp;
+	bIsDead = false;
 }
 
 
@@ -91,26 +94,26 @@ void UBaseStatComponent::ImmuneToDamageEnd()
 
 void UBaseStatComponent::OnDeath()
 {
+	if (bIsDead)
+	{
+		return;
+	}
+	bIsDead = true;
+
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	if (!OwnerCharacter) return;
 
 	OnDeathEvent.Broadcast(OwnerCharacter);
 
-	if (USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh())
-	{
-		MeshComp->SetSimulatePhysics(true);
-		MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	}
 
 	if (AAIController* AICon = Cast<AAIController>(OwnerCharacter->GetController()))
 	{
-		if (UBrainComponent* BrainComp = AICon->GetBrainComponent())
-		{
-			BrainComp->StopLogic(TEXT(""));
-		}
-
 		if (AEnemyAIController* EnemyAICon = Cast<AEnemyAIController>(AICon))
 		{
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Enemy is dead!"));
+			}
 			EnemyAICon->SetStateAsDead();
 		}
 	}
@@ -127,6 +130,8 @@ void UBaseStatComponent::OnDeath()
 			PC->bShowMouseCursor = true;
 		}
 	}
+
+	OnDeathEvent.Clear();
 }
 
 int UBaseStatComponent::GetHp()
