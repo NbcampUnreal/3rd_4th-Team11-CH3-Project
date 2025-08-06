@@ -1,4 +1,9 @@
 ﻿#include "BaseStatComponent.h"
+#include "GameFramework/Character.h"
+#include "AIController.h"
+#include "BrainComponent.h"
+#include "BaseEnemy.h"
+#include "EnemyAIController.h"
 
 
 UBaseStatComponent::UBaseStatComponent()
@@ -74,7 +79,29 @@ void UBaseStatComponent::ImmuneToDamageEnd()
 
 void UBaseStatComponent::OnDeath()
 {
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (!OwnerCharacter) return;
 
+	OnDeathEvent.Broadcast(OwnerCharacter);
+
+	if (USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh())
+	{
+		MeshComp->SetSimulatePhysics(true);
+		MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
+
+	if (AAIController* AICon = Cast<AAIController>(OwnerCharacter->GetController()))
+	{
+		if (UBrainComponent* BrainComp = AICon->GetBrainComponent())
+		{
+			BrainComp->StopLogic(TEXT(""));
+		}
+
+		if (AEnemyAIController* EnemyAICon = Cast<AEnemyAIController>(AICon))
+		{
+			EnemyAICon->SetStateAsDead();
+		}
+	}
 }
 
 int UBaseStatComponent::GetHp()
