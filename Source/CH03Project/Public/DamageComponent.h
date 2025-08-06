@@ -21,7 +21,16 @@ protected:
 	int AttackDamage;
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Token")
+	int32 AttackTokenCount = 0;
+
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void TransDamage(AActor* TargetActor);
+
+	UFUNCTION()
+	bool StoreAttackToken(int32 Amount);
+
+	UFUNCTION()
+	void ReturnAttackToken(int32 Amount);
 };

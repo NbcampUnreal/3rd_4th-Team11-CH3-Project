@@ -8,6 +8,7 @@ ABaseActor::ABaseActor()
 
 	BaseStatComponent = CreateDefaultSubobject<UBaseStatComponent>(TEXT("StatComponent"));
 	DamageComponent = CreateDefaultSubobject<UDamageComponent>(TEXT("DamageComponent"));
+	DamageComponent->AttackTokenCount = 1;
 }
 
 void ABaseActor::BeginPlay()
