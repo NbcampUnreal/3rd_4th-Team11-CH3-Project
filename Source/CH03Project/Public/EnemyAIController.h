@@ -67,6 +67,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI|Blackboard")
 	void SetStateAsInvestigating(const FVector& Location);
 
+	UFUNCTION(BlueprintCallable, Category = "AI|Blackboard")
+	void SetStateAsDead();
+
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
 	FName TargetActorKey;
 
