@@ -9,5 +9,6 @@ enum class EItemType : uint8
 {
 	HealthPotion	UMETA(DisplayName="HealthPotion"),
 	Adrenaline		UMETA(DisplayName="Adrenaline"),
+	CardKey			UMETA(DisplayName="CardKey"),
 	CatStatue		UMETA(DisplayName="CatStatue")
 };
