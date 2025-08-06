@@ -27,6 +27,9 @@ protected:
 	int MaxHp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BaseStat")
+	int Bullet;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BaseStat")
 	int Armor;
 
 	//대미지면역관리

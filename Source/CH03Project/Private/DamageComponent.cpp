@@ -1,5 +1,5 @@
 ﻿#include "DamageComponent.h"
-
+#include "Engine/Engine.h"
 
 UDamageComponent::UDamageComponent()
 {
@@ -28,6 +28,8 @@ void UDamageComponent::TransDamage(AActor* TargetActor)
 		if (TargetStatComponent)
 		{
 			TargetStatComponent->AddHp(-AttackDamage);
+
+
 		}
 	}
 }
