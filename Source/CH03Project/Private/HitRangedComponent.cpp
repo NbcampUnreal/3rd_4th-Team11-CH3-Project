@@ -4,6 +4,8 @@
 #include "Components/SkeletalMeshComponent.h"
 
 #include "DrawDebugHelpers.h"
+#include "Engine/World.h"
+#include "Engine/EngineTypes.h"
 
 
 UHitRangedComponent::UHitRangedComponent()
@@ -44,14 +46,16 @@ void UHitRangedComponent::FireTrace()
 
 
 	FHitResult HitResult;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, TraceParams);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECollisionChannel::ECC_GameTraceChannel1, TraceParams);
 
 	DrawDebugLine(GetWorld(), StartLocation, EndLocation, bHit ? FColor::Red : FColor::Green, false, 2.0f);
 
 	if (bHit)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s"), *HitResult.GetActor()->GetName());
 		if (HitResult.GetActor() && HitResult.GetActor()->ActorHasTag("Player"))
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Hit Player"));
 			UDamageComponent* DamageComp = HitResult.GetActor()->FindComponentByClass<UDamageComponent>();
 			if (DamageComp)
 			{

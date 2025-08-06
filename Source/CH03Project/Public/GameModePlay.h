@@ -41,7 +41,7 @@ public:
 
 
 private:
-	UFUNCTION()
-	void HandlePlayerHpChanged(int32 NewHp, int32 MaxHp, AActor* OwnerActor);
+	
+	
 	AGameStatePlay* GameStatePlays;
 };
