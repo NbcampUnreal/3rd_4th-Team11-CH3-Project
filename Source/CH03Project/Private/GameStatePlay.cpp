@@ -13,11 +13,13 @@ AGameStatePlay::AGameStatePlay()
 void AGameStatePlay::SetScore(int32 NewScore)
 {
     Score = NewScore;
+	OnScoreChanged.Broadcast(Score);
 }
 
 void AGameStatePlay::AddScore(int32 Points)
 {
     Score += Points;
+    OnScoreChanged.Broadcast(Score);
 }
 
 
