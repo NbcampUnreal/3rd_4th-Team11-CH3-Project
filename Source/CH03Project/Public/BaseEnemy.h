@@ -6,9 +6,12 @@
 #include "BaseActor.h"
 #include "EnemyActionInterface.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "Delegates/DelegateCombinations.h" 
 #include "BaseEnemy.generated.h"
 
 class AAIController;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackEnd);
 
 UCLASS()
 class CH03PROJECT_API ABaseEnemy : public ABaseActor, public IEnemyActionInterface
@@ -41,9 +44,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI")
 	void ShuffleWayPoints();
 
+	UPROPERTY(BlueprintAssignable, Category = "Combat")
+	FOnAttackEnd OnAttackEnd;
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void CallOnAttackEnd()
+	{
+		OnAttackEnd.Broadcast();
+	}
+
 public:
 	virtual TArray<FVector> GetPatrolWaypoints_Implementation() override;
 	virtual void SetMovementSpeed_Implementation(ESpeedState SpeedState) override;
 	virtual void GetIdealRadius_Implementation(float& OutAttackRadius, float& OutDefendRadius) override;
-	virtual void Attack_Implementation() override;
+	virtual void Attack_Implementation(AActor* AttackTarget) override;
 };

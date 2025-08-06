@@ -1,6 +1,7 @@
 #include "MyCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "MyPlayerController.h"
+#include "DamageComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -323,5 +324,22 @@ void AMyCharacter::StopShoot(const FInputActionValue& value)
 	if (!value.Get<bool>())
 	{
 		GetWorldTimerManager().ClearTimer(ShootTimerHandle);
+	}
+}
+
+bool AMyCharacter::StoreAttackToken(int32 Amount)
+{
+	if (DamageComponent)
+	{
+		return DamageComponent->StoreAttackToken(Amount);
+	}
+	return false;
+}
+
+void AMyCharacter::ReturnAttackToken(int32 Amount)
+{
+	if (DamageComponent)
+	{
+		DamageComponent->ReturnAttackToken(Amount);
 	}
 }

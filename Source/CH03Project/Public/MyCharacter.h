@@ -108,4 +108,10 @@ public:
 	void StartShoot(const FInputActionValue& value);
 
 	void StopShoot(const FInputActionValue& value);
+
+	UFUNCTION(BlueprintCallable, Category = "Token")
+	bool StoreAttackToken(int32 Amount);
+
+	UFUNCTION(BlueprintCallable, Category = "Token")
+	void ReturnAttackToken(int32 Amount);
 };

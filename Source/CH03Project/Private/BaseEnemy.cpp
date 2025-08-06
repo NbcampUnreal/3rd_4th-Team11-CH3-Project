@@ -105,6 +105,6 @@ void ABaseEnemy::GetIdealRadius_Implementation(float& OutAttackRadius, float& Ou
 	OutDefendRadius = 350.f;
 }
 
-void ABaseEnemy::Attack_Implementation()
+void ABaseEnemy::Attack_Implementation(AActor* AttackTarget)
 {
 }
