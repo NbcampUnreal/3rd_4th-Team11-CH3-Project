@@ -56,7 +56,9 @@ void UHitRangedComponent::FireTrace()
 		if (HitResult.GetActor() && HitResult.GetActor()->ActorHasTag("Player"))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Hit Player"));
-			UDamageComponent* DamageComp = HitResult.GetActor()->FindComponentByClass<UDamageComponent>();
+
+			//나 자신의 대미지 컴포넌트
+			UDamageComponent* DamageComp = GetOwner()->FindComponentByClass<UDamageComponent>();
 			if (DamageComp)
 			{
 				DamageComp->TransDamage(HitResult.GetActor());
