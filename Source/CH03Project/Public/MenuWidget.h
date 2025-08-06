@@ -22,7 +22,7 @@ protected:
 	UFUNCTION()
 	void OnQuitClicked();
 
-	void SetMenuState(bool bIsGameOver);
+	
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -36,6 +36,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetScoreText(bool bIsGameOver);
+
+	UFUNCTION()
+	void SetMenuState(bool bIsGameOver);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
