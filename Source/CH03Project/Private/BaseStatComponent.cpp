@@ -125,7 +125,7 @@ void UBaseStatComponent::OnDeath()
 			}
 		}
 	}
-
+	OnDeathEvent.Broadcast(OwnerCharacter);
 	AGameModePlay* GameModePlay = Cast<AGameModePlay>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameModePlay)
 	{
