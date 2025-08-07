@@ -15,4 +15,7 @@ class CH03PROJECT_API IRangedWeaponInterface
 	GENERATED_BODY()
 
 public:
+	virtual void Shoot() = 0;
+	virtual void Reload() = 0;
+	virtual void ChangeMaxAmmo(int32 NewMaxAmmo) = 0;
 };

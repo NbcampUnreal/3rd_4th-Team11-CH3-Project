@@ -2,8 +2,25 @@
 
 ABaseRangedWeapon::ABaseRangedWeapon()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
+	MaxAmmo = 0;
+	CurrentAmmo = 0;
+}
+
+void ABaseRangedWeapon::Shoot()
+{
+
+}
+
+void ABaseRangedWeapon::Reload()
+{
+	CurrentAmmo = MaxAmmo;
+}
+
+void ABaseRangedWeapon::ChangeMaxAmmo(int32 NewMaxAmmo)
+{
+	MaxAmmo = NewMaxAmmo;
 }
 
 void ABaseRangedWeapon::BeginPlay()
