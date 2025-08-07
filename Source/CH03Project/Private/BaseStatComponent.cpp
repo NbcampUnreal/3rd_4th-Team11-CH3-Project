@@ -48,6 +48,18 @@ void UBaseStatComponent::AddHp(int Point)
 	{
 		ImmuneToDamageSet();
 		Point = FMath::Min(Point + Armor, 0);
+
+		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		AMyPlayerController* MyController = Cast<AMyPlayerController>(PC);
+		if (!bIsDead)
+		{
+			FVector DamageLocation = GetOwner()->GetActorLocation() + FVector(1, 1, 100.0f);
+			if (MyController && MyController->HUDWidget)
+			{
+				MyController->HUDWidget->ShowDamageText(-Point, DamageLocation);
+				MyController->HUDWidget->ShowHitMarker();
+			}
+		}
 	}
 
 
@@ -120,6 +132,7 @@ void UBaseStatComponent::OnDeath()
 					if (MyPC->HUDWidget)
 					{
 						MyPC->HUDWidget->ShowKillMarker();
+						
 					}
 				}
 			}

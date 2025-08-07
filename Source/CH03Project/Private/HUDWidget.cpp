@@ -84,18 +84,27 @@ void UHUDWidget::UpdateHiddenQuest(bool bIsGetStatue, int32 StatueCount)
 
 void UHUDWidget::ShowHitMarker()
 {
+	
 	if (HitMarkerImage)
 	{
 		HitMarkerImage->SetVisibility(ESlateVisibility::Visible);
 
+		if (ScaleUp)
+		{
+			PlayAnimation(ScaleUp, 0.f, 1);
+		}
+
 		GetWorld()->GetTimerManager().ClearTimer(HitMarkerTimerHandle);
-		GetWorld()->GetTimerManager().SetTimer(
-			HitMarkerTimerHandle,
-			this,
-			&UHUDWidget::HideHitMarker,
-			0.3f,
-			false
-		);
+		if (!GetWorld()->GetTimerManager().IsTimerActive(HitMarkerTimerHandle))
+		{
+			GetWorld()->GetTimerManager().SetTimer(
+				HitMarkerTimerHandle,
+				this,
+				&UHUDWidget::HideHitMarker,
+				0.2f,
+				false
+			);
+		}
 	}
 }
 
@@ -105,6 +114,7 @@ void UHUDWidget::HideHitMarker()
 	{
 		HitMarkerImage->SetVisibility(ESlateVisibility::Hidden);
 	}
+	
 }
 
 void UHUDWidget::ShowKillMarker()
@@ -114,7 +124,7 @@ void UHUDWidget::ShowKillMarker()
 		KillMarker->SetVisibility(ESlateVisibility::Visible);
 		GetWorld()->GetTimerManager().ClearTimer(KillMarkerTimerHandle);
 		GetWorld()->GetTimerManager().SetTimer(
-			HitMarkerTimerHandle,
+			KillMarkerTimerHandle,
 			this,
 			&UHUDWidget::HideKillMarker,
 			0.5f,
@@ -141,14 +151,16 @@ void UHUDWidget::ShowDamageText(int32 DamageAmount, const FVector& WorldLocation
 	FVector2D ScreenPosition;
 	if (PC->ProjectWorldLocationToScreen(WorldLocation, ScreenPosition))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("firststep!!"))
 		UDamageWidget* DamageWidget = CreateWidget<UDamageWidget>(PC, DamageWidgetClass);
 		if (DamageWidget)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Damage!!"))
 			DamageWidget->AddToViewport();
 			DamageWidget->SetDamageText(DamageAmount);
 			DamageWidget->SetScreenPosition(ScreenPosition);
 
-			// Á¦°Å Å¸ÀÌ¸Ó
+			// ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½Ì¸ï¿½
 			FTimerHandle RemoveTimer;
 			FTimerDelegate RemoveDelegate = FTimerDelegate::CreateLambda([DamageWidget]()
 				{
