@@ -9,8 +9,8 @@
 #include "BrainComponent.h"
 #include "BaseEnemy.h"
 #include "EnemyAIController.h"
-
 #include "Engine/Engine.h"
+#include "GameStatePlay.h"
 
 
 UBaseStatComponent::UBaseStatComponent()
@@ -116,6 +116,12 @@ void UBaseStatComponent::OnDeath()
 			}
 			EnemyAICon->SetStateAsDead();
 		}
+	}
+
+	AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
+	if (GameStatePlay)
+	{
+		GameStatePlay->AddScore(KillScore);
 	}
 
 	AMyPlayerController* PC = Cast<AMyPlayerController>(OwnerCharacter->GetController());

@@ -35,6 +35,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BaseStat")
 	float ImmuneToDamageTime;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BaseStat")
+	int32 KillScore;
+
 public:
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
