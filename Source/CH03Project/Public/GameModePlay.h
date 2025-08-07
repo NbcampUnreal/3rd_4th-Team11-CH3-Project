@@ -28,16 +28,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void AddScore(int32 Points);
 
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void AddKillCount(int32 Points);
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	void SetMissionText(const FString& Text, int32 MissionIndex);
+	void SetMissionText(const FString& Text);
 
 
 	void AddItemCount(int32 Point, int32 SlotIndex);
-
-
-	void OpenDoor();
-	
 
 
 private:

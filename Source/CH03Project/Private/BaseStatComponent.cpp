@@ -10,7 +10,7 @@
 #include "BaseEnemy.h"
 #include "EnemyAIController.h"
 #include "Engine/Engine.h"
-#include "GameStatePlay.h"
+#include "GameModePlay.h"
 
 
 UBaseStatComponent::UBaseStatComponent()
@@ -118,10 +118,12 @@ void UBaseStatComponent::OnDeath()
 		}
 	}
 
-	AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
-	if (GameStatePlay)
+	AGameModePlay* GameModePlay = Cast<AGameModePlay>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameModePlay)
 	{
-		GameStatePlay->AddScore(KillScore);
+		GameModePlay->AddScore(KillScore);
+		//킬로그 전송필요
+		//처치UI필요
 	}
 
 	AMyPlayerController* PC = Cast<AMyPlayerController>(OwnerCharacter->GetController());

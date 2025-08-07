@@ -1,81 +1,144 @@
 ﻿#include "QuestTypeA.h"
 #include "GameModePlay.h"
 #include "Kismet/GameplayStatics.h"
-
 #include "Engine/DataTable.h"
+#include "SubTextDataRow.h"
+#include "GameStatePlay.h"
 
 AQuestTypeA::AQuestTypeA()
 {	
 	PrimaryActorTick.bCanEverTick = false;
-	DoorCount = 0;
+	ProgressStage = 0;
+	FirstAreaTargetKillCount = 0;
 }
 
 void AQuestTypeA::BeginPlay()
 {
 	Super::BeginPlay();
 	GameModePlays = Cast<AGameModePlay>(UGameplayStatics::GetGameMode(GetWorld()));
+	SetSubTexts();
+	ProgressStarter();	//생성주기 때문에 문제가 될 수도 있다. 발생하면 변경.
+
+	AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
+	if (GameStatePlay)
+	{
+		GameStatePlay->OnKillCountChanged.AddDynamic(this, &AQuestTypeA::UpdateKillCount);
+		GameStatePlay->OnKeyItemChanged.AddDynamic(this, &AQuestTypeA::UpdateKeyItemCount);
+	}
+}
+
+void AQuestTypeA::SetSubTexts()
+{
+	if (!SubTextsDataTable)
+	{
+		return;		
+	}
+	SubTexts.Empty();
+
+	TArray<FSubTextDataRow*> AllRows;
+
+	SubTextsDataTable->GetAllRows<FSubTextDataRow>(TEXT("SubText"), AllRows);
+
+	for (const FSubTextDataRow* Row : AllRows)
+	{
+		if (Row)
+		{
+			SubTexts.Add(Row->SubText);
+		}
+	}
+}
+
+
+
+void AQuestTypeA::ProgressStarter()
+{
+	switch (ProgressStage)
+	{
+	case 0:
+		Progress00();
+		break;
+	case 1:
+		Progress01();
+		break;
+	case 2:
+		Progress02();
+		break;
+	}
+}
+
+void AQuestTypeA::Progress00()	//시작
+{
+	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 0단계"));
+	GameModePlays->SetMissionText(SubTexts[0]);
+}
+
+
+void AQuestTypeA::Progress01()	//문지남 키얻으쇼
+{
+	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 1단계"));
 	
-}
-
-// 시작 콜리전 동작시
-void AQuestTypeA::StartQuest()
-{
-	// 퀘스트 시작 로직
-	UE_LOG(LogTemp, Warning, TEXT("퀘스트가 시작되었습니다."));
-	DoorCount++;
-	//텍스트0 인스턴스로 전달 - 예상 텍스트(문을 열고 나아가라? -> 열쇠를 찾아라)
-	GameModePlays->SetMissionText(QuestTexts[0].ToString(), 1);
-}
-
-
-void AQuestTypeA::CheckQuestDoor()
-{
-	if (DoorCount == 1)
+	AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
+	if (GameStatePlay)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("1구역 문 열림"));
-		DoorCount++;
-		GameModePlays->SetMissionText(QuestTexts[1].ToString(), 1);
-		//문 열림 처리 필요
-		//공간을 지나가면 닫힘 필요
+		StartKillCount = GameStatePlay->GetKillCount();
 	}
-	if (DoorCount == 2)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("2구역 문 열림 카운트 시작"));
-		DoorCount++;
-		GameModePlays->SetMissionText(QuestTexts[3].ToString() + FString::SanitizeFloat(DoorOpenCount), 0);
-		//타이머설치
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &AQuestTypeA::DoorCountCheck, 0.1f, true);
-		//문 열림 처리 필요
-		//공간을 지나가면 닫힘 필요
-	}
+	FString MissionText = FString::Printf(TEXT("%s (%d / %d)"), *SubTexts[1], 0, FirstAreaTargetKillCount);
+	GameModePlays->SetMissionText(MissionText);
 }
 
-//다른 방식을 써야할지도 모름 UI에서 처리하는 방식에 따라서..
-void AQuestTypeA::DoorCountCheck()
+void AQuestTypeA::Progress02()	//키얻음 문여쇼
 {
-	//문열림 카운트 체크
-	if (DoorOpenCount > 0)
+	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 2단계"));
+	GameModePlays->SetMissionText(SubTexts[2]);
+}
+void AQuestTypeA::Progress03()	//키소모 키 또 얻으쇼
+{
+	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 3단계"));
+	GameModePlays->SetMissionText(SubTexts[3]);
+}
+void AQuestTypeA::Progress04()	//키얻음 문여쇼
+{
+	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 4단계"));
+	GameModePlays->SetMissionText(SubTexts[2]);
+
+	//적 스폰 필요
+}
+void AQuestTypeA::Progress05()	//키얻음 문여쇼
+{
+	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 5단계"));
+	GameModePlays->SetMissionText(SubTexts[4]);
+}
+
+void AQuestTypeA::UpdateKillCount(int32 Points)
+{
+	if (ProgressStage == 1)
 	{
-		DoorOpenCount -= 1;
 		
-		GameModePlays->SetMissionText(QuestTexts[3].ToString() + FString::SanitizeFloat(DoorOpenCount), 0);
-	}
-	else
-	{
-		GetWorldTimerManager().ClearTimer(TimerHandle);
-		DoorOpenCount = 0;
-		GameModePlays->SetMissionText(QuestTexts[4].ToString(), 1);
+		FString MissionText = FString::Printf(TEXT("%s (%d / %d)"), *SubTexts[1], (Points - StartKillCount), FirstAreaTargetKillCount);
+		GameModePlays->SetMissionText(MissionText);
+
+		//일단은 아이템 직접 획득으로 처리함-> 드랍방식으로 변경할 경우 수정
+		if (FirstAreaTargetKillCount < Points - StartKillCount)
+		{	
+			GameModePlays->AddItemCount(1, 2);	//키 추가
+			ProgressStage++;
+			ProgressStarter();
+		}
 	}
 }
 
-
+void AQuestTypeA::UpdateKeyItemCount(int32 KeyCount)
+{
+	ProgressStage++;
+	ProgressStarter();
+}
 
 //구역2에서 키를 얻으면 아래 함수를 호출
 void AQuestTypeA::SpawnEnemy()
 {
 	UE_LOG(LogTemp, Warning, TEXT("몬스터가 소환이 시작되었습니다."));
 
-	GameModePlays->SetMissionText(QuestTexts[2].ToString(), 1);
+	//GameModePlays->SetMissionText(QuestTexts[2].ToString(), 1);
 
 	// 스폰 위치에서 몬스터 소환
 	int32 MaxSpawnCount = FMath::Min(SpawnLocation.Num(), SpawnDataArray.Num());
@@ -144,14 +207,19 @@ void AQuestTypeA::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	if (OtherActor && OtherActor != this)
 	{
 		//플레이어인지 체크
-		//if (OtherActor->IsA(APlayerCharacter::StaticClass())) // APlayerCharacter는 플레이어 캐릭터 클래스
+		if (!OtherActor->ActorHasTag("Player"))
+		{
+			return;
+		}
 
-		// 플레이어가 콜리전 영역에 들어왔을 때 퀘스트 시작
-		UE_LOG(LogTemp, Warning, TEXT("퀘스트 시작 콜리전이 감지되었습니다."));
-		// 콜리전 이벤트를 비활성화하여 중복 호출 방지
-		QuestStartCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		
-		// 퀘스트 시작 함수 호출
-		StartQuest();
+		if (ProgressStage == 0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("퀘스트 시작 콜리전이 감지되었습니다."));
+			QuestStartCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			ProgressStage++;
+			ProgressStarter();
+		}
 	}
 }
+
+
