@@ -349,6 +349,10 @@ void AMyCharacter::StartAim(const FInputActionValue& value)
 			CameraComp->SetFieldOfView(80.0f);
 		}
 	}
+	else if (CharacterState == ECharacterState::Running)
+	{
+		CameraComp->SetFieldOfView(100.0f);
+	}
 }
 
 void AMyCharacter::StopAim(const FInputActionValue& value)
