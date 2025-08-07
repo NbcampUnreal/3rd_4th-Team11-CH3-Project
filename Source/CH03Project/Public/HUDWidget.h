@@ -34,6 +34,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void ShowHitMarker();
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
+	void ShowKillMarker();
+	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void ShowDamageText(int32 DamageAmount, const FVector& WorldLocation);
 
 	UFUNCTION(BlueprintCallable)
@@ -67,12 +69,16 @@ protected:
 	UImage* HitMarkerImage;
 	UPROPERTY(meta = (BindWidget))
 	UImage* NormalCrossHair;
+	UPROPERTY(meta = (BindWidget))
+	UImage* KillMarker;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UDamageWidget> DamageWidgetClass;
 
 private:
 	FTimerHandle HitMarkerTimerHandle;
+	FTimerHandle KillMarkerTimerHandle;
 
 	void HideHitMarker();
+	void HideKillMarker();
 };

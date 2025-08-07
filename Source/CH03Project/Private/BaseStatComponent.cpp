@@ -1,5 +1,6 @@
 ﻿#include "BaseStatComponent.h"
 #include "MenuWidget.h"
+#include "HUDWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
@@ -103,9 +104,6 @@ void UBaseStatComponent::OnDeath()
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	if (!OwnerCharacter) return;
 
-	OnDeathEvent.Broadcast(OwnerCharacter);
-
-
 	if (AAIController* AICon = Cast<AAIController>(OwnerCharacter->GetController()))
 	{
 		if (AEnemyAIController* EnemyAICon = Cast<AEnemyAIController>(AICon))
@@ -115,6 +113,16 @@ void UBaseStatComponent::OnDeath()
 				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Enemy is dead!"));
 			}
 			EnemyAICon->SetStateAsDead();
+			if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+			{
+				if (AMyPlayerController* MyPC = Cast<AMyPlayerController>(PC))
+				{
+					if (MyPC->HUDWidget)
+					{
+						MyPC->HUDWidget->ShowKillMarker();
+					}
+				}
+			}
 		}
 	}
 
@@ -125,6 +133,7 @@ void UBaseStatComponent::OnDeath()
 		//킬로그 전송필요
 		//처치UI필요
 	}
+
 
 	AMyPlayerController* PC = Cast<AMyPlayerController>(OwnerCharacter->GetController());
 	if (PC && PC->MainMenuWidgetClass)
