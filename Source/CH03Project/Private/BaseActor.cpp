@@ -6,9 +6,9 @@ ABaseActor::ABaseActor()
 {	
 	PrimaryActorTick.bCanEverTick = true;
 
-	BaseStatComponent = CreateDefaultSubobject<UBaseStatComponent>(TEXT("StatComponent"));
+	/*BaseStatComponent = CreateDefaultSubobject<UBaseStatComponent>(TEXT("StatComponent"));
 	DamageComponent = CreateDefaultSubobject<UDamageComponent>(TEXT("DamageComponent"));
-	DamageComponent->AttackTokenCount = 1;
+	DamageComponent->AttackTokenCount = 1;*/
 }
 
 void ABaseActor::BeginPlay()

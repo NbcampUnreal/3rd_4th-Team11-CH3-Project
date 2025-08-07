@@ -1,4 +1,4 @@
-#include "MyCharacter.h"
+﻿#include "MyCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "MyPlayerController.h"
 #include "DamageComponent.h"
@@ -65,6 +65,8 @@ void AMyCharacter::BeginPlay()
 	{
 		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 	}
+
+	DamageComponent = FindComponentByClass<UDamageComponent>();
 }
 
 void AMyCharacter::PossessedBy(AController* NewController)

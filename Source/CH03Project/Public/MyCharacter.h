@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "BaseActor.h"
@@ -74,7 +74,7 @@ protected:
 	// Timer
 	FTimerHandle ShootTimerHandle;
 
-
+	UDamageComponent* DamageComponent;
 
 public:
 	AMyCharacter();
@@ -126,4 +126,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Token")
 	void ReturnAttackToken(int32 Amount);
+
+
+
 };
