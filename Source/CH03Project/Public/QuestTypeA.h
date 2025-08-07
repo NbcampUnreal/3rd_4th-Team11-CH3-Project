@@ -41,7 +41,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
 	int32 FirstAreaTargetKillCount;
 
+	UFUNCTION()
 	void UpdateKillCount(int32 Points);
+	UFUNCTION()
 	void UpdateKeyItemCount(int32 Points);
 
 	//스폰데이터어레이
@@ -69,6 +71,7 @@ public:
 	void Progress03();
 	void Progress04();
 	void Progress05();
+	void Progress06();
 
 
 

@@ -75,6 +75,8 @@ void AMyPlayerController::BeginPlay()
 				{
 					GameStatePlay->OnScoreChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateScore);
 					HUDWidget->UpdateScore(GameStatePlay->Score);
+					//GameStatePlay->OnMissionTextChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateSubQuest);
+					//HUDWidget->UpdateSubQuest(GameStatePlay->GetCurrentMissionText());
 				}
 			}
 		}
