@@ -107,6 +107,30 @@ void UHUDWidget::HideHitMarker()
 	}
 }
 
+void UHUDWidget::ShowKillMarker()
+{
+	if (KillMarker)
+	{
+		KillMarker->SetVisibility(ESlateVisibility::Visible);
+		GetWorld()->GetTimerManager().ClearTimer(KillMarkerTimerHandle);
+		GetWorld()->GetTimerManager().SetTimer(
+			HitMarkerTimerHandle,
+			this,
+			&UHUDWidget::HideKillMarker,
+			0.5f,
+			false
+		);
+	}
+}
+
+void UHUDWidget::HideKillMarker()
+{
+	if (KillMarker)
+	{
+		KillMarker->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
 void UHUDWidget::ShowDamageText(int32 DamageAmount, const FVector& WorldLocation)
 {
 	if (!DamageWidgetClass) return;
