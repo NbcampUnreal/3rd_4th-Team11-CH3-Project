@@ -32,11 +32,13 @@ public:
 	void AddKillCount(int32 Points);
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	void SetMissionText(const FString& Text);
+	void SetMissionText(FString Text);
 
 
 	void AddItemCount(int32 Point, int32 SlotIndex);
 
+	void SetGameStatePlay();
+	
 
 private:
 	

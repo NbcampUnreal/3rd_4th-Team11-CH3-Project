@@ -10,6 +10,7 @@ AGameStatePlay::AGameStatePlay()
 	Score = 0;
     killCount = 0;
 	ItemCounts = TArray<int32>({ 0, 0, 0, 0 }); // 힐템, 아드, 키, 고양이
+    SubMissionText = TEXT("");
 }
 
 
@@ -38,7 +39,7 @@ int AGameStatePlay::GetKillCount()
 
 
 void AGameStatePlay::SetMissionText(const FString& Text)
-{
+{	
     SubMissionText = Text;
 	OnMissionTextChanged.Broadcast(SubMissionText);
 }
