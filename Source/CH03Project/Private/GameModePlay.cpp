@@ -34,8 +34,8 @@ void AGameModePlay::AddKillCount(int32 Points)
 }
 
 
-void AGameModePlay::SetMissionText(const FString& Text)
-{
+void AGameModePlay::SetMissionText(FString Text)
+{	
 	GameStatePlays->SetMissionText(Text);
 }
 
@@ -44,4 +44,14 @@ void AGameModePlay::AddItemCount(int32 Point, int32 SlotIndex)
 {
 	GameStatePlays->AddItemCount(Point, SlotIndex);
 	//타이머 0.1f float로
+}
+
+
+void AGameModePlay::SetGameStatePlay()
+{
+	// 게임 상태를 Play로 설정
+	if (GameStatePlays == nullptr)
+	{
+		GameStatePlays = GetGameState<AGameStatePlay>();
+	}
 }

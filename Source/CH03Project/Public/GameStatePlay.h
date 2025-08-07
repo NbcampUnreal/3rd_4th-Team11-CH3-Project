@@ -54,7 +54,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	TArray<int32> ItemCounts;	//0 힐템 1 아드 2 키 3 고양이
 
-
+	UFUNCTION(BlueprintCallable)
 	void AddItemCount(int32 Point, int32 SlotIndex);
 
 };

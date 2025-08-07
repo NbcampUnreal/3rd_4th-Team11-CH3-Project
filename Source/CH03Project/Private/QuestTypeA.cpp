@@ -10,21 +10,25 @@ AQuestTypeA::AQuestTypeA()
 	PrimaryActorTick.bCanEverTick = false;
 	ProgressStage = 0;
 	FirstAreaTargetKillCount = 0;
+	//생성자에서 하나 생성
+	QuestStartCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("QuestStartCollision"));
 }
 
 void AQuestTypeA::BeginPlay()
 {
 	Super::BeginPlay();
 	GameModePlays = Cast<AGameModePlay>(UGameplayStatics::GetGameMode(GetWorld()));
+	
 	SetSubTexts();
-	ProgressStarter();	//생성주기 때문에 문제가 될 수도 있다. 발생하면 변경.
-
 	AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
 	if (GameStatePlay)
 	{
 		GameStatePlay->OnKillCountChanged.AddDynamic(this, &AQuestTypeA::UpdateKillCount);
 		GameStatePlay->OnKeyItemChanged.AddDynamic(this, &AQuestTypeA::UpdateKeyItemCount);
 	}
+	ProgressStarter();	//생성주기 때문에 문제가 될 수도 있다. 발생하면 변경.
+
+	QuestStartCollision->OnComponentBeginOverlap.AddDynamic(this, &AQuestTypeA::OnOverlapBegin);
 }
 
 void AQuestTypeA::SetSubTexts()
@@ -69,7 +73,8 @@ void AQuestTypeA::ProgressStarter()
 void AQuestTypeA::Progress00()	//시작
 {
 	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 0단계"));
-	GameModePlays->SetMissionText(SubTexts[0]);
+	GameModePlays->SetGameStatePlay();
+	GameModePlays->SetMissionText(SubTexts[1]);
 }
 
 
@@ -103,11 +108,18 @@ void AQuestTypeA::Progress04()	//키얻음 문여쇼
 
 	//적 스폰 필요
 }
-void AQuestTypeA::Progress05()	//키얻음 문여쇼
+void AQuestTypeA::Progress05()	//문 오픈대기 : 시간시간
 {
 	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 5단계"));
 	GameModePlays->SetMissionText(SubTexts[4]);
 }
+void AQuestTypeA::Progress06()	//문 열림
+{
+	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 5단계"));
+	GameModePlays->SetMissionText(SubTexts[4]);
+}
+
+
 
 void AQuestTypeA::UpdateKillCount(int32 Points)
 {
@@ -204,13 +216,16 @@ void AQuestTypeA::SpawnEnemy()
 
 void AQuestTypeA::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp, Warning, TEXT("충돌 시작"));
 	if (OtherActor && OtherActor != this)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("충돌 시작 1단계 패스"));
 		//플레이어인지 체크
 		if (!OtherActor->ActorHasTag("Player"))
 		{
 			return;
 		}
+		UE_LOG(LogTemp, Warning, TEXT("충돌 시작 2단계 패스"));
 
 		if (ProgressStage == 0)
 		{
