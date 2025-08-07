@@ -1,37 +1,34 @@
 #include "HUDWidget.h"
+#include "DamageWidget.h"
+#include "MyPlayerController.h"
+#include "TimerManager.h"
+#include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
+
+
 
 void UHUDWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	//UMyGameInstance* GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	//if (GameInstance)
-	//{
-	//	// GameInstanceÀÇ OnHealthChanged µ¨¸®°ÔÀÌÆ®¿¡ HUDWidgetÀÇ UpdateHealth ÇÔ¼ö ¹ÙÀÎµù
-	//	GameInstance->OnHealthChanged.AddDynamic(this, &UHUDWidget::UpdateHealth);
-	//	// GameInstanceÀÇ OnBulletChanged µ¨¸®°ÔÀÌÆ®¿¡ HUDWidgetÀÇ UpdateBullet ÇÔ¼ö ¹ÙÀÎµù
-	//	GameInstance->OnBulletChanged.AddDynamic(this, &UHUDWidget::UpdateBullet);
-
-	//	// HUD°¡ »ý¼ºµÉ ¶§ ÃÊ±â Ã¼·Â°ú ÃÑ¾Ë °ªÀ» ¾÷µ¥ÀÌÆ® (¼±ÅÃ »çÇ×)
-	//	UpdateHealth(GameInstance->CurrentPlayerHealth, GameInstance->MaxPlayerHealth);
-	//	UpdateBullet(GameInstance->CurrentPlayerBullet);
-	//}
 }
-
-void UHUDWidget::UpdateHealth(float CurrentHealth, float MaxHealth)
+void UHUDWidget::UpdateHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Instigator)
 {
 	if (HealthBar)
 	{
-		HealthBar->SetPercent(CurrentHealth / MaxHealth);
+		HealthBar->SetPercent(1-static_cast<float>(CurrentHealth) / MaxHealth);
 	}
 
-	if (HealthText)
+	if (HealthNum)
 	{
-		HealthText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), CurrentHealth)));
+		FString HealthString = FString::Printf(TEXT("%d"), CurrentHealth);
+		HealthNum->SetText(FText::FromString(HealthString));
 	}
 }
+
 
 void UHUDWidget::UpdateBullet(int32 CurrentBullet)
 {
@@ -41,7 +38,7 @@ void UHUDWidget::UpdateBullet(int32 CurrentBullet)
 	}
 }
 
-void UHUDWidget::UpdateBossHP(float CurrentBossHealth, float MaxBossHealth)
+void UHUDWidget::UpdateBossHP(int CurrentBossHealth, int MaxBossHealth)
 {
 	if (BossHealthBar)
 	{
@@ -54,5 +51,134 @@ void UHUDWidget::UpdateScore(int32 CurrentScore)
 	if (HUDScoreNum)
 	{
 		HUDScoreNum->SetText(FText::AsNumber(CurrentScore));
+	}
+}
+
+void UHUDWidget::UpdateSubQuest(int32 QuestIndex, const TArray<FString>& MissionTexts)
+{
+	if (SubQuestText && MissionTexts.IsValidIndex(QuestIndex))
+	{
+		FString QuestText = MissionTexts[QuestIndex];
+		SubQuestText->SetText(FText::FromString(QuestText));
+	}
+}
+
+void UHUDWidget::UpdateHiddenQuest(bool bIsGetStatue, int32 StatueCount)
+{
+	if (HiddenQuestText)
+	{
+		HiddenQuestText->SetVisibility(ESlateVisibility::Visible);
+	}
+
+	if (StatueNum)
+	{
+		StatueNum->SetVisibility(ESlateVisibility::Visible);
+		StatueNum->SetText(FText::AsNumber(StatueCount));
+	}
+
+	if (HiddenQuestOutline)
+	{
+		HiddenQuestOutline->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void UHUDWidget::ShowHitMarker()
+{
+	
+	if (HitMarkerImage)
+	{
+		HitMarkerImage->SetVisibility(ESlateVisibility::Visible);
+
+		if (ScaleUp)
+		{
+			PlayAnimation(ScaleUp, 0.f, 1);
+		}
+
+		GetWorld()->GetTimerManager().ClearTimer(HitMarkerTimerHandle);
+		if (!GetWorld()->GetTimerManager().IsTimerActive(HitMarkerTimerHandle))
+		{
+			GetWorld()->GetTimerManager().SetTimer(
+				HitMarkerTimerHandle,
+				this,
+				&UHUDWidget::HideHitMarker,
+				0.2f,
+				false
+			);
+		}
+	}
+}
+
+void UHUDWidget::HideHitMarker()
+{
+	if (HitMarkerImage)
+	{
+		HitMarkerImage->SetVisibility(ESlateVisibility::Hidden);
+	}
+	
+}
+
+void UHUDWidget::ShowKillMarker()
+{
+	if (KillMarker)
+	{
+		KillMarker->SetVisibility(ESlateVisibility::Visible);
+		GetWorld()->GetTimerManager().ClearTimer(KillMarkerTimerHandle);
+		GetWorld()->GetTimerManager().SetTimer(
+			KillMarkerTimerHandle,
+			this,
+			&UHUDWidget::HideKillMarker,
+			0.5f,
+			false
+		);
+	}
+}
+
+void UHUDWidget::HideKillMarker()
+{
+	if (KillMarker)
+	{
+		KillMarker->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+void UHUDWidget::ShowDamageText(int32 DamageAmount, const FVector& WorldLocation)
+{
+	if (!DamageWidgetClass) return;
+
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (!PC) return;
+
+	FVector2D ScreenPosition;
+	if (PC->ProjectWorldLocationToScreen(WorldLocation, ScreenPosition))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("firststep!!"))
+		UDamageWidget* DamageWidget = CreateWidget<UDamageWidget>(PC, DamageWidgetClass);
+		if (DamageWidget)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Damage!!"))
+			DamageWidget->AddToViewport();
+			DamageWidget->SetDamageText(DamageAmount);
+			DamageWidget->SetScreenPosition(ScreenPosition);
+
+			// ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½Ì¸ï¿½
+			FTimerHandle RemoveTimer;
+			FTimerDelegate RemoveDelegate = FTimerDelegate::CreateLambda([DamageWidget]()
+				{
+					if (DamageWidget)
+					{
+						DamageWidget->RemoveFromParent();
+					}
+				});
+
+			PC->GetWorldTimerManager().SetTimer(RemoveTimer, RemoveDelegate, 1.5f, false);
+		}
+	}
+}
+
+void UHUDWidget::SetCrosshairVisible(bool bVisible)
+{
+	if (NormalCrossHair)
+	{
+		NormalCrossHair->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }

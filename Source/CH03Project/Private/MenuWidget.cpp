@@ -18,7 +18,8 @@ void UMenuWidget::NativeConstruct()
 
 void UMenuWidget::OnStartClicked()
 {
-    UGameplayStatics::OpenLevel(GetWorld(), FName("GameMap"));
+    RemoveFromParent();
+    UGameplayStatics::OpenLevel(GetWorld(), FName("MainLevel"));
 }
 
 void UMenuWidget::OnQuitClicked()
@@ -54,6 +55,13 @@ void UMenuWidget::SetScoreNumText(bool bIsGameOver)
             ScoreNumText->SetVisibility(ESlateVisibility::Visible);
         }
     }
+    else
+    {
+        if (ScoreNumText)
+        {
+            ScoreNumText->SetVisibility(ESlateVisibility::Collapsed);
+        }
+    }
 }
 
 void UMenuWidget::SetScoreText(bool bIsGameOver)
@@ -65,4 +73,19 @@ void UMenuWidget::SetScoreText(bool bIsGameOver)
             ScoreText->SetVisibility(ESlateVisibility::Visible);
         }
     }
+    else
+    {
+        if (ScoreText)
+        {
+            ScoreText->SetVisibility(ESlateVisibility::Collapsed);
+        }
+    }
+}
+
+void UMenuWidget::SetMenuState(bool bIsGameOver)
+{
+    SetStartButtonText(bIsGameOver);
+    SetTileText(bIsGameOver);
+    SetScoreNumText(bIsGameOver);
+    SetScoreText(bIsGameOver);
 }

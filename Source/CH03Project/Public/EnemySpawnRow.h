@@ -14,9 +14,9 @@ struct FEnemySpawnRow : public FTableRowBase
 public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EnemySpawn")
-	TSubclassOf<class AActor> EnemyClass;
+	TSubclassOf<class AActor> EnemyClass = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EnemySpawn")
-	int SpawnCount;
+	int SpawnCount = 0;
 	
 
 };

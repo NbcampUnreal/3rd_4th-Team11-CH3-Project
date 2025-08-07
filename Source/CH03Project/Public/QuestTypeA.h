@@ -14,10 +14,7 @@ class CH03PROJECT_API AQuestTypeA : public AActor
 	GENERATED_BODY()
 	
 private:
-	int DoorCount;
-
 	
-
 	FTimerHandle TimerHandle;
 
 public:
@@ -27,16 +24,28 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
-	int DoorOpenCount;//10배로 관리
-
+	int32 ProgressStage;
+	
 	AGameModePlay* GameModePlays;
-	
-	//텍스트 어레이
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
-	TArray<FText> QuestTexts;
+	UDataTable* SubTextsDataTable;
+	TArray<FString> SubTexts;
+	void SetSubTexts();
 	
+
+	int32 StartKillCount;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
+	//int32 FirstAreaEnemyCount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
+	int32 FirstAreaTargetKillCount;
+
+	UFUNCTION()
+	void UpdateKillCount(int32 Points);
+	UFUNCTION()
+	void UpdateKeyItemCount(int32 Points);
+
 	//스폰데이터어레이
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
 	TArray<UDataTable*> SpawnDataArray;
@@ -54,12 +63,24 @@ public:
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	UFUNCTION()
-	void StartQuest();
 
-	void CheckQuestDoor();
+	void ProgressStarter();
+	void Progress00();
+	void Progress01();
+	void Progress02();
+	void Progress03();
+	void Progress04();
+	void Progress05();
+	void Progress06();
 
-	void DoorCountCheck();
+
+
+
+
+
+
+	
+	
 
 	void SpawnEnemy();
 

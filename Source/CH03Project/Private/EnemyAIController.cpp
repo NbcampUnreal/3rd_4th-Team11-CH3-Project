@@ -7,19 +7,51 @@
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
 #include "Perception/AISense_Damage.h"
+#include "Perception/AISenseConfig_Sight.h"
+#include "Perception/AISenseConfig_Hearing.h"
+#include "Perception/AISenseConfig_Damage.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BaseEnemy.h"
 
+
 AEnemyAIController::AEnemyAIController()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));
 	SetPerceptionComponent(*AIPerception);
 
 	BB = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 	BT = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
+
+	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
+	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("HearingConfig"));
+	DamageConfig = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("DamageConfig"));
+
+	SightConfig->SightRadius = 800.0f;
+	SightConfig->LoseSightRadius = 1200.0f;
+	SightConfig->PeripheralVisionAngleDegrees = 90.0f;
+	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
+	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
+	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+
+	HearingConfig->HearingRange = 600.0f;
+	HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
+	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
+	HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
+
+	AIPerception->ConfigureSense(*SightConfig);
+	AIPerception->ConfigureSense(*HearingConfig);
+	AIPerception->ConfigureSense(*DamageConfig);
+
+	AIPerception->SetDominantSense(SightConfig->GetSenseImplementation());
+
+	StateKey = "State";
+	TargetActorKey = "TargetActor";
+	InterestKey = "PointOfInterest";
+	AttackRadiusKey = "AttackRadius";
+	DefendRadiusKey = "DefendRadius";
 }
 
 void AEnemyAIController::BeginPlay()
@@ -38,7 +70,6 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 
 	ControlledEnemy = Cast<ABaseEnemy>(InPawn);
 	if (!ControlledEnemy) return;
-	TargetActor = ControlledEnemy;
 
 	if (ControlledEnemy && ControlledEnemy->BehaviorTree)
 	{
@@ -46,102 +77,155 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 		{
 			RunBehaviorTree(ControlledEnemy->BehaviorTree);
 
-			SetStateAsPassive();
-
 			if (BB)
 			{
-				float AttackRadius = 0.0f;
-				float DefendRadius = 0.0f;
-				ControlledEnemy->GetIdealRadius(AttackRadius, DefendRadius);
+				float AttackRadius = 150.0f;
+				float DefendRadius = 350.0f;
+				if (ControlledEnemy->GetClass()->ImplementsInterface(UEnemyActionInterface::StaticClass()))
+				{
+					IEnemyActionInterface::Execute_GetIdealRadius(ControlledEnemy, AttackRadius, DefendRadius);
+				}
 
 				BB->SetValueAsFloat(AttackRadiusKey, AttackRadius);
 				BB->SetValueAsFloat(DefendRadiusKey, DefendRadius);
 			}
+
+			SetStateAsPassive();
 		}
 	}
 }
 
 void AEnemyAIController::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	if (!ControlledEnemy) return;
+	if (!ControlledEnemy || !AIPerception) return;
 
-	const FName Sense = Stimulus.Type.Name;
+	TArray<AActor*> UpdatedActors;
+	AIPerception->GetCurrentlyPerceivedActors(NULL, UpdatedActors);
 
-	if (Sense == UAISense_Sight::StaticClass()->GetFName())
+	for (AActor* PerceivedActor : UpdatedActors)
 	{
-		if (CanSenseActor(ControlledEnemy, Actor, Stimulus, Sense))
+		if (!IsValid(PerceivedActor))
+			continue;
+
+		TSubclassOf<UAISense> SensedClass;
+
+		if (CanSenseActor(ControlledEnemy, PerceivedActor, UAISense_Sight::StaticClass(), SensedClass))
 		{
-			HandleSensedSight(Actor);
+			HandleSensedSight(PerceivedActor);
+			continue;
 		}
-	}
-	else if (Sense == UAISense_Hearing::StaticClass()->GetFName())
-	{
-		if (CanSenseActor(ControlledEnemy, Actor, Stimulus, Sense))
+
+		if (CanSenseActor(ControlledEnemy, PerceivedActor, UAISense_Hearing::StaticClass(), SensedClass))
 		{
-			HandleSensedSound(Stimulus.StimulusLocation);
+			FActorPerceptionBlueprintInfo PerceptionInfo;
+			AIPerception->GetActorsPerception(PerceivedActor, PerceptionInfo);
+
+			for (const FAIStimulus& EachStimulus : PerceptionInfo.LastSensedStimuli)
+			{
+				if (UAIPerceptionSystem::GetSenseClassForStimulus(GetWorld(), EachStimulus) == UAISense_Hearing::StaticClass())
+				{
+					HandleSensedSound(EachStimulus.StimulusLocation);
+					break;
+				}
+			}
+			continue;
 		}
-	}
-	else if (Sense == UAISense_Damage::StaticClass()->GetFName())
-	{
-		if (CanSenseActor(ControlledEnemy, Actor, Stimulus, Sense))
+
+		if (CanSenseActor(ControlledEnemy, PerceivedActor, UAISense_Damage::StaticClass(), SensedClass))
 		{
-			HandleSensedDamage(Actor);
+			HandleSensedDamage(PerceivedActor);
 		}
 	}
 }
 
-bool AEnemyAIController::CanSenseActor(ABaseEnemy* Enemy, AActor* Actor, const FAIStimulus& Stimulus, FName SenseName) const
+
+bool AEnemyAIController::CanSenseActor(ABaseEnemy* Enemy, AActor* Actor,
+	TSubclassOf<UAISense> SenseToCheck,
+	TSubclassOf<UAISense>& OutSensedClass) const
 {
-	return (IsValid(Actor) && Stimulus.WasSuccessfullySensed());
+	if (!IsValid(Actor) || !AIPerception)
+	{
+		return false;
+	}
+
+	FActorPerceptionBlueprintInfo PerceptionInfo;
+	AIPerception->GetActorsPerception(Actor, PerceptionInfo);
+
+	for (const FAIStimulus& EachStimulus : PerceptionInfo.LastSensedStimuli)
+	{
+		TSubclassOf<UAISense> ThisSenseClass = UAIPerceptionSystem::GetSenseClassForStimulus(GetWorld(), EachStimulus);
+
+		if (ThisSenseClass == SenseToCheck)
+		{
+			OutSensedClass = ThisSenseClass;
+			return EachStimulus.WasSuccessfullySensed();
+		}
+	}
+
+	return false;
 }
 
 void AEnemyAIController::HandleSensedSight(AActor* Actor)
 {
 	if (!BB || !Actor) return;
 
-	if (GetCurrentState() == EEnemyState::Attacking)
-	{
-		return;
-	}
+	EEnemyState CurrentState = GetCurrentState();
 
-	BB->SetValueAsObject(TargetActorKey, Actor);
-	SetStateAsAttacking();
+	if (CurrentState == EEnemyState::Passive || CurrentState == EEnemyState::Investigating)
+	{
+		if (Actor == GetWorld()->GetFirstPlayerController()->GetPawn())
+		{
+			SetStateAsAttacking(Actor);
+		}
+	}
 }
 
 void AEnemyAIController::HandleSensedSound(const FVector& Location)
 {
 	if (!BB) return;
 
-	BB->SetValueAsVector(InterestKey, Location);
-	SetStateAsInvestigating(Location);
+	EEnemyState CurrentState = GetCurrentState();
+
+	if (CurrentState == EEnemyState::Passive)
+	{
+		SetStateAsInvestigating(Location);
+	}
 }
 
 void AEnemyAIController::HandleSensedDamage(AActor* Actor)
 {
 	if (!BB || !Actor) return;
 
-	if (GetCurrentState() == EEnemyState::Attacking)
-	{
-		return;
-	}
+	EEnemyState CurrentState = GetCurrentState();
 
-	BB->SetValueAsObject(TargetActorKey, Actor);
-	SetStateAsAttacking();
+	if (CurrentState != EEnemyState::Attacking)
+	{
+		if (Actor == GetWorld()->GetFirstPlayerController()->GetPawn())
+		{
+			SetStateAsAttacking(Actor);
+		}
+	}
 }
 
 void AEnemyAIController::SetStateAsPassive()
 {
 	if (BB)
 	{
-		BB->SetValueAsEnum(StateKey, static_cast<uint8>(0)); // Enum_EnemyState::Passive
+		BB->SetValueAsEnum(StateKey, static_cast<uint8>(EEnemyState::Passive));
 	}
 }
 
-void AEnemyAIController::SetStateAsAttacking()
+void AEnemyAIController::SetStateAsAttacking(AActor* AttackTarget)
 {
 	if (BB)
 	{
-		BB->SetValueAsEnum(StateKey, static_cast<uint8>(1)); // Enum_EnemyState::Attacking
+		if (AttackTarget)
+		{
+			BB->SetValueAsObject(TargetActorKey, AttackTarget);
+		}
+
+		BB->SetValueAsEnum(StateKey, static_cast<uint8>(EEnemyState::Attacking));
+		TargetActor = AttackTarget;
 	}
 }
 
@@ -149,8 +233,16 @@ void AEnemyAIController::SetStateAsInvestigating(const FVector& Location)
 {
 	if (BB)
 	{
-		BB->SetValueAsEnum(StateKey, static_cast<uint8>(3)); // Enum_EnemyState::Investigating
+		BB->SetValueAsEnum(StateKey, static_cast<uint8>(EEnemyState::Investigating));
 		BB->SetValueAsVector(InterestKey, Location);
+	}
+}
+
+void AEnemyAIController::SetStateAsDead()
+{
+	if (BB)
+	{
+		BB->SetValueAsEnum(StateKey, static_cast<uint8>(EEnemyState::Dead));
 	}
 }
 

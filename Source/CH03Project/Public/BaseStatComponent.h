@@ -4,7 +4,9 @@
 #include "Components/ActorComponent.h"
 #include "BaseStatComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnHpChangedSignature, int, int, AActor*);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnHpChangedSignature, int32, OldHp, int32, NewHp, AActor*, Instigator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AActor*, DeadActor);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CH03PROJECT_API UBaseStatComponent : public UActorComponent
 {
@@ -29,8 +31,12 @@ protected:
 
 	//대미지면역관리
 	bool bIsImmuneToDamage;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BaseStat")
 	float ImmuneToDamageTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BaseStat")
+	int32 KillScore;
 
 public:
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -45,5 +51,16 @@ public:
 
 	virtual void OnDeath();
 
+	int GetHp();
+	int GetMaxHp();
+	int GetArmor();
+
+	UPROPERTY(BlueprintCallable)
 	FOnHpChangedSignature OnHpChangedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnDeath OnDeathEvent;
+
+private:
+	bool bIsDead;
 };

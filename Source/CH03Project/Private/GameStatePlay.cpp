@@ -6,40 +6,42 @@
 
 AGameStatePlay::AGameStatePlay()
 {
-
+    //초기화
+	Score = 0;
+    killCount = 0;
+	ItemCounts = TArray<int32>({ 0, 0, 0, 0 }); // 힐템, 아드, 키, 고양이
+    SubMissionText = TEXT("");
 }
 
 
 void AGameStatePlay::SetScore(int32 NewScore)
 {
     Score = NewScore;
+	OnScoreChanged.Broadcast(Score);
 }
 
 void AGameStatePlay::AddScore(int32 Points)
 {
     Score += Points;
+    OnScoreChanged.Broadcast(Score);
+}
+
+void AGameStatePlay::AddKillCount(int32 Points)
+{
+    killCount += Points;
+	OnKillCountChanged.Broadcast(killCount);
+}
+
+int AGameStatePlay::GetKillCount()
+{
+    return killCount;
 }
 
 
-void AGameStatePlay::SetPlayerHealth(int32 NewValHp, int32 NewValMaxHp)
-{
-    int32 OldHpBeforeChange = PlayerHp;
-
-    //PlayerHp = FMath::Clamp(NewValHp, 0, NewValMaxHp);
-    PlayerHp = NewValHp;
-    PlayerMaxHp = NewValMaxHp;
-
-    //OnPlayerHpChanged.Broadcast(PlayerHp, PlayerMaxHp, OldHpBeforeChange);
-}
-
-
-
-void AGameStatePlay::SetMissionText(const FString& Text, int32 MissionIndex)
-{
-    if (MissionIndex >= 0 && MissionIndex < MissionTexts.Num())
-    {
-        MissionTexts[MissionIndex] = Text;
-    }
+void AGameStatePlay::SetMissionText(const FString& Text)
+{	
+    SubMissionText = Text;
+	OnMissionTextChanged.Broadcast(SubMissionText);
 }
 
 
@@ -51,5 +53,10 @@ void AGameStatePlay::AddItemCount(int32 Point, int32 SlotIndex)
     if (ItemCounts.Num() > SlotIndex)
     {
 		ItemCounts[SlotIndex] = FMath::Max(ItemCounts[SlotIndex] + Point, 0);
+
+        if (SlotIndex == 2)
+        {
+			OnKeyItemChanged.Broadcast(ItemCounts[SlotIndex]);
+        }
     }
 }

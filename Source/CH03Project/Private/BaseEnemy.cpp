@@ -4,7 +4,9 @@
 #include "BaseEnemy.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "WayPointSpawner.h"
+#include "EnemyAIController.h"
 
 ABaseEnemy::ABaseEnemy()
 {
@@ -12,24 +14,26 @@ ABaseEnemy::ABaseEnemy()
 
 	PatrolIndex = 0;
 	Direction = 1;
-	bIsWeildingWeapon = false;
+
+	AIControllerClass = AEnemyAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	
 }
 
 void ABaseEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TArray<AActor*> FoundSpawners;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWayPointSpawner::StaticClass(), FoundSpawners);
+	AWayPointSpawner* WaySpawner = Cast<AWayPointSpawner>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), AWayPointSpawner::StaticClass()));
 
-	for (AActor* Spawner : FoundSpawners)
+	if (!WaySpawner)
 	{
-		if (AWayPointSpawner* WaySpawner = Cast<AWayPointSpawner>(Spawner))
-		{
-			WaySpawner->GenerateWaypointVectorsForActor(this, TargetPoints);
-			break;
-		}
+		UE_LOG(LogTemp, Warning, TEXT("No WayPointSpawner found in the level!"));
+		return;
 	}
+
+	WaySpawner->GenerateWaypointVectorsForActor(this, TargetPoints);
 }
 
 void ABaseEnemy::IncrementPatrolRoute()
@@ -68,28 +72,29 @@ TArray<FVector> ABaseEnemy::GetPatrolWaypoints_Implementation()
 
 void ABaseEnemy::SetMovementSpeed_Implementation(ESpeedState SpeedState)
 {
-	if (!CharacterMovementComponent) return;
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+	if (!MoveComp) return;
 
 	switch (SpeedState)
 	{
 	case ESpeedState::Idle:
-		CharacterMovementComponent->MaxWalkSpeed = 0.0f;
+		MoveComp->MaxWalkSpeed = 0.0f;
 		break;
 
 	case ESpeedState::Walking:
-		CharacterMovementComponent->MaxWalkSpeed = 100.0f;
+		MoveComp->MaxWalkSpeed = 100.0f;
 		break;
 
 	case ESpeedState::Jogging:
-		CharacterMovementComponent->MaxWalkSpeed = 300.0f;
+		MoveComp->MaxWalkSpeed = 300.0f;
 		break;
 
 	case ESpeedState::Sprinting:
-		CharacterMovementComponent->MaxWalkSpeed = 500.0f;
+		MoveComp->MaxWalkSpeed = 500.0f;
 		break;
 
 	default:
-		CharacterMovementComponent->MaxWalkSpeed = 300.0f;
+		MoveComp->MaxWalkSpeed = 300.0f;
 		break;
 	}
 }
@@ -100,16 +105,6 @@ void ABaseEnemy::GetIdealRadius_Implementation(float& OutAttackRadius, float& Ou
 	OutDefendRadius = 350.f;
 }
 
-void ABaseEnemy::EquipWeapon_Implementation()
-{
-	bIsWeildingWeapon = true;
-}
-
-void ABaseEnemy::UnequipWeapon_Implementation()
-{
-	bIsWeildingWeapon = false;
-}
-
-void ABaseEnemy::Attack_Implementation()
+void ABaseEnemy::Attack_Implementation(AActor* AttackTarget)
 {
 }

@@ -4,7 +4,11 @@
 #include "GameFramework/GameState.h"
 #include "GameStatePlay.generated.h"
 
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnPlayerHpChangedSignature, int32, NewHp, int32, MaxHp, int32, OldHp);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScoreChanged, int32, Score);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKillCountChanged, int32, KillCount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMissionTextChanged, const FString&, MissionText);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKeyItemChanged, int32, KeyItem);
 
 UCLASS()
 class CH03PROJECT_API AGameStatePlay : public AGameState
@@ -15,18 +19,9 @@ class CH03PROJECT_API AGameStatePlay : public AGameState
 public:
 
 	AGameStatePlay();
+
+	FOnScoreChanged OnScoreChanged;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	int32 PlayerHp;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	int32 PlayerMaxHp;
-
-	UFUNCTION(BlueprintCallable, Category = "UI")
-	void SetPlayerHealth(int32 NewValHp, int32 NewValMaxHp);
-
-	//UPROPERTY(BlueprintAssignable, Category = "UI|Events")
-	//FOnPlayerHpChangedSignature OnPlayerHpChanged;
-
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	int32 Score;
@@ -34,14 +29,19 @@ public:
 	void SetScore(int32 NewScore);
 	void AddScore(int32 Points);
 	
+	FOnKillCountChanged OnKillCountChanged;
+	int32 killCount;
+	void AddKillCount(int32 Points);
+	int32 GetKillCount();
+	
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	int32 CurrentAmmo;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	TArray<FString> MissionTexts; //0 서브 1 히든
+	FOnMissionTextChanged OnMissionTextChanged;
+	FString SubMissionText;
 
-	void SetMissionText(const FString& Text, int32 MissionIndex);
+	void SetMissionText(const FString& Text);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	int32 EnemyBossHp;
@@ -49,10 +49,12 @@ public:
 	int32 EnemyBossMaxHp;
 
 
+	FOnKeyItemChanged OnKeyItemChanged;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	TArray<int32> ItemCounts;	//0 힐템 1 아드 2 키 3 고양이
 
-
+	UFUNCTION(BlueprintCallable)
 	void AddItemCount(int32 Point, int32 SlotIndex);
 
 };

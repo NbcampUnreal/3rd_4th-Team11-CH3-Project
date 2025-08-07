@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "EnumTypes.h"
+#include "GameFramework/Actor.h"
 #include "EnemyActionInterface.generated.h"
 
 UINTERFACE(MinimalAPI, Blueprintable)
@@ -28,11 +29,5 @@ public:
 	void GetIdealRadius(float& OutAttackRadius, float& OutDefendRadius);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Enemy|Combat")
-	void EquipWeapon();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Enemy|Combat")
-	void UnequipWeapon();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Enemy|Combat")
-	void Attack();
+	void Attack(AActor* AttackTarget);
 };

@@ -7,6 +7,7 @@
 class UButton;
 class UTextBlock;
 
+
 UCLASS()
 class CH03PROJECT_API UMenuWidget : public UUserWidget
 {
@@ -21,6 +22,8 @@ protected:
 	UFUNCTION()
 	void OnQuitClicked();
 
+	
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void SetStartButtonText(bool bIsGameOver);
@@ -33,6 +36,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetScoreText(bool bIsGameOver);
+
+	UFUNCTION()
+	void SetMenuState(bool bIsGameOver);
 
 protected:
 	UPROPERTY(meta = (BindWidget))

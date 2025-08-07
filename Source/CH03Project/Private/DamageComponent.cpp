@@ -1,5 +1,9 @@
 ﻿#include "DamageComponent.h"
-
+#include "BaseStatComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/PlayerController.h"
+#include "MyPlayerController.h"
+#include "HUDWidget.h"
 
 UDamageComponent::UDamageComponent()
 {
@@ -20,10 +24,31 @@ void UDamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 }
 
 
-void UDamageComponent::TransDamage(UBaseStatComponent* TargetStatComponent)
+void UDamageComponent::TransDamage(AActor* TargetActor)
 {
-	if (TargetStatComponent)
+	if (TargetActor)
 	{
-		TargetStatComponent->AddHp(-AttackDamage);
+		UBaseStatComponent* TargetStatComponent = TargetActor->FindComponentByClass<UBaseStatComponent>();
+		if (TargetStatComponent)
+		{
+			TargetStatComponent->AddHp(-AttackDamage);
+
+			
+		}
 	}
+}
+
+bool UDamageComponent::StoreAttackToken(int32 Amount)
+{
+	if (AttackTokenCount >= Amount)
+	{
+		AttackTokenCount -= Amount;
+		return true;
+	}
+	return false;
+}
+
+void UDamageComponent::ReturnAttackToken(int32 Amount)
+{
+	AttackTokenCount += Amount;
 }

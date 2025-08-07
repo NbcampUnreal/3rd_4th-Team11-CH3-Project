@@ -1,10 +1,26 @@
 ﻿#include "BaseStatComponent.h"
+#include "MenuWidget.h"
+#include "HUDWidget.h"
+#include "GameFramework/PlayerController.h"
+#include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
+#include "MyPlayerController.h"
+#include "GameFramework/Character.h"
+#include "AIController.h"
+#include "BrainComponent.h"
+#include "BaseEnemy.h"
+#include "EnemyAIController.h"
+#include "Engine/Engine.h"
+#include "GameModePlay.h"
 
 
 UBaseStatComponent::UBaseStatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	ImmuneToDamageTime = 0.1f;
+	MaxHp = 100;
+	Hp = MaxHp;
+	bIsDead = false;
 }
 
 
@@ -23,10 +39,27 @@ void UBaseStatComponent::BeginPlay()
 
 void UBaseStatComponent::AddHp(int Point)
 {
+	if (bIsImmuneToDamage)
+	{
+		return;
+	}
+
 	if (Point < 0)
 	{
 		ImmuneToDamageSet();
-		Point = FMath::Max(Point + Armor, 0);
+		Point = FMath::Min(Point + Armor, 0);
+
+		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		AMyPlayerController* MyController = Cast<AMyPlayerController>(PC);
+		if (!bIsDead)
+		{
+			FVector DamageLocation = GetOwner()->GetActorLocation() + FVector(1, 1, 100.0f);
+			if (MyController && MyController->HUDWidget)
+			{
+				MyController->HUDWidget->ShowDamageText(-Point, DamageLocation);
+				MyController->HUDWidget->ShowHitMarker();
+			}
+		}
 	}
 
 
@@ -74,5 +107,74 @@ void UBaseStatComponent::ImmuneToDamageEnd()
 
 void UBaseStatComponent::OnDeath()
 {
+	if (bIsDead)
+	{
+		return;
+	}
+	bIsDead = true;
 
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (!OwnerCharacter) return;
+
+	if (AAIController* AICon = Cast<AAIController>(OwnerCharacter->GetController()))
+	{
+		if (AEnemyAIController* EnemyAICon = Cast<AEnemyAIController>(AICon))
+		{
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Enemy is dead!"));
+			}
+			EnemyAICon->SetStateAsDead();
+			if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+			{
+				if (AMyPlayerController* MyPC = Cast<AMyPlayerController>(PC))
+				{
+					if (MyPC->HUDWidget)
+					{
+						MyPC->HUDWidget->ShowKillMarker();
+						
+					}
+				}
+			}
+		}
+	}
+	OnDeathEvent.Broadcast(OwnerCharacter);
+	AGameModePlay* GameModePlay = Cast<AGameModePlay>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameModePlay)
+	{
+		GameModePlay->AddScore(KillScore);
+		//킬로그 전송필요
+		//처치UI필요
+	}
+
+
+	AMyPlayerController* PC = Cast<AMyPlayerController>(OwnerCharacter->GetController());
+	if (PC && PC->MainMenuWidgetClass)
+	{
+		UMenuWidget* MenuWidget = CreateWidget<UMenuWidget>(PC, PC->MainMenuWidgetClass);
+		if (MenuWidget)
+		{
+			MenuWidget->AddToViewport();
+			MenuWidget->SetMenuState(true);
+			PC->SetInputMode(FInputModeUIOnly());
+			PC->bShowMouseCursor = true;
+		}
+	}
+
+	OnDeathEvent.Clear();
+}
+
+int UBaseStatComponent::GetHp()
+{
+	return Hp;
+}
+
+int UBaseStatComponent::GetMaxHp()
+{
+	return MaxHp;
+}
+
+int UBaseStatComponent::GetArmor()
+{
+	return Armor;
 }

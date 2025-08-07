@@ -14,6 +14,9 @@ class UBlackboardComponent;
 class UBehaviorTreeComponent;
 class ABaseEnemy;
 class AActor;
+class UAISenseConfig_Sight;
+class UAISenseConfig_Hearing;
+class UAISenseConfig_Damage;
 
 UCLASS()
 class CH03PROJECT_API AEnemyAIController : public AAIController
@@ -37,11 +40,20 @@ protected:
 	UPROPERTY()
 	ABaseEnemy* ControlledEnemy;
 
+	UPROPERTY()
+	UAISenseConfig_Sight* SightConfig;
+
+	UPROPERTY()
+	UAISenseConfig_Hearing* HearingConfig;
+
+	UPROPERTY()
+	UAISenseConfig_Damage* DamageConfig;
+
 protected:
 	UFUNCTION()
 	void OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 
-	bool CanSenseActor(ABaseEnemy* Enemy, AActor* Actor, const FAIStimulus& Stimulus, FName SenseName) const;
+	bool CanSenseActor(ABaseEnemy* Enemy, AActor* Actor, TSubclassOf<UAISense> SenseToCheck, TSubclassOf<UAISense>& OutSensedClass) const;
 
 	void HandleSensedSight(AActor* Actor);
 	void HandleSensedSound(const FVector& Location);
@@ -51,24 +63,27 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI|Blackboard")
 	void SetStateAsPassive();
 	UFUNCTION(BlueprintCallable, Category = "AI|Blackboard")
-	void SetStateAsAttacking();
+	void SetStateAsAttacking(AActor* AttackTarget);
 	UFUNCTION(BlueprintCallable, Category = "AI|Blackboard")
 	void SetStateAsInvestigating(const FVector& Location);
 
-	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName TargetActorKey = TEXT("TargetActorKey");
+	UFUNCTION(BlueprintCallable, Category = "AI|Blackboard")
+	void SetStateAsDead();
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName StateKey = TEXT("StateKey");
+	FName TargetActorKey;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName InterestKey = TEXT("InterestKey");
+	FName StateKey;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName AttackRadiusKey = TEXT("AttackRadiusKey");
+	FName InterestKey;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName DefendRadiusKey = TEXT("DefendRadiusKey");
+	FName AttackRadiusKey;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
+	FName DefendRadiusKey;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AIBlackboard")
 	AActor* TargetActor;
