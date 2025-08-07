@@ -41,6 +41,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetCrosshairVisible(bool bVisible);
 
+	void HideHitMarker();
+	void HideKillMarker();
+
 
 protected:
 	virtual void NativeConstruct() override;
@@ -55,6 +58,7 @@ protected:
 	UProgressBar* BossHealthBar;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* HUDScoreNum;
+
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* SubQuestText;
 	UPROPERTY(meta = (BindWidget))
@@ -65,6 +69,7 @@ protected:
 	UTextBlock* StatueNum;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* HiddenQuestText;
+
 	UPROPERTY(meta = (BindWidget))
 	UImage* HitMarkerImage;
 	UPROPERTY(meta = (BindWidget))
@@ -72,13 +77,13 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UImage* KillMarker;
 
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ScaleUp;
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UDamageWidget> DamageWidgetClass;
 
 private:
 	FTimerHandle HitMarkerTimerHandle;
 	FTimerHandle KillMarkerTimerHandle;
-
-	void HideHitMarker();
-	void HideKillMarker();
 };

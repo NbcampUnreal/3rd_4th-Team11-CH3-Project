@@ -1,5 +1,9 @@
 ﻿#include "DamageComponent.h"
-
+#include "BaseStatComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/PlayerController.h"
+#include "MyPlayerController.h"
+#include "HUDWidget.h"
 
 UDamageComponent::UDamageComponent()
 {
@@ -28,6 +32,8 @@ void UDamageComponent::TransDamage(AActor* TargetActor)
 		if (TargetStatComponent)
 		{
 			TargetStatComponent->AddHp(-AttackDamage);
+
+			
 		}
 	}
 }
