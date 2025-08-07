@@ -1,12 +1,14 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "BaseActor.h"
+#include "GameFramework/Character.h"
 #include "MyCharacter.generated.h"
 
 class UCameraComponent;
 struct FInputActionValue;
 class AMyPlayerController;
+class UBaseStatComponent;
+class UDamageComponent;
 
 UENUM(BlueprintType)
 enum class ECharacterState : uint8
@@ -29,7 +31,7 @@ enum class EWeaponState : uint8
 };
 
 UCLASS()
-class CH03PROJECT_API AMyCharacter : public ABaseActor
+class CH03PROJECT_API AMyCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -45,6 +47,10 @@ protected:
 	USkeletalMeshComponent* SkeletalMeshComp2;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMeshComp;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	UBaseStatComponent* BaseStatComp;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	UDamageComponent* DamageComp;
 
 	// Animation Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
@@ -74,7 +80,6 @@ protected:
 	// Timer
 	FTimerHandle ShootTimerHandle;
 
-	UDamageComponent* DamageComponent;
 
 public:
 	AMyCharacter();

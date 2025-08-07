@@ -1,6 +1,7 @@
 ﻿#include "MyCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "MyPlayerController.h"
+#include "BaseStatComponent.h"
 #include "DamageComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
@@ -24,6 +25,10 @@ AMyCharacter::AMyCharacter()
 	SkeletalMeshComp2 = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
 
 	StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Magazine"));
+
+	BaseStatComp = CreateDefaultSubobject<UBaseStatComponent>(TEXT("BaseStatComponent"));
+
+	DamageComp = CreateDefaultSubobject<UDamageComponent>(TEXT("DamageComponent"));
 
 	AnimInstance = nullptr;
 	FireMontage = nullptr;
@@ -65,8 +70,6 @@ void AMyCharacter::BeginPlay()
 	{
 		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 	}
-
-	DamageComponent = FindComponentByClass<UDamageComponent>();
 }
 
 void AMyCharacter::PossessedBy(AController* NewController)
@@ -130,7 +133,10 @@ void AMyCharacter::Shoot()
 
 			if (HitActor && HitActor->ActorHasTag("Enemy"))
 			{
-				DamageComponent->TransDamage(HitActor);
+				if (DamageComp)
+				{
+					DamageComp->TransDamage(HitActor);
+				}
 			}
 		}
 	}
@@ -393,17 +399,17 @@ void AMyCharacter::StopShoot(const FInputActionValue& value)
 
 bool AMyCharacter::StoreAttackToken(int32 Amount)
 {
-	if (DamageComponent)
+	if (DamageComp)
 	{
-		return DamageComponent->StoreAttackToken(Amount);
+		return DamageComp->StoreAttackToken(Amount);
 	}
 	return false;
 }
 
 void AMyCharacter::ReturnAttackToken(int32 Amount)
 {
-	if (DamageComponent)
+	if (DamageComp)
 	{
-		DamageComponent->ReturnAttackToken(Amount);
+		DamageComp->ReturnAttackToken(Amount);
 	}
 }
