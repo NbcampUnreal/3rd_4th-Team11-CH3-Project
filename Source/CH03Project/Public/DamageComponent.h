@@ -5,6 +5,7 @@
 #include "BaseStatComponent.h"
 #include "DamageComponent.generated.h"
 
+class IBaseWeaponInterface;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CH03PROJECT_API UDamageComponent : public UActorComponent
@@ -25,6 +26,8 @@ public:
 	int32 AttackTokenCount = 0;
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	void SetAttackDamage(IBaseWeaponInterface* EquippedWeapon);
 
 	UFUNCTION(BlueprintCallable)
 	void TransDamage(AActor* TargetActor);

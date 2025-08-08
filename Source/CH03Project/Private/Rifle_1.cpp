@@ -4,23 +4,26 @@ ARifle_1::ARifle_1()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	WeaponName = "Rifle_1";
-	Damage = 10;
-	AttackSpeed = 0.2f;
-	MaxAmmo = 30;
-	CurrentAmmo = MaxAmmo;
-	ShootingRange = 10000.0f;
 }
 
 void ARifle_1::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	WeaponName = "Rifle_1";
+	Damage = 10;
+	AttackSpeed = 0.2f;
+	MaxAmmo = 30;
+	CurrentAmmo = MaxAmmo;
+	ShootingRange = 10000.0f;
+
 	StaticMeshComp->AttachToComponent(
 		SkeletalMeshComp,
 		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
 		TEXT("magazine")
 	);
+
+	OnChangeCurrentAmmo.Broadcast(CurrentAmmo);
 }
 
 void ARifle_1::Tick(float DeltaTime)

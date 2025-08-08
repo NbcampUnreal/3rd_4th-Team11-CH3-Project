@@ -60,10 +60,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* FireMontage;
 
-	// Effect Valiable
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	UParticleSystem* ShootHitEffect;
-
 	// State Management EnumClass Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	ECharacterState CharacterState;

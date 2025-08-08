@@ -5,6 +5,8 @@
 #include "RangedWeaponInterface.h"
 #include "BaseRangedWeapon.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeCurrentAmmo, int32, CurrentAmmo);
+
 UCLASS()
 class CH03PROJECT_API ABaseRangedWeapon : public ABaseWeapon, public IRangedWeaponInterface
 {
@@ -21,7 +23,12 @@ protected:
 	FVector StartLocation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LineTrace")
 	FVector EndLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	UParticleSystem* ShootHitEffect;
 
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnChangeCurrentAmmo OnChangeCurrentAmmo;
 
 public:	
 	ABaseRangedWeapon();

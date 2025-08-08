@@ -11,7 +11,6 @@
 #include "BaseWeaponInterface.h"
 #include "RangedWeaponInterface.h"
 
-
 AMyCharacter::AMyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -37,8 +36,6 @@ AMyCharacter::AMyCharacter()
 	AnimInstance = nullptr;
 	FireMontage = nullptr;
 
-	ShootHitEffect = nullptr;
-
 	CharacterState = ECharacterState::Idle;
 	WeaponState = EWeaponState::Base;
 
@@ -56,6 +53,8 @@ AMyCharacter::AMyCharacter()
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	DamageComp->AttackTokenCount = 1;
 
 	EquipRangedWeapon();
 
@@ -120,6 +119,8 @@ void AMyCharacter::EquipRangedWeapon()
 				FAttachmentTransformRules::SnapToTargetNotIncludingScale,
 				TEXT("magazine")
 			);
+
+			DamageComp->SetAttackDamage(EquippedWeapon);
 		}
 	}
 }
@@ -390,13 +391,16 @@ void AMyCharacter::StartShoot(const FInputActionValue& value)
 	{
 		Shoot();
 
-		GetWorldTimerManager().SetTimer(
-			ShootTimerHandle,
-			this,
-			&AMyCharacter::Shoot,
-			0.2f,
-			true
-		);
+		if (EquippedWeapon)
+		{
+			GetWorldTimerManager().SetTimer(
+				ShootTimerHandle,
+				this,
+				&AMyCharacter::Shoot,
+				EquippedWeapon->GetAttackSpeed(),
+				true
+			);
+		}
 	}
 }
 

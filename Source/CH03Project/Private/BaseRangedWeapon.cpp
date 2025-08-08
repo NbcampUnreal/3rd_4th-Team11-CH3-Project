@@ -1,4 +1,7 @@
 #include "BaseRangedWeapon.h"
+#include "MyCharacter.h"
+#include "DamageComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ABaseRangedWeapon::ABaseRangedWeapon()
 {
@@ -10,6 +13,7 @@ ABaseRangedWeapon::ABaseRangedWeapon()
 	ShootingRange = 0.0f;
 	StartLocation = FVector::ZeroVector;
 	EndLocation = FVector::ZeroVector;
+	ShootHitEffect = nullptr;
 }
 
 int32 ABaseRangedWeapon::GetMaxAmmo()
@@ -39,46 +43,58 @@ void ABaseRangedWeapon::SetLineTraceEndPoint(FVector EndPoint)
 
 void ABaseRangedWeapon::Shoot()
 {
-	FHitResult Hit;
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
-
-	bool bHit = GetWorld()->LineTraceSingleByChannel(
-		Hit,
-		StartLocation,
-		EndLocation,
-		ECC_GameTraceChannel2,
-		Params
-	);
-	/*
-	if (ShootHitEffect)
+	if (CurrentAmmo > 0)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(
-			GetWorld(),
-			ShootHitEffect,
-			Hit.ImpactPoint,
-			Hit.ImpactNormal.Rotation()
+		FHitResult Hit;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		bool bHit = GetWorld()->LineTraceSingleByChannel(
+			Hit,
+			StartLocation,
+			EndLocation,
+			ECC_GameTraceChannel2,
+			Params
 		);
-	}
 
-	if (bHit)
-	{
-		AActor* HitActor = Hit.GetActor();
-
-		if (HitActor && HitActor->ActorHasTag("Enemy"))
+		if (ShootHitEffect)
 		{
-			if (DamageComp)
+			UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				ShootHitEffect,
+				Hit.ImpactPoint,
+				Hit.ImpactNormal.Rotation()
+			);
+		}
+
+		if (bHit)
+		{
+			AActor* HitActor = Hit.GetActor();
+
+			if (HitActor && HitActor->ActorHasTag("Enemy"))
 			{
-				DamageComp->TransDamage(HitActor);
+				AMyCharacter* Player = Cast<AMyCharacter>(GetOwner());
+				if (Player)
+				{
+					if (UDamageComponent* PlayerDamageComp = Player->DamageComp)
+					{
+						PlayerDamageComp->TransDamage(HitActor);
+					}
+				}
 			}
 		}
+
+		CurrentAmmo--;
+
+		OnChangeCurrentAmmo.Broadcast(CurrentAmmo);
 	}
-	*/
 }
 
 void ABaseRangedWeapon::Reload()
 {
 	CurrentAmmo = MaxAmmo;
+
+	OnChangeCurrentAmmo.Broadcast(CurrentAmmo);
 }
 
 void ABaseRangedWeapon::BeginPlay()
