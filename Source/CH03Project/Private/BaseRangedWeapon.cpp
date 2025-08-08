@@ -47,38 +47,39 @@ void ABaseRangedWeapon::Shoot()
 	{
 		FHitResult Hit;
 		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(Cast<AMyCharacter>(GetOwner()));
+		AMyCharacter* WeaponOwner = Cast<AMyCharacter>(GetOwner());
 
-		bool bHit = GetWorld()->LineTraceSingleByChannel(
-			Hit,
-			StartLocation,
-			EndLocation,
-			ECC_GameTraceChannel2,
-			Params
-		);
-
-		if (ShootHitEffect)
+		if (WeaponOwner)
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(),
-				ShootHitEffect,
-				Hit.ImpactPoint,
-				Hit.ImpactNormal.Rotation()
+			Params.AddIgnoredActor(WeaponOwner);
+
+			bool bHit = GetWorld()->LineTraceSingleByChannel(
+				Hit,
+				StartLocation,
+				EndLocation,
+				ECC_GameTraceChannel2,
+				Params
 			);
-		}
 
-		if (bHit)
-		{
-			AActor* HitActor = Hit.GetActor();
-
-			if (HitActor && HitActor->ActorHasTag("Enemy"))
+			if (ShootHitEffect)
 			{
-				AMyCharacter* Player = Cast<AMyCharacter>(GetOwner());
-				if (Player)
+				UGameplayStatics::SpawnEmitterAtLocation(
+					GetWorld(),
+					ShootHitEffect,
+					Hit.ImpactPoint,
+					Hit.ImpactNormal.Rotation()
+				);
+			}
+
+			if (bHit)
+			{
+				AActor* HitActor = Hit.GetActor();
+
+				if (HitActor && HitActor->ActorHasTag("Enemy"))
 				{
-					if (UDamageComponent* PlayerDamageComp = Player->DamageComp)
+					if (UDamageComponent* OwnerDamageComp = WeaponOwner->DamageComp)
 					{
-						PlayerDamageComp->TransDamage(HitActor);
+						OwnerDamageComp->TransDamage(HitActor);
 					}
 				}
 			}

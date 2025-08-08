@@ -94,6 +94,13 @@ void AMyCharacter::EquipRangedWeapon()
 
 		if (EquippedWeapon)
 		{
+			ABaseWeapon* AEquippedWeapon = Cast<ABaseWeapon>(EquippedWeapon);
+
+			if (AEquippedWeapon)
+			{
+				AEquippedWeapon->SetOwner(this);
+			}
+
 			USkeletalMesh* SKM = EquippedWeapon->GetSkeletalMeshComponent()->SkeletalMesh;
 
 			if (IsValid(SKM))
