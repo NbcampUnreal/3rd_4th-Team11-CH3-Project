@@ -7,7 +7,7 @@
 #include "Components/BoxComponent.h"
 #include "QuestTypeA.generated.h"
 
-
+class ASpawnAreaActor;
 UCLASS()
 class CH03PROJECT_API AQuestTypeA : public AActor
 {
@@ -51,15 +51,13 @@ public:
 	TArray<UDataTable*> SpawnDataArray;
 
 
-
-
-	//--------------------------------- 
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
 	UBoxComponent* QuestStartCollision;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
-	TArray<UBoxComponent*> SpawnLocation;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestSpawnAreas")
+	TArray<ASpawnAreaActor*> SpawnLocation;
+
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -79,8 +77,9 @@ public:
 
 
 
-	
-	
+	UFUNCTION(BlueprintCallable, Category = "QuestTypeA")
+	void TestFunction000();
+	void TestFunction001();
 
 	void SpawnEnemy();
 
