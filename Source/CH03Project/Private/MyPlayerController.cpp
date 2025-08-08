@@ -19,6 +19,7 @@ AMyPlayerController::AMyPlayerController()
 	ReloadAction = nullptr;
 	ShootAction = nullptr;
 	InteractionAction = nullptr;
+	PauseAction = nullptr;
 	MyCharacter = nullptr;
 }
 
