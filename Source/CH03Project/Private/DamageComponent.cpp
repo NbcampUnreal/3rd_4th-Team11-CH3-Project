@@ -5,6 +5,7 @@
 #include "MyPlayerController.h"
 #include "HUDWidget.h"
 #include "BaseWeaponInterface.h"
+#include "Perception/AISense_Damage.h"
 
 UDamageComponent::UDamageComponent()
 {
@@ -41,7 +42,18 @@ void UDamageComponent::TransDamage(AActor* TargetActor)
 		{
 			TargetStatComponent->AddHp(-AttackDamage);
 
-			
+			APawn* InstigatorPawn = Cast<APawn>(GetOwner());
+			if (InstigatorPawn && TargetActor->HasAuthority())
+			{
+				UAISense_Damage::ReportDamageEvent(
+					GetWorld(),
+					TargetActor,           
+					InstigatorPawn,          
+					static_cast<float>(AttackDamage),
+					TargetActor->GetActorLocation(),
+					InstigatorPawn->GetActorLocation()
+				);
+			}
 		}
 	}
 }
