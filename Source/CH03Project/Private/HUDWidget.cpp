@@ -1,4 +1,4 @@
-#include "HUDWidget.h"
+﻿#include "HUDWidget.h"
 #include "DamageWidget.h"
 #include "MyPlayerController.h"
 #include "TimerManager.h"
@@ -54,16 +54,15 @@ void UHUDWidget::UpdateScore(int32 CurrentScore)
 	}
 }
 
-void UHUDWidget::UpdateSubQuest(int32 QuestIndex, const TArray<FString>& MissionTexts)
+void UHUDWidget::UpdateSubQuest(const FString& QuestText)
 {
-	if (SubQuestText && MissionTexts.IsValidIndex(QuestIndex))
+	if (SubQuestText)
 	{
-		FString QuestText = MissionTexts[QuestIndex];
 		SubQuestText->SetText(FText::FromString(QuestText));
 	}
 }
 
-void UHUDWidget::UpdateHiddenQuest(bool bIsGetStatue, int32 StatueCount)
+void UHUDWidget::UpdateHiddenQuest(int32 StatueCount)
 {
 	if (HiddenQuestText)
 	{

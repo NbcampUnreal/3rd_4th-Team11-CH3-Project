@@ -41,12 +41,13 @@ int AGameStatePlay::GetKillCount()
 void AGameStatePlay::SetMissionText(const FString& Text)
 {	
     SubMissionText = Text;
+	UE_LOG(LogTemp, Warning, TEXT("SubMissionText: %s"), *SubMissionText);
 	OnMissionTextChanged.Broadcast(SubMissionText);
 }
-
-
-
-
+FString AGameStatePlay::GetMissionText() const
+{
+    return SubMissionText;
+}
 
 void AGameStatePlay::AddItemCount(int32 Point, int32 SlotIndex)
 {
@@ -58,5 +59,10 @@ void AGameStatePlay::AddItemCount(int32 Point, int32 SlotIndex)
         {
 			OnKeyItemChanged.Broadcast(ItemCounts[SlotIndex]);
         }
+        else if (SlotIndex == 3)
+        {
+            OnHiddenItemChanged.Broadcast(ItemCounts[SlotIndex]);
+        }
     }
 }
+
