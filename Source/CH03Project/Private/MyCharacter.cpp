@@ -1,12 +1,16 @@
 ﻿#include "MyCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "MyPlayerController.h"
+#include "BaseWeapon.h"
 #include "BaseStatComponent.h"
 #include "DamageComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "BaseWeaponInterface.h"
+#include "RangedWeaponInterface.h"
+
 
 AMyCharacter::AMyCharacter()
 {
@@ -38,7 +42,11 @@ AMyCharacter::AMyCharacter()
 	CharacterState = ECharacterState::Idle;
 	WeaponState = EWeaponState::Base;
 
+	WeaponClass = nullptr;
+
 	PlayerController = nullptr;
+
+	EquippedWeapon = nullptr;
 
 	NormalSpeed = 600.0f;
 	RunSpeedMultiplier = 1.7f;
@@ -49,17 +57,7 @@ void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SkeletalMeshComp2->AttachToComponent(
-		SkeletalMeshComp1,
-		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-		TEXT("ik_hand_gun")
-	);
-
-	StaticMeshComp->AttachToComponent(
-		SkeletalMeshComp2,
-		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-		TEXT("magazine")
-	);
+	EquipRangedWeapon();
 
 	if (SkeletalMeshComp1)
 	{
@@ -89,6 +87,43 @@ void AMyCharacter::Tick(float DeltaTime)
 
 }
 
+void AMyCharacter::EquipRangedWeapon()
+{
+	if (GetWorld() && WeaponClass)
+	{
+		EquippedWeapon = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClass, FTransform::Identity);
+
+		if (EquippedWeapon)
+		{
+			USkeletalMesh* SKM = EquippedWeapon->GetSkeletalMeshComponent()->SkeletalMesh;
+
+			if (IsValid(SKM))
+			{
+				SkeletalMeshComp2->SetSkeletalMesh(SKM);
+			}
+
+			UStaticMesh* SM = EquippedWeapon->GetStaticMeshComponent()->GetStaticMesh();
+
+			if (IsValid(SM))
+			{
+				StaticMeshComp->SetStaticMesh(SM);
+			}
+
+			SkeletalMeshComp2->AttachToComponent(
+				SkeletalMeshComp1,
+				FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+				TEXT("ik_hand_gun")
+			);
+
+			StaticMeshComp->AttachToComponent(
+				SkeletalMeshComp2,
+				FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+				TEXT("magazine")
+			);
+		}
+	}
+}
+
 void AMyCharacter::Shoot()
 {
 	if (CharacterState != ECharacterState::Running)
@@ -103,40 +138,17 @@ void AMyCharacter::Shoot()
 		FVector Location;
 		FRotator Rotation;
 		PlayerController->GetPlayerViewPoint(Location, Rotation);
-		FVector End = Location + (Rotation.Vector() * 10000.0f); // 10000.0f weapon shootdistance
 
-		FHitResult Hit;
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-
-		bool bHit = GetWorld()->LineTraceSingleByChannel(
-			Hit,
-			Location,
-			End,
-			ECC_GameTraceChannel2,
-			Params
-		);
-
-		if (ShootHitEffect)
+		if (EquippedWeapon)
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(),
-				ShootHitEffect,
-				Hit.ImpactPoint,
-				Hit.ImpactNormal.Rotation()
-			);
-		}
+			IRangedWeaponInterface* EquippedRangedWeapon = Cast<IRangedWeaponInterface>(EquippedWeapon);
 
-		if (bHit)
-		{
-			AActor* HitActor = Hit.GetActor();
-
-			if (HitActor && HitActor->ActorHasTag("Enemy"))
+			if (EquippedRangedWeapon)
 			{
-				if (DamageComp)
-				{
-					DamageComp->TransDamage(HitActor);
-				}
+				FVector End = Location + (Rotation.Vector() * EquippedRangedWeapon->GetShootingRange());
+				EquippedRangedWeapon->SetLineTraceStartPoint(Location);
+				EquippedRangedWeapon->SetLineTraceEndPoint(End);
+				EquippedRangedWeapon->Shoot();
 			}
 		}
 	}
