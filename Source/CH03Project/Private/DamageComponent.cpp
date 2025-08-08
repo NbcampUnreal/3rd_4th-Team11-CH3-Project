@@ -4,6 +4,7 @@
 #include "GameFramework/PlayerController.h"
 #include "MyPlayerController.h"
 #include "HUDWidget.h"
+#include "BaseWeaponInterface.h"
 
 UDamageComponent::UDamageComponent()
 {
@@ -23,6 +24,13 @@ void UDamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+void UDamageComponent::SetAttackDamage(IBaseWeaponInterface* EquippedWeapon)
+{
+	if (EquippedWeapon)
+	{
+		AttackDamage = EquippedWeapon->GetDamage();
+	}
+}
 
 void UDamageComponent::TransDamage(AActor* TargetActor)
 {

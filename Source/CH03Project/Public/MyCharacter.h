@@ -9,6 +9,7 @@ struct FInputActionValue;
 class AMyPlayerController;
 class UBaseStatComponent;
 class UDamageComponent;
+class IBaseWeaponInterface;
 
 UENUM(BlueprintType)
 enum class ECharacterState : uint8
@@ -35,7 +36,7 @@ class CH03PROJECT_API AMyCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	// Component
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	USceneComponent* SceneComp;
@@ -52,15 +53,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UDamageComponent* DamageComp;
 
+protected:
 	// Animation Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimInstance* AnimInstance;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* FireMontage;
-
-	// Effect Valiable
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	UParticleSystem* ShootHitEffect;
 
 	// State Management EnumClass Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
@@ -68,9 +66,16 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	EWeaponState WeaponState;
 
+	// TSubclassOf Valiable
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<class ABaseWeapon> WeaponClass;
+
 	// Pointer Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerController")
 	AMyPlayerController* PlayerController;
+
+	// Interface Valiable
+	IBaseWeaponInterface* EquippedWeapon;
 
 	// General Valiable
 	float NormalSpeed;
@@ -88,8 +93,8 @@ public:
 
 
 	// General Function
+	void EquipRangedWeapon();
 	void Shoot();
-
 
 
 protected:

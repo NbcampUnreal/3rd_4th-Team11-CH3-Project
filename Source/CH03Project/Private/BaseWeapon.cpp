@@ -1,4 +1,5 @@
 #include "BaseWeapon.h"
+#include "Engine/Engine.h"
 
 ABaseWeapon::ABaseWeapon()
 {
@@ -16,19 +17,34 @@ ABaseWeapon::ABaseWeapon()
 	AttackSpeed = 0.0f;
 }
 
-void ABaseWeapon::Attack(AActor* TargetActor)
+USkeletalMeshComponent* ABaseWeapon::GetSkeletalMeshComponent()
 {
-
+	return SkeletalMeshComp;
 }
 
-void ABaseWeapon::Equip(AActor* TargetActor)
+UStaticMeshComponent* ABaseWeapon::GetStaticMeshComponent()
 {
-
+	return StaticMeshComp;
 }
 
-void ABaseWeapon::Unequip(AActor* TargetActor)
+FName ABaseWeapon::GetWeaponType()
 {
+	return WeaponType;
+}
 
+FName ABaseWeapon::GetWeaponName()
+{
+	return WeaponName;
+}
+
+int32 ABaseWeapon::GetDamage()
+{
+	return Damage;
+}
+
+float ABaseWeapon::GetAttackSpeed()
+{
+	return AttackSpeed;
 }
 
 void ABaseWeapon::ChangeDamage(int32 NewDamage)
@@ -45,6 +61,7 @@ void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	SetActorHiddenInGame(true);
 }
 
 void ABaseWeapon::Tick(float DeltaTime)
