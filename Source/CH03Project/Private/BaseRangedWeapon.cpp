@@ -47,7 +47,7 @@ void ABaseRangedWeapon::Shoot()
 	{
 		FHitResult Hit;
 		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
+		Params.AddIgnoredActor(Cast<AMyCharacter>(GetOwner()));
 
 		bool bHit = GetWorld()->LineTraceSingleByChannel(
 			Hit,
