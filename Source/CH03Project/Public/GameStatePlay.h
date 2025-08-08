@@ -8,6 +8,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScoreChanged, int32, Score);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKillCountChanged, int32, KillCount);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMissionTextChanged, const FString&, MissionText);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHiddenItemChanged, int32, HiddenItemCount);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKeyItemChanged, int32, KeyItem);
 
 UCLASS()
@@ -39,9 +40,11 @@ public:
 	int32 CurrentAmmo;
 
 	FOnMissionTextChanged OnMissionTextChanged;
+	FOnHiddenItemChanged OnHiddenItemChanged;
 	FString SubMissionText;
 
 	void SetMissionText(const FString& Text);
+	FString GetMissionText() const;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	int32 EnemyBossHp;
