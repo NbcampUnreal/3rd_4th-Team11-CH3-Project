@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -27,9 +27,9 @@ public:
 	void UpdateScore(int32 CurrentScore);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 
-	void UpdateSubQuest(int32 QuestIndex, const TArray<FString>& MissionTexts);
+	void UpdateSubQuest(const FString& QuestText);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
-	void UpdateHiddenQuest(bool bIsGetStatue, int32 StatueCount);
+	void UpdateHiddenQuest(int32 StatueCount);
 
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void ShowHitMarker();
