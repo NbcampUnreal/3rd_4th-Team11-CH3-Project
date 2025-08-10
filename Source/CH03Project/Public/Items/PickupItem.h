@@ -37,9 +37,8 @@ public:
 	USphereComponent* Collision;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI")
 	UWidgetComponent* InteractUI;
-	// 아이템 데이터
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item")
-	TSubclassOf<UBaseItem> ItemDataClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, Category="Item")
+	UBaseItem* ItemData;
 
 	// 오버랩 관련 함수
 	UFUNCTION()

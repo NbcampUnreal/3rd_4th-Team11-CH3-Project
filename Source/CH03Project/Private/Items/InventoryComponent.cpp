@@ -20,6 +20,10 @@ bool UInventoryComponent::AddItem(UBaseItem* NewItem)
 			if(Item->Quantity < Data.MaxStackSize)
 			{
 				Item->Quantity = FMath::Min(Item->Quantity + NewItem->Quantity, Data.MaxStackSize);
+				UE_LOG(LogTemp, Log, TEXT("[Inventory] %s 수량 증가: %d"),
+					   *Data.ItemName.ToString(),
+					   Item->Quantity
+				);
 				return true;
 			}
 			else

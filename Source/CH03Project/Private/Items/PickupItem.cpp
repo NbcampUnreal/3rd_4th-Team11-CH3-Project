@@ -33,15 +33,11 @@ APickupItem::APickupItem()
 // 아이템마다의 점수를 반환하는 함수
 int32 APickupItem::GetItemScore() const
 {
-	if(!ItemDataClass)
-		return 0;
-
-	// 임시 인스턴스 생성
-	UBaseItem* TempItem = NewObject<UBaseItem>((UObject*)GetTransientPackage(), ItemDataClass);
-	if(!TempItem)
-		return 0;
-
-	return TempItem->GetItemData().Score;
+	if(ItemData)
+	{
+		return ItemData->GetItemData().Score;
+	}
+	return 0;
 }
 
 // 오버랩 됐을 때 아이템 위에 상호작용 UI를 띄울 함수
@@ -66,9 +62,7 @@ void APickupItem::HideWidget()
 // 해당 함수를 호출하면 InventoryComponent (ActorComponent) 에 아이템을 저장하는 함수
 void APickupItem::Interact()
 {
-	// 아이템 인스턴스 생성
-	UBaseItem* NewItem = NewObject<UBaseItem>(this, ItemDataClass);
-	if(!NewItem)
+	if(!ItemData)
 		return;
 
 	// 플레이어 찾기
@@ -76,18 +70,16 @@ void APickupItem::Interact()
 	if(!PlayerActor)
 		return;
 
-	// 인벤토리 컴포넌트 가져오기
-	UInventoryComponent* Inventory = PlayerActor->FindComponentByClass<UInventoryComponent>();
-	if(!Inventory)
+	// InventoryComponent 가져오기
+	auto InventoryComp = PlayerActor->FindComponentByClass<UInventoryComponent>();
+	if(!InventoryComp)
 		return;
 
-	// 인벤토리에 아이템 추가
-	if(Inventory->AddItem(NewItem))
-	{
+	// 인벤토리에 추가
+	InventoryComp->AddItem(ItemData);
 
-		// 아이템 월드에서 제거
-		Destroy();
-	}
+	// 월드에서 제거
+	Destroy();
 }
 
 // 오버랩 됐을 때 위젯을 표시

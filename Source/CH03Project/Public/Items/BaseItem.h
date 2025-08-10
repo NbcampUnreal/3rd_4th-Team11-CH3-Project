@@ -5,7 +5,7 @@
 #include "ItemDataRow.h"
 #include "BaseItem.generated.h"
 
-UCLASS(BlueprintType, Blueprintable)
+UCLASS(BlueprintType, Blueprintable, EditInlineNew)
 class CH03PROJECT_API UBaseItem : public UObject
 {
 	GENERATED_BODY()
