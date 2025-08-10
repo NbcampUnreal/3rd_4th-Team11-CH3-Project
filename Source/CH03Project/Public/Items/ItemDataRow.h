@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
@@ -13,13 +13,13 @@ struct FItemDataRow : public FTableRowBase
 public:
 	// 데이터 테이블의 고유 ID
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Data")
-	int32 ItemID;
-	// 아이템 타입
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Data")
-	EItemType ItemType;
+	FName ItemID;
 	// 이름
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Data")
 	FText ItemName;
+	// 아이템 타입
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Data")
+	EItemType ItemType;
 	// 설명
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Data")
 	FText Description;
@@ -29,12 +29,6 @@ public:
 	// 사운드
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Data")
 	TSoftObjectPtr<USoundBase> PickupSound;
-	// 이펙트
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Data")
-	TSoftObjectPtr<UParticleSystem> PickupEffect;
-	// 겹칠 수 있는 아이템인지 ( 추가 부품 아이템을 제작시 확장성을 위해 필요 )
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Data")
-	bool bIsStackable;
 	// 최대 수량
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Data")
 	int32 MaxStackSize;
