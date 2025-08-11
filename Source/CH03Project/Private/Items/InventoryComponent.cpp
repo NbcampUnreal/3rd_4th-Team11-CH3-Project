@@ -18,6 +18,7 @@ bool UInventoryComponent::AddItem(UBaseItem* NewItem)
         {
             // 수량 증가
             Item->Quantity += NewItem->Quantity;
+
             // 델리게이트 발행
             OnAddItemChanged.Broadcast(Item->GetItemData().ItemID, Item->Quantity);
 
@@ -34,7 +35,7 @@ bool UInventoryComponent::AddItem(UBaseItem* NewItem)
     {
         // 새 아이템 추가
         Items.Add(NewItem);
-        
+
         // 델리게이트 발행
         OnAddItemChanged.Broadcast(NewItem->GetItemData().ItemID, NewItem->Quantity);
 
@@ -57,12 +58,12 @@ bool UInventoryComponent::RemoveItem(UBaseItem* Item, int32 Amount)
 	if(Item->Quantity > Amount)
 	{
 		Item->Quantity -= Amount;
-        OnRemoveItemChanged.Broadcast(Item->GetItemData().ItemID, Item->Quantity);
-		return true;
 	}
 	else
 	{
 		Items.Remove(Item);
-		return true;
 	}
+    // 델리게이트 발행
+    OnRemoveItemChanged.Broadcast(Item->GetItemData().ItemID, Item->Quantity);
+    return true;
 }
