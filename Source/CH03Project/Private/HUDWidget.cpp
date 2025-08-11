@@ -180,3 +180,31 @@ void UHUDWidget::SetCrosshairVisible(bool bVisible)
 		NormalCrossHair->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }
+
+void UHUDWidget::UpdateQuickSlot(FName Name, int32 Count)
+{
+	if (Name == "HealthPotion")
+	{
+		Potion->SetVisibility(ESlateVisibility::Visible);
+		PotionText->SetVisibility(ESlateVisibility::Visible);
+		PotionText->SetText(FText::AsNumber(Count));
+	}
+	else if(Name == "Adrenaline")
+	{
+		Adrenaline->SetVisibility(ESlateVisibility::Visible);
+		AdrenalineText->SetVisibility(ESlateVisibility::Visible);
+		AdrenalineText->SetText(FText::AsNumber(Count));
+	}
+	else if (Name == "CardKey")
+	{
+		CardKey->SetVisibility(ESlateVisibility::Visible);
+		CardKeyText->SetVisibility(ESlateVisibility::Visible);
+		CardKeyText->SetText(FText::AsNumber(Count));
+	}
+	else if (Name == "CatStatue")
+	{
+		Statue->SetVisibility(ESlateVisibility::Visible);
+		StatueText->SetVisibility(ESlateVisibility::Visible);
+		StatueText->SetText(FText::AsNumber(Count));
+	}
+}

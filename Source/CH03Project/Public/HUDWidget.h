@@ -26,7 +26,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateScore(int32 CurrentScore);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
+	void UpdateQuickSlot(FName Name, int32 Count);
 
+	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateSubQuest(const FString& QuestText);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateHiddenQuest(int32 StatueCount);
@@ -74,6 +76,24 @@ protected:
 	UImage* NormalCrossHair;
 	UPROPERTY(meta = (BindWidget))
 	UImage* KillMarker;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* PotionText;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* AdrenalineText;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* CardKeyText;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* StatueText;
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* Potion;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Adrenaline;
+	UPROPERTY(meta = (BindWidget))
+	UImage* CardKey;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Statue;
 
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* ScaleUp;

@@ -2,6 +2,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "MyCharacter.h"
 #include "HUDWidget.h"
+#include "Items/InventoryComponent.h"
+#include "Items/BaseItem.h" 
 #include "BaseRangedWeapon.h"
 #include "BaseStatComponent.h"
 #include "Blueprint/UserWidget.h"
@@ -82,7 +84,12 @@ void AMyPlayerController::BeginPlay()
 					HUDWidget->UpdateSubQuest(GameStatePlay->GetMissionText());
 					GameStatePlay->OnHiddenItemChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateHiddenQuest);
 				}
-	
+
+				if (UInventoryComponent* Inv = MyPlayerCharacter->FindComponentByClass<UInventoryComponent>())
+				{
+					Inv->OnAddItemChanged.AddDynamic(this, &AMyPlayerController::HandleAddItemChanged);
+					Inv->OnRemoveItemChanged.AddDynamic(this, &AMyPlayerController::HandleRemoveItemChanged);
+				}
 			}
 		}
 
@@ -105,3 +112,4 @@ void AMyPlayerController::BindDeligateToSpawnedWeapon(AActor* SpawnedWeapon)
 		}
 	}
 }
+{

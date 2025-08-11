@@ -46,6 +46,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
 	TSubclassOf<class UUserWidget> MainMenuWidgetClass;
 
+	UFUNCTION() 
+	void HandleAddItemChanged(FName ItemID, int32 Quantity);
+	UFUNCTION() 
+	void HandleRemoveItemChanged(FName ItemID, int32 Quantity);
 
 public:
 	AMyPlayerController();
