@@ -19,12 +19,10 @@ protected:
 	int32 CurrentAmmo;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	float ShootingRange;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LineTrace")
-	FVector StartLocation;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LineTrace")
-	FVector EndLocation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	UParticleSystem* ShootHitEffect;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+	EWeaponState WeaponState;
 
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
@@ -33,22 +31,17 @@ public:
 public:	
 	ABaseRangedWeapon();
 
-	UFUNCTION(BlueprintCallable, Category = "Get")
-	virtual int32 GetMaxAmmo() override;
-	UFUNCTION(BlueprintCallable, Category = "Get")
-	virtual float GetShootingRange() override;
-	UFUNCTION(BlueprintCallable, Category = "Get")
-	virtual int32 GetCurrentAmmo();
-	UFUNCTION(BlueprintCallable, Category = "Set")
-	virtual void ChangeMaxAmmo(int32 NewMaxAmmo) override;
-	UFUNCTION(BlueprintCallable, Category = "Set")
-	virtual void SetLineTraceStartPoint(FVector StartPoint) override;
-	UFUNCTION(BlueprintCallable, Category = "Set")
-	virtual void SetLineTraceEndPoint(FVector EndPoint) override;
-	UFUNCTION(BlueprintCallable, Category = "Behavior")
-	virtual void Shoot() override;
+	virtual void Attack() override;
+	virtual void Equip() override;
+	virtual void Unequip() override;
 	UFUNCTION(BlueprintCallable, Category = "Behavior")
 	virtual void Reload() override;
+	UFUNCTION(BlueprintCallable, Category = "Set")
+	virtual void ChangeMaxAmmo(int32 NewMaxAmmo) override;
+	UFUNCTION(BlueprintCallable, Category = "Get")
+	virtual EWeaponState GetWeaponState() override;
+	UFUNCTION(BlueprintCallable, Category = "Set")
+	virtual void SetWeaponState(EWeaponState NewState) override;
 
 protected:
 	virtual void BeginPlay() override;

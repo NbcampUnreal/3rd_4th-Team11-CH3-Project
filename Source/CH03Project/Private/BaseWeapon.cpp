@@ -1,4 +1,5 @@
 #include "BaseWeapon.h"
+#include "MyCharacter.h"
 #include "Engine/Engine.h"
 
 ABaseWeapon::ABaseWeapon()
@@ -17,14 +18,19 @@ ABaseWeapon::ABaseWeapon()
 	AttackSpeed = 0.0f;
 }
 
-USkeletalMeshComponent* ABaseWeapon::GetSkeletalMeshComponent()
+void ABaseWeapon::Attack()
 {
-	return SkeletalMeshComp;
+
 }
 
-UStaticMeshComponent* ABaseWeapon::GetStaticMeshComponent()
+void ABaseWeapon::Equip()
 {
-	return StaticMeshComp;
+
+}
+
+void ABaseWeapon::Unequip()
+{
+	
 }
 
 FName ABaseWeapon::GetWeaponType()

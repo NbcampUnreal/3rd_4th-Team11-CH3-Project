@@ -5,6 +5,8 @@
 #include "BaseWeaponInterface.h"
 #include "BaseWeapon.generated.h"
 
+class AMyCharacter;
+
 UCLASS()
 class CH03PROJECT_API ABaseWeapon : public AActor, public IBaseWeaponInterface
 {
@@ -28,14 +30,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	float AttackSpeed;
 
-
 public:	
 	ABaseWeapon();
 
-	UFUNCTION(BlueprintCallable, Category = "Get")
-	virtual USkeletalMeshComponent* GetSkeletalMeshComponent() override;
-	UFUNCTION(BlueprintCallable, Category = "Get")
-	virtual UStaticMeshComponent* GetStaticMeshComponent() override;
+	UFUNCTION(BlueprintCallable, Category = "Bihavior")
+	virtual void Attack() override;
+	UFUNCTION(BlueprintCallable, Category = "Bihavior")
+	virtual void Equip() override;
+	UFUNCTION(BlueprintCallable, Category = "Bihavior")
+	virtual void Unequip() override;
 	UFUNCTION(BlueprintCallable, Category = "Get")
 	virtual FName GetWeaponType() override;
 	UFUNCTION(BlueprintCallable, Category = "Get")
