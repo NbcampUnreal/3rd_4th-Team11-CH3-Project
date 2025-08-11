@@ -4,6 +4,14 @@
 #include "UObject/Interface.h"
 #include "RangedWeaponInterface.generated.h"
 
+UENUM(BlueprintType)
+enum class EWeaponState : uint8
+{
+	Base            UMETA(DisplayName = "Base"),
+	Aiming			UMETA(DisplayName = "Aiming"),
+	Reloading		UMETA(DisplayName = "Reloading")
+};
+
 UINTERFACE(MinimalAPI)
 class URangedWeaponInterface : public UInterface
 {
@@ -15,11 +23,8 @@ class CH03PROJECT_API IRangedWeaponInterface
 	GENERATED_BODY()
 
 public:
-	virtual int32 GetMaxAmmo() = 0;
-	virtual float GetShootingRange() = 0;
-	virtual void ChangeMaxAmmo(int32 NewMaxAmmo) = 0;
-	virtual void SetLineTraceStartPoint(FVector StartPoint) = 0;
-	virtual void SetLineTraceEndPoint(FVector EndPoint) = 0;
-	virtual void Shoot() = 0;
+	virtual EWeaponState GetWeaponState() = 0;
+	virtual void SetWeaponState(EWeaponState NewState) = 0;
 	virtual void Reload() = 0;
+	virtual void ChangeMaxAmmo(int32 NewMaxAmmo) = 0;
 };

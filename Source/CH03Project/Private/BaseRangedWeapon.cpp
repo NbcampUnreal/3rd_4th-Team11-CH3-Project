@@ -1,5 +1,6 @@
 #include "BaseRangedWeapon.h"
 #include "MyCharacter.h"
+#include "MyPlayerController.h"
 #include "DamageComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -11,52 +12,30 @@ ABaseRangedWeapon::ABaseRangedWeapon()
 	MaxAmmo = 0;
 	CurrentAmmo = 0;
 	ShootingRange = 0.0f;
-	StartLocation = FVector::ZeroVector;
-	EndLocation = FVector::ZeroVector;
 	ShootHitEffect = nullptr;
+	WeaponState = EWeaponState::Base;
 }
 
-int32 ABaseRangedWeapon::GetMaxAmmo()
-{
-	return MaxAmmo;
-}
-
-float ABaseRangedWeapon::GetShootingRange()
-{
-	return ShootingRange;
-}
-
-void ABaseRangedWeapon::ChangeMaxAmmo(int32 NewMaxAmmo)
-{
-	MaxAmmo = NewMaxAmmo;
-}
-
-void ABaseRangedWeapon::SetLineTraceStartPoint(FVector StartPoint)
-{
-	StartLocation = StartPoint;
-}
-
-void ABaseRangedWeapon::SetLineTraceEndPoint(FVector EndPoint)
-{
-	EndLocation = EndPoint;
-}
-
-void ABaseRangedWeapon::Shoot()
+void ABaseRangedWeapon::Attack()
 {
 	if (CurrentAmmo > 0)
 	{
 		FHitResult Hit;
 		FCollisionQueryParams Params;
-		AMyCharacter* WeaponOwner = Cast<AMyCharacter>(GetOwner());
 
-		if (WeaponOwner)
+		if (AMyCharacter* WeaponOwner = Cast<AMyCharacter>(GetOwner()))
 		{
 			Params.AddIgnoredActor(WeaponOwner);
 
+			FVector Location;
+			FRotator Rotation;
+			WeaponOwner->GetMyPlayerController()->GetPlayerViewPoint(Location, Rotation);
+			FVector End = Location + (Rotation.Vector() * ShootingRange);
+
 			bool bHit = GetWorld()->LineTraceSingleByChannel(
 				Hit,
-				StartLocation,
-				EndLocation,
+				Location,
+				End,
 				ECC_GameTraceChannel2,
 				Params
 			);
@@ -91,11 +70,67 @@ void ABaseRangedWeapon::Shoot()
 	}
 }
 
+void ABaseRangedWeapon::Equip()
+{
+	if (AMyCharacter* WeaponOwner = Cast<AMyCharacter>(GetOwner()))
+	{
+		if (IsValid(SkeletalMeshComp))
+		{
+			if (IsValid(SkeletalMeshComp->SkeletalMesh))
+			{
+				WeaponOwner->SkeletalMeshComp2->SetSkeletalMesh(SkeletalMeshComp->SkeletalMesh);
+			}
+		}
+
+		if (IsValid(StaticMeshComp))
+		{
+			if (IsValid(StaticMeshComp->GetStaticMesh()))
+			{
+				WeaponOwner->StaticMeshComp->SetStaticMesh(StaticMeshComp->GetStaticMesh());
+			}
+		}
+
+		WeaponOwner->SkeletalMeshComp2->AttachToComponent(
+			WeaponOwner->SkeletalMeshComp1,
+			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			TEXT("ik_hand_gun")
+		);
+
+		WeaponOwner->StaticMeshComp->AttachToComponent(
+			WeaponOwner->SkeletalMeshComp2,
+			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			TEXT("magazine")
+		);
+
+		WeaponOwner->DamageComp->SetAttackDamage(this);
+	}
+}
+
+void ABaseRangedWeapon::Unequip()
+{
+
+}
+
+void ABaseRangedWeapon::ChangeMaxAmmo(int32 NewMaxAmmo)
+{
+	MaxAmmo = NewMaxAmmo;
+}
+
 void ABaseRangedWeapon::Reload()
 {
 	CurrentAmmo = MaxAmmo;
 
 	OnChangeCurrentAmmo.Broadcast(CurrentAmmo);
+}
+
+EWeaponState ABaseRangedWeapon::GetWeaponState()
+{
+	return WeaponState;
+}
+
+void ABaseRangedWeapon::SetWeaponState(EWeaponState NewState)
+{
+	WeaponState = NewState;
 }
 
 void ABaseRangedWeapon::BeginPlay()
@@ -108,9 +143,4 @@ void ABaseRangedWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-}
-
-int32 ABaseRangedWeapon::GetCurrentAmmo()
-{
-	return CurrentAmmo;
 }

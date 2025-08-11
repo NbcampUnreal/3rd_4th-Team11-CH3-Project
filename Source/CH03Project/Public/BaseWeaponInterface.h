@@ -15,8 +15,9 @@ class CH03PROJECT_API IBaseWeaponInterface
 	GENERATED_BODY()
 
 public:
-	virtual USkeletalMeshComponent* GetSkeletalMeshComponent() = 0;
-	virtual UStaticMeshComponent* GetStaticMeshComponent() = 0;
+	virtual void Attack() = 0;
+	virtual void Equip() = 0;
+	virtual void Unequip() = 0;
 	virtual FName GetWeaponType() = 0;
 	virtual FName GetWeaponName() = 0;
 	virtual int32 GetDamage() = 0;

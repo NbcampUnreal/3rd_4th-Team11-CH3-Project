@@ -2,6 +2,7 @@
 #include "EnhancedInputComponent.h"
 #include "MyPlayerController.h"
 #include "BaseWeapon.h"
+#include "BaseRangedWeapon.h"
 #include "BaseStatComponent.h"
 #include "DamageComponent.h"
 #include "HUDWidget.h"
@@ -9,8 +10,6 @@
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "BaseWeaponInterface.h"
-#include "RangedWeaponInterface.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -37,8 +36,8 @@ AMyCharacter::AMyCharacter()
 	AnimInstance = nullptr;
 	FireMontage = nullptr;
 
-	CharacterState = ECharacterState::Idle;
-	WeaponState = EWeaponState::Base;
+	MoveState = EMoveState::Idle;
+	ActionState = EActionState::Idle;
 
 	WeaponClass = nullptr;
 
@@ -57,7 +56,21 @@ void AMyCharacter::BeginPlay()
 
 	DamageComp->AttackTokenCount = 1;
 
-	EquipRangedWeapon();
+	if (GetWorld() && WeaponClass)
+	{
+		EquippedWeapon = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClass, FTransform::Identity);
+
+		if (EquippedWeapon)
+		{
+			EquippedWeapon->SetOwner(this);
+			EquippedWeapon->Equip();
+
+			if (PlayerController)
+			{
+				PlayerController->BindDeligateToSpawnedWeapon(EquippedWeapon);
+			}
+		}
+	}
 
 	if (SkeletalMeshComp1)
 	{
@@ -87,79 +100,23 @@ void AMyCharacter::Tick(float DeltaTime)
 
 }
 
-void AMyCharacter::EquipRangedWeapon()
+AMyPlayerController* AMyCharacter::GetMyPlayerController()
 {
-	if (GetWorld() && WeaponClass)
-	{
-		EquippedWeapon = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClass, FTransform::Identity);
-
-		if (EquippedWeapon)
-		{
-			ABaseWeapon* AEquippedWeapon = Cast<ABaseWeapon>(EquippedWeapon);
-
-			if (AEquippedWeapon)
-			{
-				AEquippedWeapon->SetOwner(this);
-			}
-
-			USkeletalMesh* SKM = EquippedWeapon->GetSkeletalMeshComponent()->SkeletalMesh;
-
-			if (IsValid(SKM))
-			{
-				SkeletalMeshComp2->SetSkeletalMesh(SKM);
-			}
-
-			UStaticMesh* SM = EquippedWeapon->GetStaticMeshComponent()->GetStaticMesh();
-
-			if (IsValid(SM))
-			{
-				StaticMeshComp->SetStaticMesh(SM);
-			}
-
-			SkeletalMeshComp2->AttachToComponent(
-				SkeletalMeshComp1,
-				FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-				TEXT("ik_hand_gun")
-			);
-
-			StaticMeshComp->AttachToComponent(
-				SkeletalMeshComp2,
-				FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-				TEXT("magazine")
-			);
-
-			DamageComp->SetAttackDamage(EquippedWeapon);
-		}
-	}
+	return PlayerController;
 }
 
-void AMyCharacter::Shoot()
+void AMyCharacter::Attack()
 {
-	if (CharacterState != ECharacterState::Running)
+	if (!EquippedWeapon) return;
+
+	if (MoveState != EMoveState::Running)
 	{
 		if (AnimInstance && FireMontage)
 		{
 			AnimInstance->Montage_Play(FireMontage, 1.0f);
 		}
-
-		if (!PlayerController) return;
-
-		FVector Location;
-		FRotator Rotation;
-		PlayerController->GetPlayerViewPoint(Location, Rotation);
-
-		if (EquippedWeapon)
-		{
-			IRangedWeaponInterface* EquippedRangedWeapon = Cast<IRangedWeaponInterface>(EquippedWeapon);
-
-			if (EquippedRangedWeapon)
-			{
-				FVector End = Location + (Rotation.Vector() * EquippedRangedWeapon->GetShootingRange());
-				EquippedRangedWeapon->SetLineTraceStartPoint(Location);
-				EquippedRangedWeapon->SetLineTraceEndPoint(End);
-				EquippedRangedWeapon->Shoot();
-			}
-		}
+		
+		EquippedWeapon->Attack();
 	}
 }
 
@@ -268,14 +225,14 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					PlayerController->ShootAction,
 					ETriggerEvent::Started,
 					this,
-					&AMyCharacter::StartShoot
+					&AMyCharacter::StartAttack
 				);
 
 				EnhancedInput->BindAction(
 					PlayerController->ShootAction,
 					ETriggerEvent::Completed,
 					this,
-					&AMyCharacter::StopShoot
+					&AMyCharacter::StopAttack
 				);
 			}
 		}
@@ -301,7 +258,7 @@ void AMyCharacter::Move(const FInputActionValue& value)
 
 void AMyCharacter::StartRun(const FInputActionValue& value)
 {
-	CharacterState = ECharacterState::Running;
+	MoveState = EMoveState::Running;
 
 	if (GetCharacterMovement())
 	{
@@ -311,7 +268,7 @@ void AMyCharacter::StartRun(const FInputActionValue& value)
 
 void AMyCharacter::StopRun(const FInputActionValue& value)
 {
-	CharacterState = ECharacterState::Idle;
+	MoveState = EMoveState::Idle;
 
 	if (GetCharacterMovement())
 	{
@@ -362,11 +319,11 @@ void AMyCharacter::Look(const FInputActionValue& value)
 
 void AMyCharacter::StartAim(const FInputActionValue& value)
 {
-	if (CharacterState != ECharacterState::Running)
+	if (MoveState != EMoveState::Running)
 	{
 		if (value.Get<bool>())
 		{
-			WeaponState = EWeaponState::Aiming;
+			Cast<ABaseRangedWeapon>(EquippedWeapon)->SetWeaponState(EWeaponState::Aiming);
 			CameraComp->SetFieldOfView(80.0f);
 
 			if (AMyPlayerController* PC = Cast<AMyPlayerController>(GetController()))
@@ -378,7 +335,7 @@ void AMyCharacter::StartAim(const FInputActionValue& value)
 			}
 		}
 	}
-	else if (CharacterState == ECharacterState::Running)
+	else if (MoveState == EMoveState::Running)
 	{
 		CameraComp->SetFieldOfView(100.0f);
 	}
@@ -389,7 +346,7 @@ void AMyCharacter::StopAim(const FInputActionValue& value)
 {
 	if (!value.Get<bool>())
 	{
-		WeaponState = EWeaponState::Base;
+		Cast<ABaseRangedWeapon>(EquippedWeapon)->SetWeaponState(EWeaponState::Base);
 		CameraComp->SetFieldOfView(100.0f);
 
 		if (AMyPlayerController* PC = Cast<AMyPlayerController>(GetController()))
@@ -410,18 +367,18 @@ void AMyCharacter::Reload(const FInputActionValue& value)
 	}
 }
 
-void AMyCharacter::StartShoot(const FInputActionValue& value)
+void AMyCharacter::StartAttack(const FInputActionValue& value)
 {
 	if (value.Get<bool>())
 	{
-		Shoot();
+		Attack();
 
 		if (EquippedWeapon)
 		{
 			GetWorldTimerManager().SetTimer(
-				ShootTimerHandle,
+				AttackTimerHandle,
 				this,
-				&AMyCharacter::Shoot,
+				&AMyCharacter::Attack,
 				EquippedWeapon->GetAttackSpeed(),
 				true
 			);
@@ -429,11 +386,11 @@ void AMyCharacter::StartShoot(const FInputActionValue& value)
 	}
 }
 
-void AMyCharacter::StopShoot(const FInputActionValue& value)
+void AMyCharacter::StopAttack(const FInputActionValue& value)
 {
 	if (!value.Get<bool>())
 	{
-		GetWorldTimerManager().ClearTimer(ShootTimerHandle);
+		GetWorldTimerManager().ClearTimer(AttackTimerHandle);
 	}
 }
 

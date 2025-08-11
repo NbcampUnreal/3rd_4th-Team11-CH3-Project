@@ -9,28 +9,24 @@ struct FInputActionValue;
 class AMyPlayerController;
 class UBaseStatComponent;
 class UDamageComponent;
-class IBaseWeaponInterface;
-class UHUDWidget;
 class ABaseWeapon;
 
 UENUM(BlueprintType)
-enum class ECharacterState : uint8
+enum class EMoveState : uint8
 {
 	Idle            UMETA(DisplayName = "Idle"),
 	Walking         UMETA(DisplayName = "Walking"),
-	Running         UMETA(DisplayName = "Running"),
-	Crouchinging    UMETA(DisplayName = "Crouching"),
-	Jumping			UMETA(DisplayName = "Jumping"),
-	Cling			UMETA(DisplayName = "Cling"),
-	Shooting		UMETA(DisplayName = "Shooting"),
-	Dead			UMETA(DisplayName = "Dead")
+	Running         UMETA(DisplayName = "Running")
 };
 
 UENUM(BlueprintType)
-enum class EWeaponState : uint8
+enum class EActionState : uint8
 {
-	Base            UMETA(DisplayName = "Base"),
-	Aiming			UMETA(DisplayName = "Aiming")
+	Idle			UMETA(DisplayName = "Idle"),
+	Crouching		UMETA(DisplayName = "Crouching"),
+	Jumping			UMETA(DisplayName = "Jumping"),
+	Cling			UMETA(DisplayName = "Cling"),
+	Dead			UMETA(DisplayName = "Dead")
 };
 
 UCLASS()
@@ -64,9 +60,9 @@ protected:
 
 	// State Management EnumClass Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	ECharacterState CharacterState;
+	EMoveState MoveState;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	EWeaponState WeaponState;
+	EActionState ActionState;
 
 	// TSubclassOf Valiable
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
@@ -75,9 +71,8 @@ protected:
 	// Pointer Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerController")
 	AMyPlayerController* PlayerController;
-
-	// Interface Valiable
-	IBaseWeaponInterface* EquippedWeapon;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	ABaseWeapon* EquippedWeapon;
 
 	// General Valiable
 	float NormalSpeed;
@@ -85,23 +80,17 @@ protected:
 	float RunSpeed;
 
 	// Timer
-	FTimerHandle ShootTimerHandle;
+	FTimerHandle AttackTimerHandle;
 
-	UPROPERTY(BlueprintReadWrite, Category = "UI")
-	UHUDWidget* HUDWidget;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	TSubclassOf<class UHUDWidget> HUDWidgetClass;
 
 public:
 	AMyCharacter();
 
 	// Getter, Setter
-
+	AMyPlayerController* GetMyPlayerController();
 
 	// General Function
-	void EquipRangedWeapon();
-	void Shoot();
+	void Attack();
 
 
 protected:
@@ -134,9 +123,9 @@ public:
 
 	void Reload(const FInputActionValue& value);
 
-	void StartShoot(const FInputActionValue& value);
+	void StartAttack(const FInputActionValue& value);
 
-	void StopShoot(const FInputActionValue& value);
+	void StopAttack(const FInputActionValue& value);
 
 	UFUNCTION(BlueprintCallable, Category = "Token")
 	bool StoreAttackToken(int32 Amount);
