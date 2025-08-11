@@ -101,6 +101,14 @@ void UBaseStatComponent::AddMaxHp(int Point)
 	//현재 체력도 같은 포인트 늘려줄지 고민해봐야한다.
 }
 
+void UBaseStatComponent::HealHP(float Point)
+{
+	Hp += Point;
+	Hp = FMath::Max(Hp, MaxHp);
+
+	OnHpChangedEvent.Broadcast(Hp, MaxHp, GetOwner()); //델리게이트
+}
+
 void UBaseStatComponent::AddArmor(int Point)
 {
 	Armor += Point;

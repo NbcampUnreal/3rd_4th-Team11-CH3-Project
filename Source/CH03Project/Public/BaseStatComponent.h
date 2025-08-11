@@ -43,6 +43,7 @@ public:
 
 	void AddHp(int Point);
 	void AddMaxHp(int Point);
+	void HealHP(float Point); // 체력회복 포션에서 사용
 
 	void AddArmor(int Point);
 

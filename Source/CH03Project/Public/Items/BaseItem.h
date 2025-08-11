@@ -20,7 +20,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item")
 	int32 Quantity;
 
-	//아이템 데이터 반환
+	// 아이템 데이터 반환
 	UFUNCTION(BlueprintCallable, Category = "Item")
 	FItemDataRow GetItemData() const;
+	// 아이템 사용
+	UFUNCTION(BlueprintNativeEvent, Category="Item")
+	void Use(AActor* User);
+	virtual void Use_Implementation(AActor* User);
 };
