@@ -8,42 +8,38 @@ UInventoryComponent::UInventoryComponent()
 
 bool UInventoryComponent::AddItem(UBaseItem* NewItem)
 {
-	if(!NewItem)
-		return false;
+    if(!NewItem)
+        return false;
 
-	// 같은 아이템이 이미 있는지 확인
-	for(UBaseItem* Item : Items)
-	{
-		if(Item && Item->ItemDataHandle.RowName == NewItem->ItemDataHandle.RowName)
-		{
-			const FItemDataRow Data = Item->GetItemData();
-			if(Item->Quantity < Data.MaxStackSize)
-			{
-				Item->Quantity = FMath::Min(Item->Quantity + NewItem->Quantity, Data.MaxStackSize);
-				UE_LOG(LogTemp, Log, TEXT("[Inventory] %s 수량 증가: %d"),
-					   *Data.ItemName.ToString(),
-					   Item->Quantity
-				);
-				return true;
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Max stack reached for %s"), *Data.ItemName.ToString());
-				return false;
-			}
-		}
-	}
+    // 같은 아이템 여부 확인
+    for(UBaseItem* Item : Items)
+    {
+        if(Item && Item->ItemDataHandle.RowName == NewItem->ItemDataHandle.RowName)
+        {
+            // 수량 증가
+            Item->Quantity += NewItem->Quantity;
 
-	// 새 아이템 추가
-	if(Items.Num() < MaxInventorySize)
-	{
-		Items.Add(NewItem);
-		return true;
-	}
+            UE_LOG(LogTemp, Log, TEXT("[%s] 수량 증가: %d"),
+                   *Item->GetItemData().ItemName.ToString(),
+                   Item->Quantity
+            );
+            return true;
+        }
+    }
 
-	// 인벤토리 가득 참
-	UE_LOG(LogTemp, Warning, TEXT("Inventory is full!"));
-	return false;
+    // 새 아이템 추가
+    if(Items.Num() < MaxInventorySize)
+    {
+        Items.Add(NewItem);
+        UE_LOG(LogTemp, Log, TEXT("[%s] 수량 증가: %d"),
+               *NewItem->GetItemData().ItemName.ToString(),
+               NewItem->Quantity
+        );
+        return true;
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("Inventory is full!"));
+    return false;
 }
 
 bool UInventoryComponent::RemoveItem(UBaseItem* Item, int32 Amount)

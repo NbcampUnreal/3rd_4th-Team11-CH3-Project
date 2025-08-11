@@ -63,17 +63,26 @@ void APickupItem::HideWidget()
 void APickupItem::Interact()
 {
 	if(!ItemData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No ItemData"));
 		return;
+	}
 
 	// 플레이어 찾기
 	AActor* PlayerActor = GetWorld()->GetFirstPlayerController()->GetPawn();
 	if(!PlayerActor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No PlayerActor"));
 		return;
+	}
 
 	// InventoryComponent 가져오기
 	auto InventoryComp = PlayerActor->FindComponentByClass<UInventoryComponent>();
 	if(!InventoryComp)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No InventoryComp"));
 		return;
+	}
 
 	// 인벤토리에 추가
 	InventoryComp->AddItem(ItemData);
@@ -95,7 +104,7 @@ void APickupItem::OnItemOverlap(
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("overlap")));
 		ShowWidget();
-		Interact();
+		Interact(); // 라인트레이싱을 활용하는 방향으로 변경
 	}
 }
 
