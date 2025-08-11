@@ -112,4 +112,13 @@ void AMyPlayerController::BindDeligateToSpawnedWeapon(AActor* SpawnedWeapon)
 		}
 	}
 }
+
+void AMyPlayerController::HandleAddItemChanged(FName ItemID, int32 Quantity)
 {
+	if (HUDWidget) { HUDWidget->UpdateQuickSlot(ItemID, Quantity); }
+}
+
+void AMyPlayerController::HandleRemoveItemChanged(FName ItemID, int32 Quantity)
+{
+	if (HUDWidget) { HUDWidget->UpdateQuickSlot(ItemID, Quantity); }
+}
