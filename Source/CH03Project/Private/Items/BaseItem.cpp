@@ -20,3 +20,8 @@ FItemDataRow UBaseItem::GetItemData() const
     // 기본값 또는 빈 구조체 반환
     return FItemDataRow();
 }
+
+void UBaseItem::Use_Implementation(AActor* User)
+{
+    
+}
