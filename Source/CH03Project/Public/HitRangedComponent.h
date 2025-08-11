@@ -19,9 +19,14 @@ protected:
 	UPROPERTY()
 	USkeletalMeshComponent* SkeletalMeshComp;
 
+	FTimerHandle TimerHandle_FireTrace;
+	FVector CachedPlayerLocation;
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void FireTrace();
+	UFUNCTION(BlueprintCallable)
+	void StartAttack();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HitRanged")
 	float TraceDistance;
@@ -29,6 +34,7 @@ public:
 	FVector StartOffset;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HitRanged")
 	FName SocketName;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HitRanged")
+	float AttackDelayTime;
 		
 };
