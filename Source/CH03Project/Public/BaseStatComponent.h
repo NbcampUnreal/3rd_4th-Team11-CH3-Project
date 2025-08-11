@@ -63,4 +63,15 @@ public:
 
 private:
 	bool bIsDead;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	FName ShouldStunBBKeyName = TEXT("ShouldStun");
+
+	UPROPERTY(VisibleInstanceOnly, Category = "AI")
+	bool bTriggeredStun70 = false;
+
+	UPROPERTY(VisibleInstanceOnly, Category = "AI")
+	bool bTriggeredStun38 = false;
+
+	void RaiseStunOnAI();
 };

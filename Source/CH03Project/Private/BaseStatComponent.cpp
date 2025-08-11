@@ -10,7 +10,9 @@
 #include "AIController.h"
 #include "BrainComponent.h"
 #include "BaseEnemy.h"
+#include "AIController.h"
 #include "EnemyAIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/Engine.h"
 #include "GameModePlay.h"
 
@@ -72,6 +74,17 @@ void UBaseStatComponent::AddHp(int Point)
 
 	//캐릭터와 보스	
 	OnHpChangedEvent.Broadcast(Hp, MaxHp, GetOwner());
+
+	const float HPRatio = (float)Hp / FMath::Max(1, MaxHp);
+	if (!bTriggeredStun70 && HPRatio <= 0.70f)
+	{
+		bTriggeredStun70 = true;
+		RaiseStunOnAI();
+	} else if (!bTriggeredStun38 && HPRatio <= 0.38f)
+	{
+		bTriggeredStun38 = true;
+		RaiseStunOnAI();
+	}
 
 	if (Hp <= 0)
 	{
@@ -191,3 +204,19 @@ int UBaseStatComponent::GetArmor()
 {
 	return Armor;
 }
+
+void UBaseStatComponent::RaiseStunOnAI()
+{
+	AActor* OwnerActor = GetOwner();
+	if (!OwnerActor) return;
+	if (!OwnerActor->HasAuthority()) return;
+	APawn* Pawn = Cast<APawn>(OwnerActor);
+	if (!Pawn) return;
+	AAIController* AIC = Cast<AAIController>(Pawn->GetController());
+	if (!AIC) return;
+	UBlackboardComponent* BB = AIC->GetBlackboardComponent();
+	if (!BB) return;
+
+	BB->SetValueAsBool(ShouldStunBBKeyName, true);
+}
+

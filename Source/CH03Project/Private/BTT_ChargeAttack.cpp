@@ -148,7 +148,7 @@ void UBTT_ChargeAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 			break;
 		}
 
-		if (St.bHitOnce && St.T >= GraceTimeAfterHit)
+		if (Char->Tags.Contains(TEXT("ChargeHitOnce")) && St.bHitOnce && St.T >= GraceTimeAfterHit)
 		{
 			ForceStopCharacter(Char);
 			St.Phase = EPhase::Finish; St.T = 0.f;
@@ -348,7 +348,8 @@ void UBTT_ChargeAttack::EnterDash(ACharacter* Char, FState& St)
 
 	if (UCapsuleComponent* Cap = Char->GetCapsuleComponent())
 	{
-		Cap->OnComponentBeginOverlap.AddDynamic(this, &UBTT_ChargeAttack::OnCapsuleOverlap);
+		Cap->OnComponentBeginOverlap.RemoveDynamic(this, &UBTT_ChargeAttack::OnCapsuleOverlap);
+		Cap->OnComponentBeginOverlap.AddUniqueDynamic(this, &UBTT_ChargeAttack::OnCapsuleOverlap);
 	}
 }
 
@@ -356,7 +357,7 @@ void UBTT_ChargeAttack::ExitAll(ACharacter* Char, FState& St)
 {
 	if (UCapsuleComponent* Cap = Char->GetCapsuleComponent())
 	{
-		Cap->OnComponentBeginOverlap.RemoveAll(this);
+		Cap->OnComponentBeginOverlap.RemoveDynamic(this, &UBTT_ChargeAttack::OnCapsuleOverlap);
 	}
 
 	if (AAIController* AICon = St.SavedAI.Get())
@@ -378,6 +379,7 @@ void UBTT_ChargeAttack::ExitAll(ACharacter* Char, FState& St)
 
 	St.Decal = nullptr;
 	St.DecalOwner = nullptr;
+	Char->Tags.Remove(TEXT("ChargeHitOnce"));
 }
 
 
@@ -468,6 +470,8 @@ void UBTT_ChargeAttack::OnCapsuleOverlap(UPrimitiveComponent* OverlappedComp, AA
 		UE_LOG(LogTemp, Warning, TEXT("Charge Attack hit %s"), *Other->GetName());
 		DamageComp->AddHp(-DamageAmount);
 	}
+	SelfChar->Tags.AddUnique(TEXT("ChargeHitOnce"));
+
 	ForceStopCharacter(SelfChar);
 }
 
