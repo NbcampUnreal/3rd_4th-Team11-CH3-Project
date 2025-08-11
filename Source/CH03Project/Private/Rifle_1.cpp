@@ -16,6 +16,7 @@ void ARifle_1::BeginPlay()
 	MaxAmmo = 30;
 	CurrentAmmo = MaxAmmo;
 	ShootingRange = 10000.0f;
+	ReloadingTime = 3.2f;
 
 	StaticMeshComp->AttachToComponent(
 		SkeletalMeshComp,

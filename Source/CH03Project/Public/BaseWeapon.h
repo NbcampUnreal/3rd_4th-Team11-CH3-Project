@@ -5,8 +5,6 @@
 #include "BaseWeaponInterface.h"
 #include "BaseWeapon.generated.h"
 
-class AMyCharacter;
-
 UCLASS()
 class CH03PROJECT_API ABaseWeapon : public AActor, public IBaseWeaponInterface
 {
@@ -40,13 +38,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Bihavior")
 	virtual void Unequip() override;
 	UFUNCTION(BlueprintCallable, Category = "Get")
-	virtual FName GetWeaponType() override;
+	virtual FName GetWeaponType() const override;
 	UFUNCTION(BlueprintCallable, Category = "Get")
-	virtual FName GetWeaponName() override;
+	virtual FName GetWeaponName() const override;
 	UFUNCTION(BlueprintCallable, Category = "Get")
-	virtual int32 GetDamage() override;
+	virtual int32 GetDamage() const override;
 	UFUNCTION(BlueprintCallable, Category = "Get")
-	virtual float GetAttackSpeed() override;
+	virtual float GetAttackSpeed() const override;
 	UFUNCTION(BlueprintCallable, Category = "Set")
 	virtual void ChangeDamage(int32 NewDamage) override;
 	UFUNCTION(BlueprintCallable, Category = "Set")
