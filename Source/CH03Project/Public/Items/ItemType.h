@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "ItemType.generated.h"
@@ -7,8 +7,6 @@
 UENUM(BlueprintType)
 enum class EItemType : uint8
 {
-	HealthPotion	UMETA(DisplayName="HealthPotion"),
-	Adrenaline		UMETA(DisplayName="Adrenaline"),
-	CardKey			UMETA(DisplayName="CardKey"),
-	CatStatue		UMETA(DisplayName="CatStatue")
+	Consumable		UMETA(DisplayName="Consumable"),
+	Accessory		UMETA(DisplayName="Accessory"),
 };
