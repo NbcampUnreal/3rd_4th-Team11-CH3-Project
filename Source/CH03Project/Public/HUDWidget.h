@@ -62,8 +62,6 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* SubQuestText;
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* QuestNumText;
-	UPROPERTY(meta = (BindWidget))
 	UImage* HiddenQuestOutline;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* StatueNum;

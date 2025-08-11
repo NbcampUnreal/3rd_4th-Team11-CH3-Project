@@ -5,6 +5,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "MyPlayerController.h"
+#include "GameStatePlay.h"
 #include "GameFramework/Character.h"
 #include "AIController.h"
 #include "BrainComponent.h"
@@ -51,7 +52,10 @@ void UBaseStatComponent::AddHp(int Point)
 
 		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 		AMyPlayerController* MyController = Cast<AMyPlayerController>(PC);
-		if (!bIsDead)
+
+		ACharacter* MyPlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+		AActor* DamagedActor = GetOwner();
+		if (!bIsDead && DamagedActor != MyPlayerCharacter)
 		{
 			FVector DamageLocation = GetOwner()->GetActorLocation() + FVector(1, 1, 100.0f);
 			if (MyController && MyController->HUDWidget)
@@ -156,7 +160,15 @@ void UBaseStatComponent::OnDeath()
 		if (MenuWidget)
 		{
 			MenuWidget->AddToViewport();
-			MenuWidget->SetMenuState(true);
+			MenuWidget->SetMenuState(true, 0);
+
+			int32 FinalScore = 0;
+			if (AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld())))
+			{
+				FinalScore = GameStatePlay->Score;
+			}
+
+			MenuWidget->SetScoreNumText(true, FinalScore);
 			PC->SetInputMode(FInputModeUIOnly());
 			PC->bShowMouseCursor = true;
 		}
