@@ -4,6 +4,7 @@
 #include "BaseWeapon.h"
 #include "BaseStatComponent.h"
 #include "DamageComponent.h"
+#include "HUDWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -367,12 +368,21 @@ void AMyCharacter::StartAim(const FInputActionValue& value)
 		{
 			WeaponState = EWeaponState::Aiming;
 			CameraComp->SetFieldOfView(80.0f);
+
+			if (AMyPlayerController* PC = Cast<AMyPlayerController>(GetController()))
+			{
+				if (PC->HUDWidget)
+				{
+					PC->HUDWidget->SetCrosshairVisible(false);
+				}
+			}
 		}
 	}
 	else if (CharacterState == ECharacterState::Running)
 	{
 		CameraComp->SetFieldOfView(100.0f);
 	}
+
 }
 
 void AMyCharacter::StopAim(const FInputActionValue& value)
@@ -381,6 +391,14 @@ void AMyCharacter::StopAim(const FInputActionValue& value)
 	{
 		WeaponState = EWeaponState::Base;
 		CameraComp->SetFieldOfView(100.0f);
+
+		if (AMyPlayerController* PC = Cast<AMyPlayerController>(GetController()))
+		{
+			if (PC->HUDWidget)
+			{
+				PC->HUDWidget->SetCrosshairVisible(true);
+			}
+		}
 	}
 }
 

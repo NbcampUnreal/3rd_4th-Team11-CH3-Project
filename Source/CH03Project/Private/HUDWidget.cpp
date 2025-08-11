@@ -159,7 +159,6 @@ void UHUDWidget::ShowDamageText(int32 DamageAmount, const FVector& WorldLocation
 			DamageWidget->SetDamageText(DamageAmount);
 			DamageWidget->SetScreenPosition(ScreenPosition);
 
-			// ���� Ÿ�̸�
 			FTimerHandle RemoveTimer;
 			FTimerDelegate RemoveDelegate = FTimerDelegate::CreateLambda([DamageWidget]()
 				{

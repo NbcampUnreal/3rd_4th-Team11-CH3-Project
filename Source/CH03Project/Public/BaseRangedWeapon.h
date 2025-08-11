@@ -37,6 +37,8 @@ public:
 	virtual int32 GetMaxAmmo() override;
 	UFUNCTION(BlueprintCallable, Category = "Get")
 	virtual float GetShootingRange() override;
+	UFUNCTION(BlueprintCallable, Category = "Get")
+	virtual int32 GetCurrentAmmo();
 	UFUNCTION(BlueprintCallable, Category = "Set")
 	virtual void ChangeMaxAmmo(int32 NewMaxAmmo) override;
 	UFUNCTION(BlueprintCallable, Category = "Set")

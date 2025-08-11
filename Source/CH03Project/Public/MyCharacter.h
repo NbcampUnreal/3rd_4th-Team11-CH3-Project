@@ -10,6 +10,8 @@ class AMyPlayerController;
 class UBaseStatComponent;
 class UDamageComponent;
 class IBaseWeaponInterface;
+class UHUDWidget;
+class ABaseWeapon;
 
 UENUM(BlueprintType)
 enum class ECharacterState : uint8
@@ -85,6 +87,11 @@ protected:
 	// Timer
 	FTimerHandle ShootTimerHandle;
 
+	UPROPERTY(BlueprintReadWrite, Category = "UI")
+	UHUDWidget* HUDWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+	TSubclassOf<class UHUDWidget> HUDWidgetClass;
 
 public:
 	AMyCharacter();
@@ -136,7 +143,5 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Token")
 	void ReturnAttackToken(int32 Amount);
-
-
 
 };

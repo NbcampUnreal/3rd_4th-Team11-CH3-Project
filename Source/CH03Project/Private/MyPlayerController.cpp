@@ -2,6 +2,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "MyCharacter.h"
 #include "HUDWidget.h"
+#include "BaseRangedWeapon.h"
 #include "BaseStatComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
@@ -71,6 +72,8 @@ void AMyPlayerController::BeginPlay()
 					StatComponent->OnHpChangedEvent.AddDynamic(HUDWidget, &UHUDWidget::UpdateHealth);
 					HUDWidget->UpdateHealth(StatComponent->GetHp(), StatComponent->GetMaxHp(), GetPawn());
 				}
+
+
 				AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
 				if (GameStatePlay)
 				{
