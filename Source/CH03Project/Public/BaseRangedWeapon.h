@@ -19,10 +19,18 @@ protected:
 	int32 CurrentAmmo;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	float ShootingRange;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	float ReloadingTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	UParticleSystem* ShootHitEffect;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	EWeaponState WeaponState;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* CharacterFireMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* CharacterReloadMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* WeaponReloadMontage;
 
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
@@ -36,10 +44,14 @@ public:
 	virtual void Unequip() override;
 	UFUNCTION(BlueprintCallable, Category = "Behavior")
 	virtual void Reload() override;
+	UFUNCTION(BlueprintCallable, Category = "Get")
+	virtual float GetReloadingTime() const override;
 	UFUNCTION(BlueprintCallable, Category = "Set")
 	virtual void ChangeMaxAmmo(int32 NewMaxAmmo) override;
 	UFUNCTION(BlueprintCallable, Category = "Get")
-	virtual EWeaponState GetWeaponState() override;
+	virtual int32 GetCurrnentAmmo() const override;
+	UFUNCTION(BlueprintCallable, Category = "Get")
+	virtual EWeaponState GetWeaponState() const override;
 	UFUNCTION(BlueprintCallable, Category = "Set")
 	virtual void SetWeaponState(EWeaponState NewState) override;
 

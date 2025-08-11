@@ -74,7 +74,6 @@ void AMyPlayerController::BeginPlay()
 					HUDWidget->UpdateHealth(StatComponent->GetHp(), StatComponent->GetMaxHp(), GetPawn());
 				}
 
-
 				AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
 				if (GameStatePlay)
 				{
@@ -90,6 +89,8 @@ void AMyPlayerController::BeginPlay()
 					Inv->OnAddItemChanged.AddDynamic(this, &AMyPlayerController::HandleAddItemChanged);
 					Inv->OnRemoveItemChanged.AddDynamic(this, &AMyPlayerController::HandleRemoveItemChanged);
 				}
+
+				MyPlayerCharacter->OnChangedIsAiming.AddDynamic(HUDWidget, &UHUDWidget::SetCrosshairVisible);
 			}
 		}
 

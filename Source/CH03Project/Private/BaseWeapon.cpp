@@ -1,6 +1,4 @@
 #include "BaseWeapon.h"
-#include "MyCharacter.h"
-#include "Engine/Engine.h"
 
 ABaseWeapon::ABaseWeapon()
 {
@@ -33,22 +31,22 @@ void ABaseWeapon::Unequip()
 	
 }
 
-FName ABaseWeapon::GetWeaponType()
+FName ABaseWeapon::GetWeaponType() const
 {
 	return WeaponType;
 }
 
-FName ABaseWeapon::GetWeaponName()
+FName ABaseWeapon::GetWeaponName() const
 {
 	return WeaponName;
 }
 
-int32 ABaseWeapon::GetDamage()
+int32 ABaseWeapon::GetDamage() const
 {
 	return Damage;
 }
 
-float ABaseWeapon::GetAttackSpeed()
+float ABaseWeapon::GetAttackSpeed() const
 {
 	return AttackSpeed;
 }

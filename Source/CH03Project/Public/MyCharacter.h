@@ -4,6 +4,8 @@
 #include "GameFramework/Character.h"
 #include "MyCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangedIsAiming, bool, bIsAiming);
+
 class UCameraComponent;
 struct FInputActionValue;
 class AMyPlayerController;
@@ -51,12 +53,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UDamageComponent* DamageComp;
 
+	// Deligate
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnChangedIsAiming OnChangedIsAiming;
+
 protected:
 	// Animation Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
-	UAnimInstance* AnimInstance;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-	UAnimMontage* FireMontage;
+	UAnimInstance* CharacterAnimInstance;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimInstance* WeaponAnimInstance;
 
 	// State Management EnumClass Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
@@ -81,17 +87,23 @@ protected:
 
 	// Timer
 	FTimerHandle AttackTimerHandle;
-
+	FTimerHandle ReloadTimerHandle;
 
 public:
 	AMyCharacter();
 
 	// Getter, Setter
-	AMyPlayerController* GetMyPlayerController();
+	AMyPlayerController* GetMyPlayerController() const;
+	EMoveState GetMoveState() const;
+	UAnimInstance* GetCharacterAnimInstance() const;
+	UAnimInstance* GetWeaponAnimInstance() const;
 
 	// General Function
 	void Attack();
 
+	void EndReload();
+
+	virtual void Landed(const FHitResult& Hit) override;
 
 protected:
 	virtual void BeginPlay() override;

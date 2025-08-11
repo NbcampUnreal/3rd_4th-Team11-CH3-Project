@@ -5,7 +5,6 @@
 #include "BaseRangedWeapon.h"
 #include "BaseStatComponent.h"
 #include "DamageComponent.h"
-#include "HUDWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -33,8 +32,8 @@ AMyCharacter::AMyCharacter()
 
 	DamageComp = CreateDefaultSubobject<UDamageComponent>(TEXT("DamageComponent"));
 
-	AnimInstance = nullptr;
-	FireMontage = nullptr;
+	CharacterAnimInstance = nullptr;
+	WeaponAnimInstance = nullptr;
 
 	MoveState = EMoveState::Idle;
 	ActionState = EActionState::Idle;
@@ -54,6 +53,19 @@ void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (SkeletalMeshComp1)
+	{
+		if (SkeletalMeshComp1->GetAnimInstance())
+		{
+			CharacterAnimInstance = SkeletalMeshComp1->GetAnimInstance();
+		}
+	}
+
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+	}
+
 	DamageComp->AttackTokenCount = 1;
 
 	if (GetWorld() && WeaponClass)
@@ -65,21 +77,19 @@ void AMyCharacter::BeginPlay()
 			EquippedWeapon->SetOwner(this);
 			EquippedWeapon->Equip();
 
+			if (SkeletalMeshComp2)
+			{
+				if (SkeletalMeshComp2->GetAnimInstance())
+				{
+					WeaponAnimInstance = SkeletalMeshComp2->GetAnimInstance();
+				}
+			}
+
 			if (PlayerController)
 			{
 				PlayerController->BindDeligateToSpawnedWeapon(EquippedWeapon);
 			}
 		}
-	}
-
-	if (SkeletalMeshComp1)
-	{
-		AnimInstance = SkeletalMeshComp1->GetAnimInstance();
-	}
-
-	if (GetCharacterMovement())
-	{
-		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 	}
 }
 
@@ -100,23 +110,49 @@ void AMyCharacter::Tick(float DeltaTime)
 
 }
 
-AMyPlayerController* AMyCharacter::GetMyPlayerController()
+AMyPlayerController* AMyCharacter::GetMyPlayerController() const
 {
 	return PlayerController;
+}
+
+EMoveState AMyCharacter::GetMoveState() const
+{
+	return MoveState;
+}
+
+UAnimInstance* AMyCharacter::GetCharacterAnimInstance() const
+{
+	return CharacterAnimInstance;
+}
+
+UAnimInstance* AMyCharacter::GetWeaponAnimInstance() const
+{
+	return WeaponAnimInstance;
 }
 
 void AMyCharacter::Attack()
 {
 	if (!EquippedWeapon) return;
 
-	if (MoveState != EMoveState::Running)
+	EquippedWeapon->Attack();
+}
+
+void AMyCharacter::EndReload()
+{
+	if (EquippedWeapon)
 	{
-		if (AnimInstance && FireMontage)
+		if (ABaseRangedWeapon* BaseRangedWeapon = Cast<ABaseRangedWeapon>(EquippedWeapon))
 		{
-			AnimInstance->Montage_Play(FireMontage, 1.0f);
+			BaseRangedWeapon->SetWeaponState(EWeaponState::Base);
 		}
-		
-		EquippedWeapon->Attack();
+	}
+}
+
+void AMyCharacter::Landed(const FHitResult& Hit)
+{
+	if (ActionState != EActionState::Crouching)
+	{
+		ActionState = EActionState::Idle;
 	}
 }
 
@@ -280,6 +316,8 @@ void AMyCharacter::StartJump(const FInputActionValue& value)
 {
 	if (value.Get<bool>())
 	{
+		ActionState = EActionState::Jumping;
+
 		Jump();
 	}
 }
@@ -319,27 +357,36 @@ void AMyCharacter::Look(const FInputActionValue& value)
 
 void AMyCharacter::StartAim(const FInputActionValue& value)
 {
-	if (MoveState != EMoveState::Running)
+	if (value.Get<bool>())
 	{
-		if (value.Get<bool>())
+		if (EquippedWeapon)
 		{
-			Cast<ABaseRangedWeapon>(EquippedWeapon)->SetWeaponState(EWeaponState::Aiming);
-			CameraComp->SetFieldOfView(80.0f);
-
-			if (AMyPlayerController* PC = Cast<AMyPlayerController>(GetController()))
+			if (ABaseRangedWeapon* BaseRangedWeapon = Cast<ABaseRangedWeapon>(EquippedWeapon))
 			{
-				if (PC->HUDWidget)
+				if (MoveState != EMoveState::Running && ActionState != EActionState::Jumping && BaseRangedWeapon->GetWeaponState() != EWeaponState::Reloading)
 				{
-					PC->HUDWidget->SetCrosshairVisible(false);
+					BaseRangedWeapon->SetWeaponState(EWeaponState::Aiming);
+					CameraComp->SetFieldOfView(80.0f);
+
+					OnChangedIsAiming.Broadcast(false);	
+				}
+				else if (MoveState == EMoveState::Running || ActionState == EActionState::Jumping)
+				{
+					BaseRangedWeapon->SetWeaponState(EWeaponState::Base);
+					CameraComp->SetFieldOfView(100.0f);
+
+					OnChangedIsAiming.Broadcast(true);
+				}
+				else if (BaseRangedWeapon->GetWeaponState() == EWeaponState::Reloading)
+				{
+					BaseRangedWeapon->SetWeaponState(EWeaponState::Reloading);
+					CameraComp->SetFieldOfView(100.0f);
+
+					OnChangedIsAiming.Broadcast(true);
 				}
 			}
 		}
 	}
-	else if (MoveState == EMoveState::Running)
-	{
-		CameraComp->SetFieldOfView(100.0f);
-	}
-
 }
 
 void AMyCharacter::StopAim(const FInputActionValue& value)
@@ -349,13 +396,7 @@ void AMyCharacter::StopAim(const FInputActionValue& value)
 		Cast<ABaseRangedWeapon>(EquippedWeapon)->SetWeaponState(EWeaponState::Base);
 		CameraComp->SetFieldOfView(100.0f);
 
-		if (AMyPlayerController* PC = Cast<AMyPlayerController>(GetController()))
-		{
-			if (PC->HUDWidget)
-			{
-				PC->HUDWidget->SetCrosshairVisible(true);
-			}
-		}
+		OnChangedIsAiming.Broadcast(true);
 	}
 }
 
@@ -363,7 +404,24 @@ void AMyCharacter::Reload(const FInputActionValue& value)
 {
 	if (value.Get<bool>())
 	{
+		if (EquippedWeapon)
+		{
+			if (ABaseRangedWeapon* BaseRangedWeapon = Cast<ABaseRangedWeapon>(EquippedWeapon))
+			{
+				if (BaseRangedWeapon->GetWeaponState() != EWeaponState::Reloading)
+				{
+					BaseRangedWeapon->Reload();
 
+					GetWorldTimerManager().SetTimer(
+						ReloadTimerHandle,
+						this,
+						&AMyCharacter::EndReload,
+						BaseRangedWeapon->GetReloadingTime(),
+						false
+					);
+				}
+			}
+		}
 	}
 }
 
