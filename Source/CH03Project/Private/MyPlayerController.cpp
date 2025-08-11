@@ -21,7 +21,6 @@ AMyPlayerController::AMyPlayerController()
 	ShootAction = nullptr;
 	InteractionAction = nullptr;
 	PauseAction = nullptr;
-	MyCharacter = nullptr;
 }
 
 void AMyPlayerController::BeginPlay()
@@ -83,10 +82,26 @@ void AMyPlayerController::BeginPlay()
 					HUDWidget->UpdateSubQuest(GameStatePlay->GetMissionText());
 					GameStatePlay->OnHiddenItemChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateHiddenQuest);
 				}
+	
 			}
 		}
 
 		SetInputMode(FInputModeGameOnly());
 		bShowMouseCursor = false;
+	}
+}
+
+void AMyPlayerController::BindDeligateToSpawnedWeapon(AActor* SpawnedWeapon)
+{
+	if (SpawnedWeapon)
+	{
+		ABaseRangedWeapon* Weapon = Cast<ABaseRangedWeapon>(SpawnedWeapon);
+		if (Weapon)
+		{
+			if (HUDWidget)
+			{
+				Weapon->OnChangeCurrentAmmo.AddDynamic(HUDWidget, &UHUDWidget::UpdateBullet);
+			}
+		}
 	}
 }

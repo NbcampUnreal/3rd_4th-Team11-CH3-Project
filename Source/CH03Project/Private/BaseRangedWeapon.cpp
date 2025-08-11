@@ -144,8 +144,3 @@ void ABaseRangedWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
-int32 ABaseRangedWeapon::GetCurrentAmmo()
-{
-	return CurrentAmmo;
-}

@@ -64,6 +64,11 @@ void AMyCharacter::BeginPlay()
 		{
 			EquippedWeapon->SetOwner(this);
 			EquippedWeapon->Equip();
+
+			if (PlayerController)
+			{
+				PlayerController->BindDeligateToSpawnedWeapon(EquippedWeapon);
+			}
 		}
 	}
 

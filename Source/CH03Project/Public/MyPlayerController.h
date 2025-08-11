@@ -6,18 +6,12 @@
 
 class UInputMappingContext;
 class UInputAction;
-class AMyCharacter;
 
 UCLASS()
 class CH03PROJECT_API AMyPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character")
-	AMyCharacter* MyCharacter;
-
-	
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
@@ -57,4 +51,6 @@ public:
 	AMyPlayerController();
 
 	virtual void BeginPlay() override;
+
+	void BindDeligateToSpawnedWeapon(AActor* SpawnedWeapon);
 };
