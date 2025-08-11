@@ -46,13 +46,14 @@ void UMenuWidget::SetTileText(bool bIsGameOver)
     }
 }
 
-void UMenuWidget::SetScoreNumText(bool bIsGameOver)
+void UMenuWidget::SetScoreNumText(bool bIsGameOver, int Score)
 {
     if (bIsGameOver)
     {
         if (ScoreNumText)
         {
             ScoreNumText->SetVisibility(ESlateVisibility::Visible);
+            ScoreNumText->SetText(FText::AsNumber(Score));
         }
     }
     else
@@ -82,10 +83,10 @@ void UMenuWidget::SetScoreText(bool bIsGameOver)
     }
 }
 
-void UMenuWidget::SetMenuState(bool bIsGameOver)
+void UMenuWidget::SetMenuState(bool bIsGameOver, int score)
 {
     SetStartButtonText(bIsGameOver);
     SetTileText(bIsGameOver);
-    SetScoreNumText(bIsGameOver);
+    SetScoreNumText(bIsGameOver, score);
     SetScoreText(bIsGameOver);
 }

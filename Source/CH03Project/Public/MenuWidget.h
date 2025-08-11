@@ -32,13 +32,13 @@ public:
 	void SetTileText(bool bIsGameOver);
 
 	UFUNCTION(BlueprintCallable)
-	void SetScoreNumText(bool bIsGameOver);
+	void SetScoreNumText(bool bIsGameOver, int Score);
 
 	UFUNCTION(BlueprintCallable)
 	void SetScoreText(bool bIsGameOver);
 
 	UFUNCTION()
-	void SetMenuState(bool bIsGameOver);
+	void SetMenuState(bool bIsGameOver, int score);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
