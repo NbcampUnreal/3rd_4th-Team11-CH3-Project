@@ -5,6 +5,8 @@
 #include "BaseItem.h"
 #include "InventoryComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAddItemChanged, FName, ItemID, int32, Quantity);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnRemoveItemChanged, FName, ItemID, int32, Quantity);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CH03PROJECT_API UInventoryComponent : public UActorComponent
@@ -14,11 +16,13 @@ class CH03PROJECT_API UInventoryComponent : public UActorComponent
 public:
 	UInventoryComponent();
 
-	// 아이템 추가 
+	// 아이템 추가 (델리게이트 포함)
+	FOnAddItemChanged OnAddItemChanged;
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	bool AddItem(UBaseItem* NewItem);
 
-	// 아이템 제거 
+	// 아이템 제거 (델리게이트 포함)
+	FOnRemoveItemChanged OnRemoveItemChanged;
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	bool RemoveItem(UBaseItem* Item, int32 Amount = 1);
 
