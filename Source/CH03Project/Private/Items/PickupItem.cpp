@@ -104,7 +104,6 @@ void APickupItem::OnItemOverlap(
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("overlap")));
 		ShowWidget();
-		Interact(); // 라인트레이싱을 활용하는 방향으로 변경
 	}
 }
 

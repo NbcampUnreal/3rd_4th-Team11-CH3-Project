@@ -8,6 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Items/PickupItem.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AMyCharacter::AMyCharacter()
@@ -271,6 +272,16 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					&AMyCharacter::StopAttack
 				);
 			}
+
+			if(PlayerController->InteractionAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->InteractionAction,
+					ETriggerEvent::Triggered,
+					this,
+					&AMyCharacter::OnInteract
+				);
+			}
 		}
 	}
 }
@@ -452,7 +463,28 @@ void AMyCharacter::StopAttack(const FInputActionValue& value)
 	}
 }
 
+void AMyCharacter::OnInteract(const FInputActionValue& value)
+{
+	FVector StartLocation = CameraComp->GetComponentLocation();
+	FVector EndLocation = StartLocation + (CameraComp->GetForwardVector() * 88.0f);
 
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	if(GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		StartLocation,
+		EndLocation,
+		ECollisionChannel::ECC_GameTraceChannel3,
+		Params))
+	{
+		if(APickupItem* PickupItem = Cast<APickupItem>(HitResult.GetActor()))
+		{
+			PickupItem->Interact();
+		}
+	}
+}
 
 
 
