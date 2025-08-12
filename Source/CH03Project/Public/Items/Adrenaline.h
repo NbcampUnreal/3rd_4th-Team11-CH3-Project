@@ -4,10 +4,16 @@
 #include "Items/BaseItem.h"
 #include "Adrenaline.generated.h"
 
+class AMyCharacter;
+
 UCLASS()
 class CH03PROJECT_API UAdrenaline : public UBaseItem
 {
 	GENERATED_BODY()
-	
-	// 이동속도 , 공격속도, 공격력을 조정하는 변수 필요
+
+public:
+	virtual void Use_Implementation(AActor* User) override;
+
+	// 공격력, 방어력 증가
+
 };
