@@ -3,6 +3,8 @@
 #include "Components/WidgetComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
+#include "GameModePlay.h"
+#include "Kismet/GameplayStatics.h"
 
 APickupItem::APickupItem()
 {
@@ -86,6 +88,13 @@ void APickupItem::Interact()
 
 	// 인벤토리에 추가
 	InventoryComp->AddItem(ItemData);
+
+	//점수 추가
+	AGameModePlay* GameModePlay = Cast<AGameModePlay>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameModePlay)
+	{
+		GameModePlay->AddScore(GetItemScore());
+	}
 
 	// 월드에서 제거
 	Destroy();
