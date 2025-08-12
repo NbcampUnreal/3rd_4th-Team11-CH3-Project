@@ -3,6 +3,7 @@
 #include "EnhancedInputComponent.h"
 #include "MyCharacter.h"
 #include "HUDWidget.h"
+#include "BaseStatComponent.h"
 #include "PauseWidget.h"
 #include "Items/InventoryComponent.h"
 #include "Items/BaseItem.h" 
@@ -92,13 +93,27 @@ void AMyPlayerController::BeginPlay()
 					//GameStatePlay->OnHiddenItemChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateHiddenQuest);
 				}
 
-				if (UInventoryComponent* Inv = MyPlayerCharacter->FindComponentByClass<UInventoryComponent>())
+				if (UInventoryComponent* QuickSlot = MyPlayerCharacter->FindComponentByClass<UInventoryComponent>())
 				{
-					Inv->OnAddItemChanged.AddDynamic(this, &AMyPlayerController::HandleAddItemChanged);
-					Inv->OnRemoveItemChanged.AddDynamic(this, &AMyPlayerController::HandleRemoveItemChanged);
+					QuickSlot->OnAddItemChanged.AddDynamic(this, &AMyPlayerController::HandleAddItemChanged);
+					QuickSlot->OnRemoveItemChanged.AddDynamic(this, &AMyPlayerController::HandleRemoveItemChanged);
 				}
 
 				MyPlayerCharacter->OnChangedIsAiming.AddDynamic(HUDWidget, &UHUDWidget::SetCrosshairVisible);
+			}
+		}
+
+		TArray<AActor*> BossActors;
+		UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("Boss"), BossActors);
+		if (BossActors.Num() > 0)
+		{
+			if (UBaseStatComponent* BossStat = BossActors[0]->FindComponentByClass<UBaseStatComponent>())
+			{
+				// 1) HUD 갱신 바인딩
+				BossStat->OnHpChangedEvent.AddDynamic(HUDWidget, &UHUDWidget::UpdateBossHealth);
+
+				// 2) 처음 데미지 때만 바 보이기
+				BossStat->OnHpChangedEvent.AddDynamic(this, &AMyPlayerController::HandleBossHpChanged);
 			}
 		}
 
@@ -149,4 +164,16 @@ void AMyPlayerController::OnPauseMenu()
 	FInputModeUIOnly InputMode;
 	SetInputMode(InputMode);
 	bShowMouseCursor = true;
+}
+
+void AMyPlayerController::HandleBossHpChanged(int32 Current, int32 Max, AActor* InstigatorActor)
+{
+	if (!bBossHPBarShown && Current < Max) // '첫 데미지' 시점만
+	{
+		bBossHPBarShown = true;
+		if (HUDWidget)
+		{
+			HUDWidget->SetBossHPBarVisible(true);
+		}
+	}
 }

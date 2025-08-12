@@ -31,7 +31,11 @@ void UHUDWidget::UpdateHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Inst
 
 void UHUDWidget::UpdateBossHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Instigator)
 {
-
+	if (BossHealthBar)
+	{
+		BossHealthBar->SetPercent(1 - static_cast<float>(CurrentHealth) / MaxHealth);
+		SetBossHPBarVisible(true);
+	}
 }
 
 void UHUDWidget::UpdateBullet(int32 CurrentBullet)
@@ -39,14 +43,6 @@ void UHUDWidget::UpdateBullet(int32 CurrentBullet)
 	if (BulletText)
 	{
 		BulletText->SetText(FText::AsNumber(CurrentBullet));
-	}
-}
-
-void UHUDWidget::UpdateBossHP(int CurrentBossHealth, int MaxBossHealth)
-{
-	if (BossHealthBar)
-	{
-		BossHealthBar->SetPercent(CurrentBossHealth / MaxBossHealth);
 	}
 }
 
@@ -210,5 +206,17 @@ void UHUDWidget::UpdateQuickSlot(FName Name, int32 Count)
 		Statue->SetVisibility(ESlateVisibility::Visible);
 		StatueText->SetVisibility(ESlateVisibility::Visible);
 		StatueText->SetText(FText::AsNumber(Count));
+	}
+}
+
+void UHUDWidget::SetBossHPBarVisible(bool bVisible)
+{
+	if (BossHealthBar)
+	{
+		BossHealthBar->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+	if (BossNameText)
+	{
+		BossNameText->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }

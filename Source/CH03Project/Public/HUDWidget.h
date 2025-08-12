@@ -24,8 +24,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateBullet(int32 CurrentBullet);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
-	void UpdateBossHP(int CurrentBossHealth, int MaxBossHealth);
-	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateScore(int32 CurrentScore);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateQuickSlot(FName Name, int32 Count);
@@ -44,6 +42,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetCrosshairVisible(bool bVisible);
+	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
+	void SetBossHPBarVisible(bool bVisible);
 
 	void HideHitMarker();
 	void HideKillMarker();
@@ -62,6 +62,8 @@ protected:
 	UProgressBar* BossHealthBar;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* HUDScoreNum;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* BossNameText;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* SubQuestText;

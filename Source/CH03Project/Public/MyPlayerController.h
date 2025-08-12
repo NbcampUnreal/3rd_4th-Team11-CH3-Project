@@ -6,6 +6,7 @@
 
 class UInputMappingContext;
 class UInputAction;
+class UBaseStatComponent;
 
 UCLASS()
 class CH03PROJECT_API AMyPlayerController : public APlayerController
@@ -14,6 +15,7 @@ class CH03PROJECT_API AMyPlayerController : public APlayerController
 
 
 public:
+	//-----------------Input---------------------------
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* IMC;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
@@ -36,26 +38,22 @@ public:
 	UInputAction* InteractionAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* PauseAction;
-
+	//-----------------UI--------------------
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<class UHUDWidget> HUDWidgetClass;
-
 	UPROPERTY(BlueprintReadWrite, Category = "UI")
 	UHUDWidget* HUDWidget;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
 	TSubclassOf<class UUserWidget> MainMenuWidgetClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
+	TSubclassOf<class UPauseWidget> PauseWidgetClass;
+	UPROPERTY(BlueprintReadWrite, Category = "UI")
+	UPauseWidget* PauseWidget;
 
 	UFUNCTION() 
 	void HandleAddItemChanged(FName ItemID, int32 Quantity);
 	UFUNCTION() 
 	void HandleRemoveItemChanged(FName ItemID, int32 Quantity);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
-	TSubclassOf<class UPauseWidget> PauseWidgetClass;
-
-	UPROPERTY(BlueprintReadWrite, Category = "UI")
-	UPauseWidget* PauseWidget;
 
 public:
 	AMyPlayerController();
@@ -66,4 +64,10 @@ public:
 	void OnPauseMenu();
 
 	void BindDeligateToSpawnedWeapon(AActor* SpawnedWeapon);
+
+protected:
+	bool bBossHPBarShown = false;
+
+	UFUNCTION()
+	void HandleBossHpChanged(int32 Current, int32 Max, AActor* InstigatorActor);
 };
