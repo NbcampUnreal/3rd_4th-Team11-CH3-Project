@@ -139,6 +139,8 @@ public:
 
 	void StopAttack(const FInputActionValue& value);
 
+	void OnInteract(const FInputActionValue& Value);
+
 	UFUNCTION(BlueprintCallable, Category = "Token")
 	bool StoreAttackToken(int32 Amount);
 
