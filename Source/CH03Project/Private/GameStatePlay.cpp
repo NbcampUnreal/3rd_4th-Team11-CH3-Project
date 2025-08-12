@@ -9,7 +9,6 @@ AGameStatePlay::AGameStatePlay()
     //초기화
 	Score = 0;
     killCount = 0;
-	ItemCounts = TArray<int32>({ 0, 0, 0, 0 }); // 힐템, 아드, 키, 고양이
     SubMissionText = TEXT("");
 }
 
@@ -24,6 +23,16 @@ void AGameStatePlay::AddScore(int32 Points)
 {
     Score += Points;
     OnScoreChanged.Broadcast(Score);
+}
+
+void AGameStatePlay::SetLastLocation(FVector LastLocation)
+{
+    LastDeathLocation = LastLocation;
+}
+
+FVector AGameStatePlay::GetLastLocation()
+{
+    return LastDeathLocation;
 }
 
 void AGameStatePlay::AddKillCount(int32 Points)
@@ -49,20 +58,5 @@ FString AGameStatePlay::GetMissionText() const
     return SubMissionText;
 }
 
-void AGameStatePlay::AddItemCount(int32 Point, int32 SlotIndex)
-{
-    if (ItemCounts.Num() > SlotIndex)
-    {
-		ItemCounts[SlotIndex] = FMath::Max(ItemCounts[SlotIndex] + Point, 0);
 
-        if (SlotIndex == 2)
-        {
-			OnKeyItemChanged.Broadcast(ItemCounts[SlotIndex]);
-        }
-        else if (SlotIndex == 3)
-        {
-            OnHiddenItemChanged.Broadcast(ItemCounts[SlotIndex]);
-        }
-    }
-}
 

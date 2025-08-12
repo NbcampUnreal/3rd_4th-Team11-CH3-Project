@@ -89,7 +89,7 @@ void AMyPlayerController::BeginPlay()
 					HUDWidget->UpdateScore(GameStatePlay->Score);
 					GameStatePlay->OnMissionTextChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateSubQuest);
 					HUDWidget->UpdateSubQuest(GameStatePlay->GetMissionText());
-					GameStatePlay->OnHiddenItemChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateHiddenQuest);
+					//GameStatePlay->OnHiddenItemChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateHiddenQuest);
 				}
 
 				if (UInventoryComponent* Inv = MyPlayerCharacter->FindComponentByClass<UInventoryComponent>())

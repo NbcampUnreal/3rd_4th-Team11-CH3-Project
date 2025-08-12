@@ -29,6 +29,10 @@ void UHUDWidget::UpdateHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Inst
 	}
 }
 
+void UHUDWidget::UpdateBossHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Instigator)
+{
+
+}
 
 void UHUDWidget::UpdateBullet(int32 CurrentBullet)
 {

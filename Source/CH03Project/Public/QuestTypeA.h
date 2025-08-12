@@ -8,6 +8,7 @@
 #include "QuestTypeA.generated.h"
 
 class ASpawnAreaActor;
+class APickupItem;
 UCLASS()
 class CH03PROJECT_API AQuestTypeA : public AActor
 {
@@ -36,8 +37,7 @@ public:
 	
 
 	int32 StartKillCount;
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
-	//int32 FirstAreaEnemyCount;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
 	int32 FirstAreaTargetKillCount;
 
@@ -45,6 +45,10 @@ public:
 	void UpdateKillCount(int32 Points);
 	UFUNCTION()
 	void UpdateKeyItemCount(int32 Points);
+
+	//스폰데이터어레이
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
+	TSubclassOf<APickupItem> KeyItem;
 
 	//스폰데이터어레이
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
@@ -76,10 +80,6 @@ public:
 
 
 
-
-	UFUNCTION(BlueprintCallable, Category = "QuestTypeA")
-	void TestFunction000();
-	void TestFunction001();
 
 	void SpawnEnemy();
 
