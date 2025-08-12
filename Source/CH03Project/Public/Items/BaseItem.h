@@ -27,4 +27,15 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Item")
 	void Use(AActor* User);
 	virtual void Use_Implementation(AActor* User);
+
+protected:
+	// 쿨타임 상태 변수
+	bool bIsOnCooldown = false;
+
+	// 쿨타임 타이머 핸들
+	FTimerHandle CooldownTimerHandle;
+
+	// 쿨타임 해제 함수
+	UFUNCTION()
+	virtual void ResetCooldown();
 };

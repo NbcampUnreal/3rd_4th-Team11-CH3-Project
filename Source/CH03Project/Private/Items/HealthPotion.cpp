@@ -9,6 +9,8 @@ UHealthPotion::UHealthPotion()
 }
 void UHealthPotion::Use_Implementation(AActor* User)
 {
+	Super::Use_Implementation(User);
+
 	if(!User)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No User!"));
