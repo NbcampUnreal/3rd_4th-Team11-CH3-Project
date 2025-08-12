@@ -51,10 +51,19 @@ public:
 	UFUNCTION() 
 	void HandleRemoveItemChanged(FName ItemID, int32 Quantity);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
+	TSubclassOf<class UPauseWidget> PauseWidgetClass;
+
+	UPROPERTY(BlueprintReadWrite, Category = "UI")
+	UPauseWidget* PauseWidget;
+
 public:
 	AMyPlayerController();
 
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void OnPauseMenu();
 
 	void BindDeligateToSpawnedWeapon(AActor* SpawnedWeapon);
 };

@@ -1,7 +1,9 @@
 ﻿#include "MyPlayerController.h"
 #include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
 #include "MyCharacter.h"
 #include "HUDWidget.h"
+#include "PauseWidget.h"
 #include "Items/InventoryComponent.h"
 #include "Items/BaseItem.h" 
 #include "BaseRangedWeapon.h"
@@ -40,7 +42,13 @@ void AMyPlayerController::BeginPlay()
 		}
 	}
 
-    
+	if (UEnhancedInputComponent* EnhancedInputComp = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		if (PauseAction)
+		{
+			EnhancedInputComp->BindAction(PauseAction, ETriggerEvent::Started, this, &AMyPlayerController::OnPauseMenu);
+		}
+	}
 
 	FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(GetWorld());
 
@@ -99,6 +107,7 @@ void AMyPlayerController::BeginPlay()
 	}
 }
 
+
 void AMyPlayerController::BindDeligateToSpawnedWeapon(AActor* SpawnedWeapon)
 {
 	if (SpawnedWeapon)
@@ -122,4 +131,22 @@ void AMyPlayerController::HandleAddItemChanged(FName ItemID, int32 Quantity)
 void AMyPlayerController::HandleRemoveItemChanged(FName ItemID, int32 Quantity)
 {
 	if (HUDWidget) { HUDWidget->UpdateQuickSlot(ItemID, Quantity); }
+}
+
+void AMyPlayerController::OnPauseMenu()
+{
+	PauseWidget = CreateWidget<UPauseWidget>(this, PauseWidgetClass);
+	if (PauseWidget)
+	{
+		AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
+		if (GameStatePlay)
+		{
+			PauseWidget->UpdateScore(GameStatePlay->Score);	
+		}
+	}
+	PauseWidget->AddToViewport();
+	SetPause(true);
+	FInputModeUIOnly InputMode;
+	SetInputMode(InputMode);
+	bShowMouseCursor = true;
 }

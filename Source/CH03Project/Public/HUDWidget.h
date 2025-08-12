@@ -20,6 +20,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Instigator);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
+	void UpdateBossHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Instigator);
+	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateBullet(int32 CurrentBullet);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateBossHP(int CurrentBossHealth, int MaxBossHealth);

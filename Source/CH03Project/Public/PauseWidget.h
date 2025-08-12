@@ -5,6 +5,7 @@
 #include "PauseWidget.generated.h"
 
 class UButton;
+class UTextBlock;
 
 UCLASS()
 class CH03PROJECT_API UPauseWidget : public UUserWidget
@@ -13,6 +14,8 @@ class CH03PROJECT_API UPauseWidget : public UUserWidget
 
 protected:
 	virtual void NativeConstruct() override;
+
+	
 	
 	UFUNCTION()
 	void OnRestartClicked();
@@ -31,4 +34,11 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* ResumeButton;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* PauseScore;
+
+public:
+	UFUNCTION()
+	void UpdateScore(int32 CurrentScore);
 };

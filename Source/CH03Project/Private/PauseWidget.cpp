@@ -16,7 +16,7 @@ void UPauseWidget::NativeConstruct()
 		QuitButton->OnClicked.AddDynamic(this, &UPauseWidget::OnQuitClicked);
 
 	if (ResumeButton)
-		QuitButton->OnClicked.AddDynamic(this, &UPauseWidget::OnResumeClicked);
+		ResumeButton->OnClicked.AddDynamic(this, &UPauseWidget::OnResumeClicked);
 }
 
 void UPauseWidget::OnRestartClicked()
@@ -42,5 +42,13 @@ void UPauseWidget::OnResumeClicked()
 		FInputModeGameOnly InputMode;
 		PC->SetInputMode(InputMode);
 		PC->bShowMouseCursor = false;
+	}
+}
+
+void UPauseWidget::UpdateScore(int32 CurrentScore)
+{
+	if (PauseScore)
+	{
+		PauseScore->SetText(FText::AsNumber(CurrentScore));
 	}
 }
