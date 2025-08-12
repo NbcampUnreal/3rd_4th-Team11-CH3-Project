@@ -168,9 +168,8 @@ void UBaseStatComponent::OnDeath()
 	if (GameModePlay)
 	{
 		GameModePlay->AddScore(KillScore);
-		GameModePlay->AddKillCount(1);
-		//킬로그 전송필요
-		//처치UI필요
+		GameModePlay->SetLastLocation(OwnerCharacter->GetActorLocation());
+		GameModePlay->AddKillCount(1);		
 	}
 
 

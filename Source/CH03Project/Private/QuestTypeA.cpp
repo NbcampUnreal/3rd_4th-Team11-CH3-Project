@@ -5,6 +5,8 @@
 #include "SubTextDataRow.h"
 #include "GameStatePlay.h"
 #include "SpawnAreaActor.h"
+#include "Items/PickupItem.h"
+#include "BaseEnemy.h"
 
 AQuestTypeA::AQuestTypeA()
 {	
@@ -29,6 +31,10 @@ void AQuestTypeA::BeginPlay()
 	ProgressStarter();	//생성주기 때문에 문제가 될 수도 있다. 발생하면 변경.
 
 	QuestStartCollision->OnComponentBeginOverlap.AddDynamic(this, &AQuestTypeA::OnOverlapBegin);
+
+
+	//타이머 설치해서 10초뒤에 DestroyAllEnemies() 실행
+	//GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AQuestTypeA::DestroyAllEnemies, 10.0f, false);
 }
 
 void AQuestTypeA::SetSubTexts()
@@ -139,20 +145,34 @@ void AQuestTypeA::UpdateKillCount(int32 Points)
 		FString MissionText = FString::Printf(TEXT("%s (%d / %d)"), *SubTexts[1], (Points - StartKillCount), FirstAreaTargetKillCount);
 		GameModePlays->SetMissionText(MissionText);
 
-		//일단은 아이템 직접 획득으로 처리함-> 드랍방식으로 변경할 경우 수정
-		if (FirstAreaTargetKillCount <= Points - StartKillCount)
+		//드랍방식
+		UE_LOG(LogTemp, Warning, TEXT("킬 카운트 업데이트: %d"), Points - StartKillCount);
+		if (FirstAreaTargetKillCount == Points - StartKillCount)
 		{	
-			//GameModePlays->AddItemCount(1, 2);	//키 추가
-			//키 획득방식에 따라 조금 달라짐
-			//ProgressStage++;
-			//ProgressStarter();
+			UE_LOG(LogTemp, Warning, TEXT("아이템스폰"));
+			AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
+			if (!GameStatePlay)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("GameStatePlay가 유효하지 않습니다."));
+				return;
+			}
+			APickupItem* SpawnedItem = GetWorld()->SpawnActor<APickupItem>(KeyItem, GameStatePlay->GetLastLocation(), FRotator::ZeroRotator);
+			if (SpawnedItem)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("아이템이 성공적으로 스폰되었습니다."));
+				GameModePlays->SetMissionText(SubTexts[5]);	//키 주으쇼
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("아이템 스폰 실패"));
+			}
 		}
 	}
 }
 
-void AQuestTypeA::UpdateKeyItemCount(int32 KeyCount)
+void AQuestTypeA::UpdateKeyItemCount()
 {
-	UE_LOG(LogTemp, Warning, TEXT("키 아이템 수: %d"), KeyCount);
+	UE_LOG(LogTemp, Warning, TEXT("키 아이템 수"));
 	ProgressStage++;
 	ProgressStarter();
 }
@@ -250,3 +270,23 @@ void AQuestTypeA::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 }
 
 
+void AQuestTypeA::DestroyAllEnemies()
+{
+	UE_LOG(LogTemp, Warning, TEXT("모든 적을 파괴합니다."));
+	if (EnemyAliveVolume)
+	{	
+		UE_LOG(LogTemp, Warning, TEXT("EnemyAliveVolume이 유효합니다."));
+		TArray<AActor*> FoundEnemies;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseEnemy::StaticClass(), FoundEnemies);
+
+		for (AActor* EnemyActor : FoundEnemies)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("적 액터 발견: %s"), *EnemyActor->GetName());
+			if (!EnemyAliveVolume->IsOverlappingActor(EnemyActor))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("적 액터가 EnemyAliveVolume과 겹치지 않습니다. 파괴합니다."));
+				EnemyActor->Destroy();
+			}
+		}
+	}
+}

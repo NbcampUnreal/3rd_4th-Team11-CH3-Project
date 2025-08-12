@@ -5,7 +5,10 @@
 #include "EnemySpawnRow.h"
 #include "GameModePlay.h"
 #include "Components/BoxComponent.h"
+#include "GameFramework/Volume.h"
+#include "Kismet/GameplayStatics.h"
 #include "QuestTypeA.generated.h"
+
 
 class ASpawnAreaActor;
 class APickupItem;
@@ -44,7 +47,7 @@ public:
 	UFUNCTION()
 	void UpdateKillCount(int32 Points);
 	UFUNCTION()
-	void UpdateKeyItemCount(int32 Points);
+	void UpdateKeyItemCount();
 
 	//스폰데이터어레이
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
@@ -83,7 +86,10 @@ public:
 
 	void SpawnEnemy();
 
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
+	AVolume* EnemyAliveVolume;
+
+	void DestroyAllEnemies();
 
 	
 
