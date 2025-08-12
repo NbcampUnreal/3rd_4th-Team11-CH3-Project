@@ -67,3 +67,27 @@ bool UInventoryComponent::RemoveItem(UBaseItem* Item, int32 Amount)
     OnRemoveItemChanged.Broadcast(Item->GetItemData().ItemID, Item->Quantity);
     return true;
 }
+
+bool UInventoryComponent::FindItem(FName ItemID) const
+{
+    for(UBaseItem* Item : Items)
+    {
+        if(Item && Item->ItemDataHandle.RowName == ItemID)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+UBaseItem* UInventoryComponent::GetItem(FName ItemID)
+{
+    for(UBaseItem* Item : Items)
+    {
+        if(Item && Item->ItemDataHandle.RowName == ItemID)
+        {
+            return Item;
+        }
+    }
+    return nullptr;
+}
