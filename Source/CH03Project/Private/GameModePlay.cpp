@@ -33,17 +33,14 @@ void AGameModePlay::AddKillCount(int32 Points)
 	GameStatePlays->AddKillCount(Points);
 }
 
+void AGameModePlay::SetLastLocation(FVector LastLocation)
+{
+	GameStatePlays->SetLastLocation(LastLocation);
+}
 
 void AGameModePlay::SetMissionText(FString Text)
 {	
 	GameStatePlays->SetMissionText(Text);
-}
-
-
-void AGameModePlay::AddItemCount(int32 Point, int32 SlotIndex)
-{
-	GameStatePlays->AddItemCount(Point, SlotIndex);
-	//타이머 0.1f float로
 }
 
 

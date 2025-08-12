@@ -11,7 +11,7 @@ AQuestTypeA::AQuestTypeA()
 	PrimaryActorTick.bCanEverTick = false;
 	ProgressStage = 0;
 	FirstAreaTargetKillCount = 0;
-	//생성자에서 하나 생성
+	
 	QuestStartCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("QuestStartCollision"));
 }
 
@@ -25,7 +25,6 @@ void AQuestTypeA::BeginPlay()
 	if (GameStatePlay)
 	{
 		GameStatePlay->OnKillCountChanged.AddDynamic(this, &AQuestTypeA::UpdateKillCount);
-		GameStatePlay->OnKeyItemChanged.AddDynamic(this, &AQuestTypeA::UpdateKeyItemCount);
 	}
 	ProgressStarter();	//생성주기 때문에 문제가 될 수도 있다. 발생하면 변경.
 
@@ -143,7 +142,7 @@ void AQuestTypeA::UpdateKillCount(int32 Points)
 		//일단은 아이템 직접 획득으로 처리함-> 드랍방식으로 변경할 경우 수정
 		if (FirstAreaTargetKillCount <= Points - StartKillCount)
 		{	
-			GameModePlays->AddItemCount(1, 2);	//키 추가
+			//GameModePlays->AddItemCount(1, 2);	//키 추가
 			//키 획득방식에 따라 조금 달라짐
 			//ProgressStage++;
 			//ProgressStarter();
@@ -251,15 +250,3 @@ void AQuestTypeA::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 }
 
 
-void AQuestTypeA::TestFunction000()
-{
-	UE_LOG(LogTemp, Warning, TEXT("테스트 함수 호출됨"));
-	GameModePlays->AddItemCount(-1, 2);
-	GameModePlays->AddItemCount(1, 3);
-}
-
-void AQuestTypeA::TestFunction001()
-{
-	UE_LOG(LogTemp, Warning, TEXT("테스트 함수 호출됨"));
-	GameModePlays->AddItemCount(1, 2);
-}
