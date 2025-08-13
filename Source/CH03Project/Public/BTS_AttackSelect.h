@@ -23,7 +23,8 @@ private:
     struct FMem { bool bPrevAttacking = false; };
     FORCEINLINE FMem* M(uint8* NodeMemory) const { return reinterpret_cast<FMem*>(NodeMemory); }
 
-    void SelectAttackPhase1(UBehaviorTreeComponent& OwnerComp);
+    void SelectAttackByPattern(UBehaviorTreeComponent& OwnerComp, const TArray<uint8>& Pattern);
+    bool IsAllowedAttack(uint8 AttackId, UBlackboardComponent* BB) const;
 
 private:
     UPROPERTY(EditAnywhere, Category = "Blackboard", meta = (AllowPrivateAccess = "true"))
@@ -31,6 +32,7 @@ private:
 
     UPROPERTY(EditAnywhere, Category = "Blackboard", meta = (AllowPrivateAccess = "true"))
     FBlackboardKeySelector PhaseIndexKey;
+
 
     UPROPERTY(EditAnywhere, Category = "Blackboard", meta = (AllowPrivateAccess = "true"))
     FBlackboardKeySelector CanPrimaryKey;
@@ -40,6 +42,11 @@ private:
 
     UPROPERTY(EditAnywhere, Category = "Blackboard", meta = (AllowPrivateAccess = "true"))
     FBlackboardKeySelector CanChargeKey;
+    UPROPERTY(EditAnywhere, Category = "Blackboard", meta = (AllowPrivateAccess = "true"))
+    FBlackboardKeySelector CanMissileKey;
+    UPROPERTY(EditAnywhere, Category = "Blackboard", meta = (AllowPrivateAccess = "true"))
+    FBlackboardKeySelector CanLasorKey;
+
 
     UPROPERTY(EditAnywhere, Category = "Blackboard", meta = (AllowPrivateAccess = "true"))
     FBlackboardKeySelector IsAttackingKey;
@@ -47,6 +54,13 @@ private:
     UPROPERTY(EditAnywhere, Category = "Blackboard", meta = (AllowPrivateAccess = "true"))
     FBlackboardKeySelector AttackTypeKey;
 
+
+
     UPROPERTY(EditAnywhere, Category = "Pattern", meta = (AllowPrivateAccess = "true"))
     TArray<uint8> Phase1Pattern;
+
+    UPROPERTY(EditAnywhere, Category = "Pattern", meta = (AllowPrivateAccess = "true"))
+    TArray<uint8> Phase2Pattern;
+    UPROPERTY(EditAnywhere, Category = "Pattern", meta = (AllowPrivateAccess = "true"))
+    TArray<uint8> Phase3Pattern;
 };
