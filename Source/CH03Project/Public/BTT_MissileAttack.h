@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BTT_LRMAttack.generated.h"
+#include "EnvironmentQuery/EnvQueryTypes.h"
+#include "BTT_MissileAttack.generated.h"
 
 class UAnimMontage;
 class UDecalComponent;
@@ -12,15 +13,19 @@ class UMaterialInterface;
 class UMaterialInstanceDynamic;
 class UBlackboardComponent;
 class AAIController;
+class UBaseStatComponent;
+class UEnvQuery;
+class UEnvQueryInstanceBlueprintWrapper;
 class UParticleSystem;
+class UBehaviorTreeComponent;
 
 UCLASS()
-class CH03PROJECT_API UBTT_LRMAttack : public UBTTaskNode
+class CH03PROJECT_API UBTT_MissileAttack : public UBTTaskNode
 {
 	GENERATED_BODY()
-	
+
 public:
-	UBTT_LRMAttack();
+	UBTT_MissileAttack();
 	virtual uint16 GetInstanceMemorySize() const override { return sizeof(struct FState); }
 
 protected:
@@ -30,41 +35,49 @@ protected:
 	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type Result) override;
 
 private:
-	enum class EPhase : uint8 { Ready, Tracking, Fire, Falling, Landing, Finish };
-	
+	enum class EPhase : uint8 { Ready, Fire, Falling, Landing, Finish };
+
 	struct FState
 	{
 		EPhase Phase = EPhase::Ready;
 		float  T = 0.f;
-		bool bImpactLocked = false;
-		float MissileTravelTime = 5.0f;
+		float MissileTravelTime = 4.0f;
 
-		FVector TrackedGround = FVector::ZeroVector;
-		FVector LockedImpact = FVector::ZeroVector;
+		bool bDecalsPlaced = false;
+		bool bExploded = false;
 
-		TWeakObjectPtr<UDecalComponent>          Decal;
-		TWeakObjectPtr<UMaterialInstanceDynamic> DecalMID;
+		int32 NumCircles = 0;
+
+		TArray<FVector> TrackedGrounds;
+		TArray<FVector> LockedImpacts;
+		TArray<TWeakObjectPtr<UDecalComponent>> Decals;
 
 		TWeakObjectPtr<ACharacter>  Boss;
 		TWeakObjectPtr<AAIController> AI;
 	};
 
+	UPROPERTY(EditAnywhere, Category = "EQS", meta = (AllowPrivateAccess = "true"))
+	UEnvQuery* Query = nullptr;
+
 	UPROPERTY(EditAnywhere, Category = "Blackboard", meta = (AllowPrivateAccess = "true"))
-	FBlackboardKeySelector TargetActorKey;
+	FBlackboardKeySelector NumPointsKey;
+	int32 NumCircles = 0;
 
 	UPROPERTY(EditAnywhere, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Montage_Ready = nullptr;
 	UPROPERTY(EditAnywhere, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Montage_JumpFire = nullptr;
+	UAnimMontage* Montage_Fire = nullptr;
 	UPROPERTY(EditAnywhere, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Montage_JumpFall = nullptr;
+	UAnimMontage* Montage_Fall = nullptr;
 	UPROPERTY(EditAnywhere, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Montage_JumpLand = nullptr;
+	UAnimMontage* Montage_Land = nullptr;
+
+
+	UPROPERTY(EditAnywhere, Category = "Decal", meta = (AllowPrivateAccess = "true"))
+	UMaterialInterface* DecalMaterial = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "FX", meta = (AllowPrivateAccess = "true"))
-	UMaterialInterface* DecalMaterial = nullptr;
-	UPROPERTY(EditAnywhere, Category = "FX", meta = (AllowPrivateAccess = "true"))
-	float DecalRadius = 100.f;
+	float DecalRadius = 300.f;
 	UPROPERTY(EditAnywhere, Category = "FX", meta = (AllowPrivateAccess = "true"))
 	float DecalThickness = 64.f;
 	UPROPERTY(EditAnywhere, Category = "FX", meta = (AllowPrivateAccess = "true"))
@@ -74,33 +87,50 @@ private:
 	UPROPERTY(EditAnywhere, Category = "FX", meta = (AllowPrivateAccess = "true"))
 	float ImpactFXScaleAtRadius100 = 1.f;
 
+
+	UPROPERTY(EditAnywhere, Category = "Decal", meta = (AllowPrivateAccess = "true", ClampMin = "0"))
+	float DelayBeforeDecals = 0.2f;
+	UPROPERTY(EditAnywhere, Category = "Decal", meta = (AllowPrivateAccess = "true", ClampMin = "0"))
+	float ExplosionDelay = 4.0f;
+
 	UPROPERTY(EditAnywhere, Category = "Damage", meta = (AllowPrivateAccess = "true"))
-	float Damage = 40.f;
+	float Damage = 50.f;
 	UPROPERTY(EditAnywhere, Category = "Damage", meta = (AllowPrivateAccess = "true"))
 	FName PlayerTag = TEXT("Player");
-
-	UPROPERTY(EditAnywhere, Category = "Trace", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "FX", meta = (AllowPrivateAccess = "true"))
 	TEnumAsByte<ECollisionChannel> GroundTraceChannel = ECC_Visibility;
 
 	UPROPERTY(EditAnywhere, Category = "FX", meta = (AllowPrivateAccess = "true"))
-	bool bFollowTargetWhileTracking = true;
-	UPROPERTY(EditAnywhere, Category = "FX", meta = (AllowPrivateAccess = "true"))
 	bool bDestroyDecalOnFire = true;
+
+	TWeakObjectPtr<UBehaviorTreeComponent> BTWeak;
+    TWeakObjectPtr<AAIController>          AIWeak;
 
 	FORCEINLINE FState* S(uint8* NodeMemory) const { return reinterpret_cast<FState*>(NodeMemory); }
 
-private:
-	void EnterReady(FState& St) const;
-	void EnterTracking(FState& St) const;
-	void EnterFalling(FState& St) const;
-	void EnterLanding(FState& St) const;
-	void FinishClean(UBehaviorTreeComponent& OwnerComp, FState& St, bool bSuccess);
+	UPROPERTY() UEnvQueryInstanceBlueprintWrapper* ActiveQuery = nullptr;
 
-	bool  UpdateTrackedGround(FState& St) const;
-	void  SpawnOrUpdateDecal(FState& St, bool bLock = false) const;
-	void  DestroyDecal(FState& St) const;
+private:
+	void EnterReady(UBehaviorTreeComponent& BTC, FState& St) const;
+	void EnterFire(UBehaviorTreeComponent& BTC, FState& St) const;
+	void EnterFalling(UBehaviorTreeComponent& BTC, FState& St) const;
+	void EnterLanding(UBehaviorTreeComponent& BTC, FState& St) const;
+	void EnterFinish(UBehaviorTreeComponent& BTC, FState& St, bool bSuccess) const;
+
+	UFUNCTION()
+	void OnQueryFinished(UEnvQueryInstanceBlueprintWrapper* Wrapper, EEnvQueryStatus::Type Status);
+
+	static bool ProjectToGround(UWorld* World, const FVector& In, FVector& Out, TEnumAsByte<ECollisionChannel> Channel, float ZOffset);
+	void  SpawnDecals(FState& St, bool bLock = false) const;
+	void  DestroyDecals(FState& St) const;
 	void  DoImpact(FState& St) const;
 
-	mutable FDelegateHandle MontageEndedHandle;
-	bool bBoundNotify = false;
+	static void RandomShuffle(TArray<FVector>& Array, FRandomStream& RNG)
+	{
+		for (int32 i = Array.Num() - 1; i > 0; --i)
+		{
+			const int32 j = RNG.RandRange(0, i);
+			Array.Swap(i, j);
+		}
+	}
 };
