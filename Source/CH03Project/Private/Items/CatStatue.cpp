@@ -3,15 +3,18 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
 
-void UCatStatue::Use_Implementation(AActor* User)
+bool UCatStatue::Use_Implementation(AActor* User)
 {
-    Super::Use_Implementation(User);
+    if (!Super::Use_Implementation(User))
+    {
+        return false;
+    }
 
     // 데이터테이블 핸들이 유효한지
     if(!ItemDataHandle.DataTable || !ItemDataHandle.RowName.IsValid())
     {
         //UE_LOG(LogTemp, Warning, TEXT("CatStatue: No valid ItemDataHandle"));
-        return;
+        return false;
     }
 
     // 데이터 테이블에서 Row 가져오기
@@ -24,14 +27,14 @@ void UCatStatue::Use_Implementation(AActor* User)
     if(!ItemRow)
     {
         //UE_LOG(LogTemp, Warning, TEXT("CatStatue: Row not found for %s"), *ItemDataHandle.RowName.ToString());
-        return;
+        return false;
     }
 
     // 사운드 경로 설정 확인
     if(!ItemRow->PickupSound.ToSoftObjectPath().IsValid())
     {
         //UE_LOG(LogTemp, Warning, TEXT("CatStatue: PickupSound path is not set for %s"), *ItemDataHandle.RowName.ToString());
-        return;
+        return false;
     }
 
     // 메모리 상에 로드가 안 되어있으면 LoadSynchronous
@@ -51,10 +54,11 @@ void UCatStatue::Use_Implementation(AActor* User)
     if(Sound && User)
     {
         UGameplayStatics::PlaySoundAtLocation(User, Sound, User->GetActorLocation());
-        UE_LOG(LogTemp, Log, TEXT("CatStatue: Played sound %s"), *Sound->GetName());
+        //UE_LOG(LogTemp, Log, TEXT("CatStatue: Played sound %s"), *Sound->GetName());
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("CatStatue: Failed to load or play sound for %s"), *ItemDataHandle.RowName.ToString());
+        //UE_LOG(LogTemp, Warning, TEXT("CatStatue: Failed to load or play sound for %s"), *ItemDataHandle.RowName.ToString());
     }
+    return true;
 }

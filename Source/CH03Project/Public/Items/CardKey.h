@@ -9,5 +9,5 @@ class CH03PROJECT_API UCardKey : public UBaseItem
 {
 	GENERATED_BODY()
 	
-	virtual void Use_Implementation(AActor* User) override;
+	virtual bool Use_Implementation(AActor* User) override;
 };

@@ -21,13 +21,13 @@ FItemDataRow UBaseItem::GetItemData() const
     return FItemDataRow();
 }
 
-void UBaseItem::Use_Implementation(AActor* User)
+bool UBaseItem::Use_Implementation(AActor* User)
 {
     // 쿨타임 상태일 때
     if(bIsOnCooldown)
     {
         UE_LOG(LogTemp, Warning, TEXT("%s: Item is on cooldown."), *GetName());
-        return;
+        return false;
     }
 
     bIsOnCooldown = true;
@@ -54,6 +54,7 @@ void UBaseItem::Use_Implementation(AActor* User)
             false
         );
     }
+    return true;
 }
 
 void UBaseItem::ResetCooldown()

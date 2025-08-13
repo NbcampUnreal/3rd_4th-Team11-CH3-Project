@@ -12,7 +12,7 @@ class CH03PROJECT_API UAdrenaline : public UBaseItem
 	GENERATED_BODY()
 
 public:
-	virtual void Use_Implementation(AActor* User) override;
+	virtual bool Use_Implementation(AActor* User) override;
 
 	// 공격력, 방어력 증가
 

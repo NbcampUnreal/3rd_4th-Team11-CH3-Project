@@ -15,5 +15,5 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="HealthPotion")
 	float HealAmount;
 
-	virtual void Use_Implementation(AActor* User) override;
+	virtual bool Use_Implementation(AActor* User) override;
 };

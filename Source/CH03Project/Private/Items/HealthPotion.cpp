@@ -7,14 +7,17 @@ UHealthPotion::UHealthPotion()
 {
 	HealAmount = 30.0f; // 초기 회복량 30
 }
-void UHealthPotion::Use_Implementation(AActor* User)
+bool UHealthPotion::Use_Implementation(AActor* User)
 {
-	Super::Use_Implementation(User);
+	if(!Super::Use_Implementation(User))
+	{
+		return false;
+	}
 
 	if(!User)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No User!"));
-		return;
+		return false;
 	}
 
 	AMyCharacter* Player = Cast<AMyCharacter>(User);
@@ -28,5 +31,6 @@ void UHealthPotion::Use_Implementation(AActor* User)
 			UE_LOG(LogTemp, Warning, TEXT("HealHP!"));
 		}
 	}
+	return true;
 }
 

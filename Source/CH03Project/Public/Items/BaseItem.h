@@ -19,23 +19,22 @@ public:
 	// 아이템 개수
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item")
 	int32 Quantity;
-
 	// 아이템 데이터 반환
 	UFUNCTION(BlueprintCallable, Category = "Item")
 	FItemDataRow GetItemData() const;
 	// 아이템 사용
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Item")
-	void Use(AActor* User);
-	virtual void Use_Implementation(AActor* User);
+	bool Use(AActor* User);
+	virtual bool Use_Implementation(AActor* User);
 
-protected:
 	// 쿨타임 상태 변수
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item")
 	bool bIsOnCooldown = false;
-
 	// 쿨타임 타이머 핸들
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item")
 	FTimerHandle CooldownTimerHandle;
 
 	// 쿨타임 해제 함수
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category="Item")
 	virtual void ResetCooldown();
 };

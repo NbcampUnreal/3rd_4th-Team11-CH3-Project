@@ -1,6 +1,6 @@
 ﻿#include "Items/CardKey.h"
 
-void UCardKey::Use_Implementation(AActor* User)
+bool UCardKey::Use_Implementation(AActor* User)
 {
-	// 구현 안함
+	return true;// 구현 안함
 }
