@@ -104,7 +104,7 @@ void UBaseStatComponent::AddMaxHp(int Point)
 void UBaseStatComponent::HealHP(float Point)
 {
 	Hp += Point;
-	Hp = FMath::Max(Hp, MaxHp);
+	Hp = FMath::Clamp(Hp, 0, MaxHp);
 
 	OnHpChangedEvent.Broadcast(Hp, MaxHp, GetOwner()); //델리게이트
 }

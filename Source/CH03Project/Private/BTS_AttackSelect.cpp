@@ -10,6 +10,8 @@ UBTS_AttackSelect::UBTS_AttackSelect()
     bCreateNodeInstance = true;
 
     Phase1Pattern = { 1, 2, 1, 3, 3, 2, 1, 1, 2 }; // 1=Primary, 2=LRM, 3=Charge
+    Phase2Pattern = { 4, 1, 3, 3, 1, 4, 1, 3, 4 }; // 4=Missile
+    Phase3Pattern = { 3, 2, 1, 4, 3, 3, 1, 2, 5 }; // 5=Lasor
 }
 
 void UBTS_AttackSelect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -25,65 +27,79 @@ void UBTS_AttackSelect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
     if (Mem->bPrevAttacking && !bAttacking)
     {
         int32 Index = BB->GetValueAsInt(PhaseIndexKey.SelectedKeyName);
-        if (Phase1Pattern.Num() > 0)
-        {
-            Index = (Index + 1) % Phase1Pattern.Num();
-        }
-        else
-        {
-            Index = 0;
-        }
+        const int32 N = Phase1Pattern.Num();
+        Index = (N > 0) ? (Index + 1) % N : 0;
         BB->SetValueAsInt(PhaseIndexKey.SelectedKeyName, Index);
     }
     Mem->bPrevAttacking = bAttacking;
 
-    if (bAttacking)
-        return;
+    if (bAttacking) return;
 
     const int32 Phase = BB->GetValueAsInt(PhaseKey.SelectedKeyName);
-    if (Phase == 1)
+    switch (Phase)
     {
-        SelectAttackPhase1(OwnerComp);
+    case 1:
+    {
+        SelectAttackByPattern(OwnerComp, Phase1Pattern); 
+        break;
+    }
+    case 2:
+    {
+        SelectAttackByPattern(OwnerComp, Phase2Pattern);
+        break;
+    }
+    case 3:
+    {
+		SelectAttackByPattern(OwnerComp, Phase3Pattern);
+		break;
+    }
+    default:
+    {
+        SelectAttackByPattern(OwnerComp, Phase1Pattern);
+        break;
+    }
     }
 }
 
-
-void UBTS_AttackSelect::SelectAttackPhase1(UBehaviorTreeComponent& OwnerComp)
+void UBTS_AttackSelect::SelectAttackByPattern(UBehaviorTreeComponent& OwnerComp, const TArray<uint8>& Pattern)
 {
     UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
     if (!BB) return;
+    if (BB->GetValueAsBool(IsAttackingKey.SelectedKeyName)) return;
 
-    if (BB->GetValueAsBool(IsAttackingKey.SelectedKeyName))
-        return;
-
-    const int32 N = Phase1Pattern.Num();
+    const int32 N = Pattern.Num();
     if (N == 0)
     {
         BB->SetValueAsEnum(AttackTypeKey.SelectedKeyName, 0);
         return;
     }
 
-    const bool bCanPrimary = BB->GetValueAsBool(CanPrimaryKey.SelectedKeyName);
-    const bool bCanLRM = BB->GetValueAsBool(CanLRMKey.SelectedKeyName);
-    const bool bCanCharge = BB->GetValueAsBool(CanChargeKey.SelectedKeyName);
-
     const int32 BaseIndex = BB->GetValueAsInt(PhaseIndexKey.SelectedKeyName);
 
     for (int32 i = 0; i < N; ++i)
     {
         const int32 TryIndex = (BaseIndex + i) % N;
-        const uint8 Attack = Phase1Pattern[TryIndex];
+        const uint8 Attack = Pattern[TryIndex];
 
-        bool bAllowed = false;
-        if (Attack == 1 && bCanPrimary) bAllowed = true;
-        if (Attack == 2 && bCanLRM)     bAllowed = true;
-        if (Attack == 3 && bCanCharge)  bAllowed = true;
-
-        if (bAllowed)
+        if (IsAllowedAttack(Attack, BB))
         {
             BB->SetValueAsEnum(AttackTypeKey.SelectedKeyName, Attack);
             return;
         }
     }
+
     BB->SetValueAsEnum(AttackTypeKey.SelectedKeyName, 0);
+}
+
+bool UBTS_AttackSelect::IsAllowedAttack(uint8 AttackId, UBlackboardComponent* BB) const
+{
+    switch (AttackId)
+    {
+    case 1: return BB->GetValueAsBool(CanPrimaryKey.SelectedKeyName);
+    case 2: return BB->GetValueAsBool(CanLRMKey.SelectedKeyName);
+    case 3: return BB->GetValueAsBool(CanChargeKey.SelectedKeyName);
+    case 4: return BB->GetValueAsBool(CanMissileKey.SelectedKeyName);
+    case 5: return BB->GetValueAsBool(CanLasorKey.SelectedKeyName); 
+    default: return false;
+    }
 }

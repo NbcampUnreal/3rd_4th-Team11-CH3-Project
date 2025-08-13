@@ -26,6 +26,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	bool RemoveItem(UBaseItem* Item, int32 Amount = 1);
 
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	bool FindItem(FName ItemID) const;
+
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	UBaseItem* GetItem(FName ItemID);
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory")
 	int32 MaxInventorySize;
