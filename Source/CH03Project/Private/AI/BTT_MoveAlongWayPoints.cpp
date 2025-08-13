@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BTT_MoveAlongWayPoints.h"
+#include "AI/BTT_MoveAlongWayPoints.h"
 #include "AIController.h"
 #include "BaseEnemy.h"
 #include "BehaviorTree/BlackboardComponent.h"

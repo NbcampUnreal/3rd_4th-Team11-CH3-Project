@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BTT_ChargeAttack.h"
+#include "AI/BTT_ChargeAttack.h"
 
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -491,7 +491,11 @@ void UBTT_ChargeAttack::ForceStopCharacter(ACharacter* Char) const
 		Move->StopMovementImmediately();
 		Move->ClearAccumulatedForces();
 		Move->Velocity = FVector::ZeroVector;
-		Move->SetMovementMode(MOVE_None);
+
+		if (Move->MovementMode != MOVE_Walking && Move->MovementMode != MOVE_Walking)
+		{
+			Move->SetMovementMode(MOVE_Walking);
+		}
 	}
 
 	Char->LaunchCharacter(FVector::ZeroVector, true, true);

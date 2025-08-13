@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BTT_SelectNextPatrolPoint.h"
+#include "AI/BTT_SelectNextPatrolPoint.h"
 #include "AIController.h"
 #include "BaseEnemy.h"
 
