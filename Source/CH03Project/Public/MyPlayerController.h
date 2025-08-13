@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
@@ -50,10 +50,13 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "UI")
 	UPauseWidget* PauseWidget;
 
-	UFUNCTION() 
+	UFUNCTION()
 	void HandleAddItemChanged(FName ItemID, int32 Quantity);
 	UFUNCTION() 
 	void HandleRemoveItemChanged(FName ItemID, int32 Quantity);
+
+	UFUNCTION()
+	void HandleAddAccessoryChanged(FName ItemID);
 
 public:
 	AMyPlayerController();

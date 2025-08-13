@@ -1,12 +1,15 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "InventoryItemSlot.h"
+﻿#include "InventoryItemSlot.h"
 #include "ItemDragDropOperation.h"
 #include "DragMoveWidget.h"
 
 void UInventoryItemSlot::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {   
+    if (!bIsCanUse)
+    {
+        OutOperation = nullptr;
+        return;
+    }
+
 	UE_LOG(LogTemp, Warning, TEXT("드래그 시작: %s"), *ItemID.ToString());
     UItemDragDropOperation* DragDropOp = NewObject<UItemDragDropOperation>(this);
     
@@ -32,5 +35,4 @@ void UInventoryItemSlot::NativeOnDragDetected(const FGeometry& InGeometry, const
     }
 
     OutOperation = DragDropOp;
-    
 }

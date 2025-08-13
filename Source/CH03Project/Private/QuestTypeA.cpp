@@ -82,6 +82,9 @@ void AQuestTypeA::ProgressStarter()
 	case 5:	
 		Progress05();
 		break;
+	case 6:
+		Progress06();
+		break;
 	}
 }
 
@@ -127,12 +130,13 @@ void AQuestTypeA::Progress04()	//키얻음 문여쇼
 void AQuestTypeA::Progress05()	//문 오픈대기 : 시간시간
 {
 	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 5단계"));
-	GameModePlays->SetMissionText(SubTexts[4]);
+	OpenDoorCount();	
 }
 void AQuestTypeA::Progress06()	//문 열림
 {
-	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 5단계"));
-	GameModePlays->SetMissionText(SubTexts[4]);
+	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 6단계"));
+	OnQuestCompleted.Broadcast();
+	GameModePlays->SetMissionText(SubTexts[0]);
 }
 
 
@@ -161,10 +165,6 @@ void AQuestTypeA::UpdateKillCount(int32 Points)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("아이템이 성공적으로 스폰되었습니다."));
 				GameModePlays->SetMissionText(SubTexts[5]);	//키 주으쇼
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("아이템 스폰 실패"));
 			}
 		}
 	}
@@ -288,5 +288,43 @@ void AQuestTypeA::DestroyAllEnemies()
 				EnemyActor->Destroy();
 			}
 		}
+	}
+}
+
+
+
+void AQuestTypeA::PassDoor()
+{
+	UE_LOG(LogTemp, Warning, TEXT("문을 통과합니다."));
+	if (ProgressStage == 2)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("문을 통과합니다."));
+		ProgressStage++;
+		ProgressStarter();
+	}
+	else if (ProgressStage == 4)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("문을 통과합니다."));
+		ProgressStage++;
+		ProgressStarter();
+	}
+	
+}
+
+void AQuestTypeA::OpenDoorCount()
+{
+	float OpenSeconds = static_cast<float>(OnDoorOpenCount) / 10.0f;
+	FString MissionText = FString::Printf(TEXT("%s ( %.1f %s)"), *SubTexts[4], OpenSeconds, *SubTexts[6]);
+	GameModePlays->SetMissionText(MissionText);
+	if (OnDoorOpenCount < 0.1f)
+	{
+		//문열림
+		ProgressStage++;
+		ProgressStarter();
+	}
+	else
+	{
+		OnDoorOpenCount--;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AQuestTypeA::OpenDoorCount, 0.1f, false);
 	}
 }

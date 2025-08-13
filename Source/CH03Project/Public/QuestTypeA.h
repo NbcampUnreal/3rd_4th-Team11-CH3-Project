@@ -12,6 +12,9 @@
 
 class ASpawnAreaActor;
 class APickupItem;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FQuestEvent);
+
 UCLASS()
 class CH03PROJECT_API AQuestTypeA : public AActor
 {
@@ -89,8 +92,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
 	AVolume* EnemyAliveVolume;
 
+	UFUNCTION(BlueprintCallable)
 	void DestroyAllEnemies();
 
+	UFUNCTION(BlueprintCallable)
+	void PassDoor();
+	void OpenDoorCount();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
+	int32 OnDoorOpenCount;
 	
+	UPROPERTY(BlueprintAssignable)
+	FQuestEvent OnQuestCompleted;
 
 };

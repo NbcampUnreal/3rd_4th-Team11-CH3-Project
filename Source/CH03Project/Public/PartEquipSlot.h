@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "ItemDragDropOperation.h"
 #include "PartEquipSlot.generated.h"
 
 
@@ -11,22 +12,48 @@ class CH03PROJECT_API UPartEquipSlot : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	void NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+	void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
 	bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	bool NativeOnDragOver(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
-	// 드래그할 아이템의 고유 ID를 저장합니다.
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Data")
+	TObjectPtr<UTexture2D> DefaultEmptyImage;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Data")
 	FName ItemID;
 
-	// 아이템의 타입을 저장합니다 (예: A, B, C 파츠).
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Data")
 	FName ItemType;
-
-	// 아이템의 아이콘 이미지를 저장합니다.
+		
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Data")
 	class UTexture2D* ItemIcon;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> SlotImage;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<class UUserWidget> DragVisualWidgetClass;
+
+	UFUNCTION(BlueprintCallable, Category = "PartEquipSlot")
+	void SetSlotItem(const FName NewItemID, UTexture2D* NewItemIcon);
+
+	UFUNCTION(BlueprintCallable, Category = "PartEquipSlot")
+	void ClearSlot();
+
+
+
+	//착용효과들
+	void ResetEffectAH();
+	void ResetEffectEM();
+	void ResetEffectSL();
+
+	void SetEffectAH01();
+	void SetEffectAH02();
+	void SetEffectEM01();
+	void SetEffectEM02();
+	void SetEffectSL01();
+	void SetEffectSL02();
+
 };
