@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BTT_LRMAttack.h"
+#include "AI/BTT_LRMAttack.h"
 
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -17,7 +17,7 @@
 
 UBTT_LRMAttack::UBTT_LRMAttack()
 {
-	NodeName = TEXT("LRM Jump Fire (Ready°ÊTracking°ÊFire°ÊFall°ÊLand)");
+	NodeName = TEXT("LRM Jump Fire (Ready + Tracking + Fire + Fall + Land)");
 	bNotifyTick = true;
 }
 

@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BTT_DefaultAttack.h"
-#include "EnemyActionInterface.h"
+#include "AI/BTT_DefaultAttack.h"
+#include "AI/EnemyActionInterface.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "BaseEnemy.h"
