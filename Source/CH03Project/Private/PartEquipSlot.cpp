@@ -1,46 +1,208 @@
 ﻿#include "PartEquipSlot.h"
 #include "ItemDragDropOperation.h"
 #include "Kismet/GameplayStatics.h"
+
 #include "Components/Image.h"
+
+
+void UPartEquipSlot::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
+{
+    if (ItemID.IsNone())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("슬롯에 아이템이 없어 드래그를 시작할 수 없습니다."));
+        OutOperation = nullptr;
+        return;
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("드래그 시작: %s"), *ItemID.ToString());
+
+    
+    UItemDragDropOperation* DragDropOp = NewObject<UItemDragDropOperation>(this);
+    if (!DragDropOp)
+    {
+        OutOperation = nullptr;
+        return;
+    }
+        
+    DragDropOp->ItemID = ItemID;
+    DragDropOp->ItemType = ItemType;
+    DragDropOp->ItemIcon = ItemIcon;
+    DragDropOp->SourceSlot = this;
+
+
+    if (DragVisualWidgetClass)
+    {
+        if (UUserWidget* DragVisual = CreateWidget<UUserWidget>(GetWorld(), DragVisualWidgetClass))
+        {
+            if (UImage* VisualImage = Cast<UImage>(DragVisual->GetWidgetFromName(TEXT("DragImageMove"))))
+            {
+                VisualImage->SetBrushFromTexture(ItemIcon);
+            }
+            DragDropOp->DefaultDragVisual = DragVisual;
+        }
+    }
+
+    OutOperation = DragDropOp;
+}
+
+
+
 
 bool UPartEquipSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
-	UE_LOG(LogTemp, Warning, TEXT("드롭 시도: %s"), *InOperation->GetName());
-   Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+    Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 
     UItemDragDropOperation* DraggedItemOp = Cast<UItemDragDropOperation>(InOperation);
     if (!DraggedItemOp)
     {
         return false;
     }
-    UE_LOG(LogTemp, Warning, TEXT("드롭 시도2"));
+
     if (DraggedItemOp->ItemType == ItemType)
     {
-        UE_LOG(LogTemp, Warning, TEXT("드롭 시도3"));
-        // 드래그 오퍼레이션에 들어있는 아이템 아이콘으로 슬롯 이미지 변경
-            if (this->SlotImage)
-            {
-                this->SlotImage->SetBrushFromTexture(DraggedItemOp->ItemIcon);
-                UE_LOG(LogTemp, Warning, TEXT("아이템 장착 성공: 타입 일치"));
-                return true; // 드롭 성공
-            }
-        //이 슬롯의 아이콘을 드롭된 아이템의 아이콘으로 변경
-        //UpdateSlotImage(DraggedItemOp->ItemIcon);
-
-        // 캐릭터에 장착 효과 적용
-        // AMyCharacter* MyCharacter = Cast<AMyCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-        // if (MyCharacter)
-        // {
-        //     MyCharacter->EquipPart(DraggedItemOp->ItemID, ItemType);
-        // }
-
-        return true; // 드롭 성공
+        if (DraggedItemOp->SourceSlot && DraggedItemOp->SourceSlot != this)
+        {
+            DraggedItemOp->SourceSlot->ClearSlot();
+        }
+        
+        SetSlotItem(DraggedItemOp->ItemID, DraggedItemOp->ItemIcon);
+        return true;
     }
 
-    return false; // 검증 실패
+    return false;
 }
 
 bool UPartEquipSlot::NativeOnDragOver(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
-    return true; // 여기서 true를 반환해야 드롭 가능
+    return true;
 }
+
+
+void UPartEquipSlot::NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+    Super::NativeOnDragCancelled(InDragDropEvent, InOperation);
+
+    
+    if (InOperation && Cast<UItemDragDropOperation>(InOperation))
+    {
+        this->ClearSlot();
+    }
+}
+
+
+void UPartEquipSlot::SetSlotItem(const FName NewItemID, UTexture2D* NewItemIcon)
+{
+	UE_LOG(LogTemp, Warning, TEXT("슬롯에 아이템 설정: %s"), *NewItemID.ToString());
+    ItemID = NewItemID;
+    ItemIcon = NewItemIcon;
+    if (SlotImage)
+    {
+        SlotImage->SetBrushFromTexture(ItemIcon);
+    }
+
+    if (ItemID == "EM01")
+    {
+        SetEffectEM01();
+    }
+    else if (ItemID == "EM02")
+    {
+        SetEffectEM02();
+    }
+    else if (ItemID == "AH01")
+    {
+        SetEffectAH01();
+    }
+    else if (ItemID == "AH02")
+    {
+        SetEffectAH02();
+    }
+    else if (ItemID == "SL01")
+    {
+        SetEffectSL01();
+    }
+    else if (ItemID == "SL02")
+    {
+		SetEffectSL02();
+    }
+}
+
+
+void UPartEquipSlot::ClearSlot()
+{
+	UE_LOG(LogTemp, Warning, TEXT("슬롯 아이템 초기화"));
+    ItemID = NAME_None; // 아이템 ID를 초기화
+    ItemIcon = nullptr; // 아이콘 레퍼런스를 해제
+    if (SlotImage)
+    {
+        SlotImage->SetBrushFromTexture(DefaultEmptyImage);
+    }
+
+    if (ItemType=="EM")
+    {
+        ResetEffectEM();
+    }
+    else if (ItemType == "AH")
+    {
+        ResetEffectAH();
+    }
+    else if (ItemType == "SL")
+    {
+        ResetEffectSL();
+	}
+}
+
+
+//효과구현
+void UPartEquipSlot::ResetEffectAH()
+{
+    // AH 효과 초기화 로직
+    UE_LOG(LogTemp, Warning, TEXT("AH 효과 초기화"));
+}
+
+void UPartEquipSlot::ResetEffectEM()
+{
+    // EM 효과 초기화 로직
+    UE_LOG(LogTemp, Warning, TEXT("EM 효과 초기화"));
+}
+void UPartEquipSlot::ResetEffectSL()
+{
+    // SL 효과 초기화 로직
+    UE_LOG(LogTemp, Warning, TEXT("SL 효과 초기화"));
+}
+
+void UPartEquipSlot::SetEffectAH01()
+{
+    // AH01 효과 적용 로직
+    UE_LOG(LogTemp, Warning, TEXT("AH01 효과 적용"));
+}
+
+void UPartEquipSlot::SetEffectAH02()
+{
+    // AH02 효과 적용 로직
+    UE_LOG(LogTemp, Warning, TEXT("AH02 효과 적용"));
+}
+
+void UPartEquipSlot::SetEffectEM01()
+{
+    // EM01 효과 적용 로직
+    UE_LOG(LogTemp, Warning, TEXT("EM01 효과 적용"));
+}
+
+void UPartEquipSlot::SetEffectEM02()
+{
+    // EM02 효과 적용 로직
+    UE_LOG(LogTemp, Warning, TEXT("EM02 효과 적용"));
+}
+
+void UPartEquipSlot::SetEffectSL01()
+{
+    // SL01 효과 적용 로직
+    UE_LOG(LogTemp, Warning, TEXT("SL01 효과 적용"));
+}
+
+void UPartEquipSlot::SetEffectSL02()
+{
+    // SL02 효과 적용 로직
+    UE_LOG(LogTemp, Warning, TEXT("SL02 효과 적용"));
+}
+

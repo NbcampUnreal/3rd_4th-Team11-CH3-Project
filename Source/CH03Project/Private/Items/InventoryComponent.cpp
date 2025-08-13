@@ -11,6 +11,14 @@ bool UInventoryComponent::AddItem(UBaseItem* NewItem)
     if(!NewItem)
         return false;
 
+
+    if (NewItem->Quantity == 99)
+    {
+		OnAddAccessoryChanged.Broadcast(NewItem->GetItemData().ItemID);
+        return true;
+    }
+
+
     // 같은 아이템 여부 확인
     for(UBaseItem* Item : Items)
     {

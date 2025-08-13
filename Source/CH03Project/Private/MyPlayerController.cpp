@@ -90,13 +90,13 @@ void AMyPlayerController::BeginPlay()
 					HUDWidget->UpdateScore(GameStatePlay->Score);
 					GameStatePlay->OnMissionTextChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateSubQuest);
 					HUDWidget->UpdateSubQuest(GameStatePlay->GetMissionText());
-					//GameStatePlay->OnHiddenItemChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateHiddenQuest);
 				}
 
 				if (UInventoryComponent* QuickSlot = MyPlayerCharacter->FindComponentByClass<UInventoryComponent>())
 				{
 					QuickSlot->OnAddItemChanged.AddDynamic(this, &AMyPlayerController::HandleAddItemChanged);
 					QuickSlot->OnRemoveItemChanged.AddDynamic(this, &AMyPlayerController::HandleRemoveItemChanged);
+					QuickSlot->OnAddAccessoryChanged.AddDynamic(this, &AMyPlayerController::HandleAddAccessoryChanged);
 				}
 
 				MyPlayerCharacter->OnChangedIsAiming.AddDynamic(HUDWidget, &UHUDWidget::SetCrosshairVisible);
@@ -147,6 +147,12 @@ void AMyPlayerController::HandleRemoveItemChanged(FName ItemID, int32 Quantity)
 {
 	if (HUDWidget) { HUDWidget->UpdateQuickSlot(ItemID, Quantity); }
 }
+
+void AMyPlayerController::HandleAddAccessoryChanged(FName ItemID)
+{
+	if (HUDWidget) { HUDWidget->UpdateAccessory(ItemID); }
+}
+
 
 void AMyPlayerController::OnPauseMenu()
 {

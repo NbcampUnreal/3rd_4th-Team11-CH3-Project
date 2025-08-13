@@ -7,6 +7,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAddItemChanged, FName, ItemID, int32, Quantity);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnRemoveItemChanged, FName, ItemID, int32, Quantity);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAddAccessoryChanged, FName, ItemID);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CH03PROJECT_API UInventoryComponent : public UActorComponent
@@ -31,6 +32,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	UBaseItem* GetItem(FName ItemID);
+
+	
+	FOnAddAccessoryChanged OnAddAccessoryChanged;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory")
