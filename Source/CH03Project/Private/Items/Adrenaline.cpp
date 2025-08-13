@@ -1,6 +1,6 @@
 ﻿#include "Items/Adrenaline.h"
 
-void UAdrenaline::Use_Implementation(AActor* User)
+bool UAdrenaline::Use_Implementation(AActor* User)
 {
-
+	return true;
 }
