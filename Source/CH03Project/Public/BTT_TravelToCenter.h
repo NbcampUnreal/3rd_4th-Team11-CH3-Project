@@ -29,6 +29,9 @@ private:
 	{
 		EPhase Phase = EPhase::Ready;
 		float  T = 0.f;
+
+		int32 MoveId = 0;
+
 		TWeakObjectPtr<ACharacter>  Boss;
 		TWeakObjectPtr<AAIController> AI;
 
