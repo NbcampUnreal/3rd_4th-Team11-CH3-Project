@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BTT_MissileAttack.h"
+#include "AI/BTT_MissileAttack.h"
 
 #include "AIController.h"
 #include "GameFramework/Character.h"
@@ -22,7 +22,7 @@
 
 UBTT_MissileAttack::UBTT_MissileAttack()
 {
-	NodeName = TEXT("Missile Attack (Ready°ÊFire°ÊFall°ÊLand)");
+	NodeName = TEXT("Missile Attack (Ready + Fire + Fall + Land)");
 	bNotifyTick = true;
 }
 

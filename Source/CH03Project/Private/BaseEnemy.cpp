@@ -6,7 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "WayPointSpawner.h"
-#include "EnemyAIController.h"
+#include "AI/EnemyAIController.h"
 
 ABaseEnemy::ABaseEnemy()
 {

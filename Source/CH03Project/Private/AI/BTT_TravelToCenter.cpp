@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BTT_TravelToCenter.h"
+#include "AI/BTT_TravelToCenter.h"
 
 #include "AIController.h"
 #include "GameFramework/Character.h"
@@ -21,7 +21,7 @@ static FORCEINLINE bool IsMontagePlaying(ACharacter* Char, UAnimMontage* Montage
 
 UBTT_TravelToCenter::UBTT_TravelToCenter()
 {
-	NodeName = TEXT("Travel To Center (Ready°ÊJump°ÊTravel°ÊFall°ÊLand)");
+	NodeName = TEXT("Travel To Center (Ready + Jump + Travel + Fall + Land)");
 	bNotifyTick = true;
 }
 

@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BTS_AttackSelect.h"
+#include "AI/BTS_AttackSelect.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 
@@ -11,7 +11,7 @@ UBTS_AttackSelect::UBTS_AttackSelect()
 
     Phase1Pattern = { 1, 2, 1, 3, 3, 2, 1, 1, 2 }; // 1=Primary, 2=LRM, 3=Charge
     Phase2Pattern = { 4, 1, 3, 3, 1, 4, 1, 3, 4 }; // 4=Missile
-    Phase3Pattern = { 3, 2, 1, 4, 3, 3, 1, 2, 5 }; // 5=Lasor
+    Phase3Pattern = { 3, 2, 5, 4, 3, 1, 2, 5, 1 }; // 5=Lasor
 }
 
 void UBTS_AttackSelect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -28,7 +28,7 @@ void UBTS_AttackSelect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
     {
         int32 Index = BB->GetValueAsInt(PhaseIndexKey.SelectedKeyName);
         const int32 N = Phase1Pattern.Num();
-        Index = (N > 0) ? (Index + 1) % N : 0;
+        Index = (N > 0) ? Index % N : 0;
         BB->SetValueAsInt(PhaseIndexKey.SelectedKeyName, Index);
     }
     Mem->bPrevAttacking = bAttacking;
@@ -84,6 +84,7 @@ void UBTS_AttackSelect::SelectAttackByPattern(UBehaviorTreeComponent& OwnerComp,
         if (IsAllowedAttack(Attack, BB))
         {
             BB->SetValueAsEnum(AttackTypeKey.SelectedKeyName, Attack);
+            BB->SetValueAsInt(PhaseIndexKey.SelectedKeyName, (TryIndex + 1) % N);
             return;
         }
     }

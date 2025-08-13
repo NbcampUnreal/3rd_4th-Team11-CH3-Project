@@ -11,7 +11,7 @@
 #include "BrainComponent.h"
 #include "BaseEnemy.h"
 #include "AIController.h"
-#include "EnemyAIController.h"
+#include "AI/EnemyAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/Engine.h"
 #include "GameModePlay.h"

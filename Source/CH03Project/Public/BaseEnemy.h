@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseActor.h"
-#include "EnemyActionInterface.h"
+#include "AI/EnemyActionInterface.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "Delegates/DelegateCombinations.h" 
 #include "BaseEnemy.generated.h"
