@@ -25,6 +25,7 @@ class CH03PROJECT_API IRangedWeaponInterface
 public:
 	virtual EWeaponState GetWeaponState() const = 0;
 	virtual void SetWeaponState(EWeaponState NewState) = 0;
+	virtual void AddRecoilPitchYaw(float RecoilPitchRange, float RecoilYawRange) = 0;
 	virtual void Reload() = 0;
 	virtual float GetReloadingTime() const = 0;
 	virtual void ChangeMaxAmmo(int32 NewMaxAmmo) = 0;

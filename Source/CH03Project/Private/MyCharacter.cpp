@@ -124,6 +124,11 @@ EMoveState AMyCharacter::GetMoveState() const
 	return MoveState;
 }
 
+EActionState AMyCharacter::GetActionState() const
+{
+	return ActionState;
+}
+
 UAnimInstance* AMyCharacter::GetCharacterAnimInstance() const
 {
 	return CharacterAnimInstance;

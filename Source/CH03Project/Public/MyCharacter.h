@@ -99,6 +99,7 @@ public:
 	// Getter, Setter
 	AMyPlayerController* GetMyPlayerController() const;
 	EMoveState GetMoveState() const;
+	EActionState GetActionState() const;
 	UAnimInstance* GetCharacterAnimInstance() const;
 	UAnimInstance* GetWeaponAnimInstance() const;
 
