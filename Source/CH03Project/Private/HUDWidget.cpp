@@ -250,3 +250,32 @@ void UHUDWidget::SetBossHPBarVisible(bool bVisible)
 		BossNameText->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }
+
+void UHUDWidget::UpdateCoolTime(float CoolTime, FName Name)
+{
+	auto Show = [&](UTextBlock* T) 
+	{
+		if (!T) return;
+
+		if (CoolTime > KINDA_SMALL_NUMBER) 
+		{
+			T->SetVisibility(ESlateVisibility::Visible);
+			float Rounded = FMath::RoundToFloat(CoolTime * 10.f) / 10.f;
+			T->SetText(FText::AsNumber(Rounded));
+		}
+		else 
+		{
+			T->SetVisibility(ESlateVisibility::Hidden);
+			T->SetText(FText::GetEmpty());
+		}
+	};
+
+	if (Name == "HealthPotion")
+	{
+		Show(PotionCoolTime);
+	}
+	else if (Name == "Adrenaline") 
+	{
+		Show(AdrenalineCoolTime);
+	}
+}

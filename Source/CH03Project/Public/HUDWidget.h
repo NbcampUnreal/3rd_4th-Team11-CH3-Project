@@ -30,11 +30,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateAccessory(FName ItemID);
-
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateSubQuest(const FString& QuestText);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateHiddenQuest(int32 StatueCount);
+
+	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
+	void UpdateCoolTime(float CoolTime, FName Name);
 
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void ShowHitMarker();
@@ -101,6 +103,11 @@ protected:
 	UImage* CardKey;
 	UPROPERTY(meta = (BindWidget))
 	UImage* Statue;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* PotionCoolTime;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* AdrenalineCoolTime;
 
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* ScaleUp;

@@ -7,6 +7,7 @@
 class UInputMappingContext;
 class UInputAction;
 class UBaseStatComponent;
+class UBaseItem;
 
 UCLASS()
 class CH03PROJECT_API AMyPlayerController : public APlayerController
@@ -57,6 +58,12 @@ public:
 
 	UFUNCTION()
 	void HandleAddAccessoryChanged(FName ItemID);
+
+	//---------------------CoolTime------------
+	UFUNCTION()
+	void HandleItemCoolTime(float Remaining, FName ItemId);
+	void BindCoolTimeToItem(class UBaseItem* Item);
+	void BindCoolTimeInInventory(class UInventoryComponent* Inv);
 
 public:
 	AMyPlayerController();
