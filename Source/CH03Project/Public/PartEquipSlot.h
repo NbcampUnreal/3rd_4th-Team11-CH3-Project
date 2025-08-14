@@ -5,7 +5,7 @@
 #include "ItemDragDropOperation.h"
 #include "PartEquipSlot.generated.h"
 
-
+class UWeaponAccCompoenent;
 UCLASS()
 class CH03PROJECT_API UPartEquipSlot : public UUserWidget
 {
@@ -43,17 +43,21 @@ public:
 	void ClearSlot();
 
 
+	UWeaponAccCompoenent* WeaponAccCompoenent;
+	void SearchWAC();
 
 	//착용효과들
 	void ResetEffectAH();
 	void ResetEffectEM();
 	void ResetEffectSL();
 
-	void SetEffectAH01();
-	void SetEffectAH02();
-	void SetEffectEM01();
-	void SetEffectEM02();
-	void SetEffectSL01();
-	void SetEffectSL02();
+	void SetEffectAH01(bool bIsPlus);
+	void SetEffectAH02(bool bIsPlus);
+	void SetEffectEM01(bool bIsPlus);
+	void SetEffectEM02(bool bIsPlus);
+	void SetEffectSL01(bool bIsPlus);
+	void SetEffectSL02(bool bIsPlus);
 
+
+	
 };

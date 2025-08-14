@@ -33,15 +33,15 @@ void UDamageComponent::SetAttackDamage(IBaseWeaponInterface* EquippedWeapon)
 	}
 }
 
-void UDamageComponent::SetAttackDamage(int32 NewAttackDamage)
+void UDamageComponent::SetItemPlusDamage(int32 NewItemPlusDamage)
 {
-	AttackDamage += NewAttackDamage;
+	ItemPlusDamage += NewItemPlusDamage;
 }
 
-int32 UDamageComponent::GetAttackDamage() const
-{
-	return AttackDamage;
-}
+//int32 UDamageComponent::GetAttackDamage() const
+//{
+//	return AttackDamage;
+//}
 
 void UDamageComponent::TransDamage(AActor* TargetActor)
 {
@@ -50,7 +50,7 @@ void UDamageComponent::TransDamage(AActor* TargetActor)
 		UBaseStatComponent* TargetStatComponent = TargetActor->FindComponentByClass<UBaseStatComponent>();
 		if (TargetStatComponent)
 		{
-			TargetStatComponent->AddHp(-AttackDamage);
+			TargetStatComponent->AddHp(-(AttackDamage + ItemPlusDamage));
 
 			APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 			if (InstigatorPawn && TargetActor->HasAuthority())

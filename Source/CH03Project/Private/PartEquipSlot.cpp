@@ -1,8 +1,10 @@
 ﻿#include "PartEquipSlot.h"
 #include "ItemDragDropOperation.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "MyCharacter.h"
 #include "Components/Image.h"
+#include "WeaponAccCompoenent.h"
+#include "BaseWeapon.h"
 
 
 void UPartEquipSlot::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
@@ -100,109 +102,193 @@ void UPartEquipSlot::SetSlotItem(const FName NewItemID, UTexture2D* NewItemIcon)
         SlotImage->SetBrushFromTexture(ItemIcon);
     }
 
+    if (!WeaponAccCompoenent)
+    {
+        SearchWAC();
+    }
+
     if (ItemID == "EM01")
     {
-        SetEffectEM01();
+        SetEffectEM01(true);
     }
     else if (ItemID == "EM02")
     {
-        SetEffectEM02();
+        SetEffectEM02(true);
     }
     else if (ItemID == "AH01")
     {
-        SetEffectAH01();
+        SetEffectAH01(true);
     }
     else if (ItemID == "AH02")
     {
-        SetEffectAH02();
+        SetEffectAH02(true);
     }
     else if (ItemID == "SL01")
     {
-        SetEffectSL01();
+        SetEffectSL01(true);
     }
     else if (ItemID == "SL02")
     {
-		SetEffectSL02();
+		SetEffectSL02(true);
     }
+    WeaponAccCompoenent->UpdateWeaponAcc();
 }
 
 
 void UPartEquipSlot::ClearSlot()
 {
-	UE_LOG(LogTemp, Warning, TEXT("슬롯 아이템 초기화"));
-    ItemID = NAME_None; // 아이템 ID를 초기화
-    ItemIcon = nullptr; // 아이콘 레퍼런스를 해제
+    UE_LOG(LogTemp, Warning, TEXT("슬롯 아이템 초기화"));
+    if (!WeaponAccCompoenent)
+    {
+        SearchWAC();
+    }
+
     if (SlotImage)
     {
         SlotImage->SetBrushFromTexture(DefaultEmptyImage);
     }
 
-    if (ItemType=="EM")
+    if (ItemID == "EM01")
     {
-        ResetEffectEM();
+        SetEffectEM01(false);
     }
-    else if (ItemType == "AH")
+    else if (ItemID == "EM02")
     {
-        ResetEffectAH();
+        SetEffectEM02(false);
     }
-    else if (ItemType == "SL")
+    else if (ItemID == "AH01")
     {
-        ResetEffectSL();
-	}
+        SetEffectAH01(false);
+    }
+    else if (ItemID == "AH02")
+    {
+        SetEffectAH02(false);
+    }
+    else if (ItemID == "SL01")
+    {
+        SetEffectSL01(false);
+    }
+    else if (ItemID == "SL02")
+    {
+        SetEffectSL02(false);
+    }
+    WeaponAccCompoenent->UpdateWeaponAcc();
+
+    ItemID = NAME_None; // 아이템 ID를 초기화
+    ItemIcon = nullptr; // 아이콘 레퍼런스를 해제
 }
 
+void UPartEquipSlot::SearchWAC()
+{   
+    ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+
+    if (PlayerCharacter)
+    {
+        AMyCharacter* MyCharacter = Cast<AMyCharacter>(PlayerCharacter);
+
+        if (MyCharacter && MyCharacter->GetEquippedWeapon())
+        {   
+            UWeaponAccCompoenent* FoundComponent = MyCharacter->GetEquippedWeapon()->FindComponentByClass<UWeaponAccCompoenent>();
+
+            if (FoundComponent)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("UWeaponAccCompoenent를 찾았습니다!"));
+                WeaponAccCompoenent = FoundComponent;
+            }
+        }
+    }
+}
 
 //효과구현
 void UPartEquipSlot::ResetEffectAH()
-{
-    // AH 효과 초기화 로직
+{   
     UE_LOG(LogTemp, Warning, TEXT("AH 효과 초기화"));
 }
 
 void UPartEquipSlot::ResetEffectEM()
 {
-    // EM 효과 초기화 로직
     UE_LOG(LogTemp, Warning, TEXT("EM 효과 초기화"));
 }
 void UPartEquipSlot::ResetEffectSL()
 {
-    // SL 효과 초기화 로직
     UE_LOG(LogTemp, Warning, TEXT("SL 효과 초기화"));
 }
 
-void UPartEquipSlot::SetEffectAH01()
+void UPartEquipSlot::SetEffectAH01(bool bIsPlus)
 {
-    // AH01 효과 적용 로직
     UE_LOG(LogTemp, Warning, TEXT("AH01 효과 적용"));
+    if (bIsPlus)
+    {
+		WeaponAccCompoenent->plusHandle += 1;
+    }
+    else
+    {
+        WeaponAccCompoenent->plusHandle -= 1;
+    }
 }
 
-void UPartEquipSlot::SetEffectAH02()
+void UPartEquipSlot::SetEffectAH02(bool bIsPlus)
 {
-    // AH02 효과 적용 로직
     UE_LOG(LogTemp, Warning, TEXT("AH02 효과 적용"));
+    if (bIsPlus)
+    {
+        WeaponAccCompoenent->plusHandle += 2;
+    }
+    else
+    {
+        WeaponAccCompoenent->plusHandle -= 2;
+    }
 }
 
-void UPartEquipSlot::SetEffectEM01()
+void UPartEquipSlot::SetEffectEM01(bool bIsPlus)
 {
-    // EM01 효과 적용 로직
     UE_LOG(LogTemp, Warning, TEXT("EM01 효과 적용"));
+    if (bIsPlus)
+    {
+        WeaponAccCompoenent->plusExtend += 10;
+    }
+    else
+    {
+        WeaponAccCompoenent->plusExtend -= 10;
+    }
 }
 
-void UPartEquipSlot::SetEffectEM02()
+void UPartEquipSlot::SetEffectEM02(bool bIsPlus)
 {
-    // EM02 효과 적용 로직
     UE_LOG(LogTemp, Warning, TEXT("EM02 효과 적용"));
+    if (bIsPlus)
+    {
+        WeaponAccCompoenent->plusExtend += 20;
+    }
+    else
+    {
+        WeaponAccCompoenent->plusExtend -= 20;
+    }
 }
 
-void UPartEquipSlot::SetEffectSL01()
+void UPartEquipSlot::SetEffectSL01(bool bIsPlus)
 {
-    // SL01 효과 적용 로직
     UE_LOG(LogTemp, Warning, TEXT("SL01 효과 적용"));
+    if (bIsPlus)
+    {
+        WeaponAccCompoenent->plusAttack += 1;
+    }
+    else
+    {
+        WeaponAccCompoenent->plusAttack -= 1;
+    }
 }
 
-void UPartEquipSlot::SetEffectSL02()
+void UPartEquipSlot::SetEffectSL02(bool bIsPlus)
 {
-    // SL02 효과 적용 로직
     UE_LOG(LogTemp, Warning, TEXT("SL02 효과 적용"));
+    if (bIsPlus)
+    {
+        WeaponAccCompoenent->plusAttack += 3;
+    }
+    else
+    {
+        WeaponAccCompoenent->plusAttack -= 3;
+    }
 }
 

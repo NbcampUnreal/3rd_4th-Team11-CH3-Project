@@ -12,7 +12,7 @@
 
 class ASpawnAreaActor;
 class APickupItem;
-
+class ATriggerVolume;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FQuestEvent);
 
 UCLASS()
@@ -80,7 +80,8 @@ public:
 	void Progress04();
 	void Progress05();
 	void Progress06();
-
+	void Progress07();
+	void Progress08();
 
 
 
@@ -105,4 +106,12 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FQuestEvent OnQuestCompleted;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
+	ATriggerVolume* LastBossTextVolume;
+
+	void OnLastBossTextVolumeBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
+
+
+	UFUNCTION(BlueprintCallable)
+	void GameEnding();
 };

@@ -599,3 +599,8 @@ void AMyCharacter::ReturnAttackToken(int32 Amount)
 		DamageComp->ReturnAttackToken(Amount);
 	}
 }
+
+ABaseWeapon* AMyCharacter::GetEquippedWeapon()
+{
+	return EquippedWeapon;
+}
