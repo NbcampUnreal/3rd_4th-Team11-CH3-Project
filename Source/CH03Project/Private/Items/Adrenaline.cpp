@@ -33,7 +33,7 @@ bool UAdrenaline::Use_Implementation(AActor* User)
 
 		if(StatComponent && DamageComponent)
 		{
-			DamageComponent->SetAttackDamage(IncreaseDamageStat);
+			DamageComponent->SetItemPlusDamage(IncreaseDamageStat);
 			StatComponent->SetArmor(IncreaseArmorStat);
 			UE_LOG(LogTemp, Warning, TEXT("%d Damage Stat Increase!"), IncreaseDamageStat);
 			UE_LOG(LogTemp, Warning, TEXT("%d Armor Stat Increase!"), IncreaseArmorStat);
@@ -63,7 +63,7 @@ void UAdrenaline::ResetAdrenalineEffect(AActor* User)
 		UBaseStatComponent* StatComponent = Player->FindComponentByClass<UBaseStatComponent>();
 		if(StatComponent && DamageComponent)
 		{
-			DamageComponent->SetAttackDamage(-IncreaseDamageStat);
+			DamageComponent->SetItemPlusDamage(0);
 			StatComponent->SetArmor(-IncreaseArmorStat);
 			UE_LOG(LogTemp, Warning, TEXT("Adrenaline effect reset."));
 		}
