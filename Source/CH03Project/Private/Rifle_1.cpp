@@ -12,7 +12,7 @@ void ARifle_1::BeginPlay()
 	
 	WeaponName = "Rifle_1";
 	Damage = 10;
-	AttackSpeed = 0.2f;
+	AttackSpeed = 0.15f;
 	MaxAmmo = 30;
 	CurrentAmmo = MaxAmmo;
 	ShootingRange = 10000.0f;
