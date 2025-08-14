@@ -15,9 +15,9 @@ void UWeaponAccCompoenent::UpdateWeaponAcc()
 	{
 		if (ABaseRangedWeapon* Weapon = Cast<ABaseRangedWeapon>(Owner))
 		{
-			/*Weapon->plusAttack += plusAttack;
-			Weapon->plusHandle += plusHandle;
-			Weapon->plusExtend += plusExtend;*/
+			Weapon->PlusAttack = PlusAttack;
+			Weapon->PlusHandle = PlusHandle;
+			Weapon->PlusAmmo = static_cast<float>(PlusAmmo) / 100;
 		}
 	}
 }

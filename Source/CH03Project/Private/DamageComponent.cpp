@@ -33,6 +33,11 @@ void UDamageComponent::SetAttackDamage(IBaseWeaponInterface* EquippedWeapon)
 	}
 }
 
+void UDamageComponent::SetItemPlusAttack(int32 NewItemPlusAttack)
+{
+	AttackDamage = NewItemPlusAttack;
+}
+
 void UDamageComponent::SetItemPlusDamage(int32 NewItemPlusDamage)
 {
 	ItemPlusDamage += NewItemPlusDamage;
