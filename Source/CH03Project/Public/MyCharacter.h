@@ -70,6 +70,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	EActionState ActionState;
 
+	// State Valiable
+	bool bIsCrouching;
+
 	// TSubclassOf Valiable
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<class ABaseWeapon> WeaponClass;

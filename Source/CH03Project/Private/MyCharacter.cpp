@@ -39,6 +39,8 @@ AMyCharacter::AMyCharacter()
 	MoveState = EMoveState::Idle;
 	ActionState = EActionState::Idle;
 
+	bIsCrouching = false;
+
 	WeaponClass = nullptr;
 
 	PlayerController = nullptr;
@@ -151,7 +153,11 @@ void AMyCharacter::EndReload()
 
 void AMyCharacter::Landed(const FHitResult& Hit)
 {
-	if (ActionState != EActionState::Crouching)
+	if (bIsCrouching)
+	{
+		ActionState = EActionState::Crouching;
+	}
+	else
 	{
 		ActionState = EActionState::Idle;
 	}
@@ -305,11 +311,14 @@ void AMyCharacter::Move(const FInputActionValue& value)
 
 void AMyCharacter::StartRun(const FInputActionValue& value)
 {
-	MoveState = EMoveState::Running;
-
-	if (GetCharacterMovement())
+	if (ActionState != EActionState::Jumping && ActionState != EActionState::Crouching && ActionState != EActionState::Cling)
 	{
-		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+		MoveState = EMoveState::Running;
+
+		if (GetCharacterMovement())
+		{
+			GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+		}
 	}
 }
 
@@ -317,9 +326,12 @@ void AMyCharacter::StopRun(const FInputActionValue& value)
 {
 	MoveState = EMoveState::Idle;
 
-	if (GetCharacterMovement())
+	if (ActionState != EActionState::Crouching)
 	{
-		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+		if (GetCharacterMovement())
+		{
+			GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+		}
 	}
 }
 
@@ -327,6 +339,7 @@ void AMyCharacter::StartJump(const FInputActionValue& value)
 {
 	if (value.Get<bool>())
 	{
+		MoveState = EMoveState::Idle;
 		ActionState = EActionState::Jumping;
 
 		Jump();
@@ -345,7 +358,41 @@ void AMyCharacter::Crouch(const FInputActionValue& value)
 {
 	if (value.Get<bool>())
 	{
+		if (!bIsCrouching)
+		{
+			MoveState = EMoveState::Idle;
+			ActionState = EActionState::Crouching;
 
+			bIsCrouching = true;
+
+			if (GetCapsuleComponent())
+			{
+				GetCapsuleComponent()->SetCapsuleHalfHeight(44.0f, true);
+			}
+
+			if (GetCharacterMovement())
+			{
+				NormalSpeed *= 0.5f;
+				GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+			}
+		}
+		else 
+		{
+			ActionState = EActionState::Idle;
+
+			bIsCrouching = false;
+
+			if (GetCapsuleComponent())
+			{
+				GetCapsuleComponent()->SetCapsuleHalfHeight(88.0f, true);
+			}
+
+			if (GetCharacterMovement())
+			{
+				NormalSpeed *= 2.0f;
+				GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+			}
+		}
 	}
 }
 
@@ -374,23 +421,34 @@ void AMyCharacter::StartAim(const FInputActionValue& value)
 		{
 			if (ABaseRangedWeapon* BaseRangedWeapon = Cast<ABaseRangedWeapon>(EquippedWeapon))
 			{
-				if (MoveState != EMoveState::Running && ActionState != EActionState::Jumping && BaseRangedWeapon->GetWeaponState() != EWeaponState::Reloading)
+				if (BaseRangedWeapon->GetWeaponState() != EWeaponState::Reloading)
 				{
-					BaseRangedWeapon->SetWeaponState(EWeaponState::Aiming);
-					CameraComp->SetFieldOfView(80.0f);
+					if (MoveState != EMoveState::Running && ActionState != EActionState::Jumping)
+					{
+						if (BaseRangedWeapon->GetWeaponState() != EWeaponState::Aiming)
+						{
+							BaseRangedWeapon->SetWeaponState(EWeaponState::Aiming);
 
-					OnChangedIsAiming.Broadcast(false);	
-				}
-				else if (MoveState == EMoveState::Running || ActionState == EActionState::Jumping)
-				{
-					BaseRangedWeapon->SetWeaponState(EWeaponState::Base);
-					CameraComp->SetFieldOfView(100.0f);
+							if (GetCharacterMovement())
+							{
+								NormalSpeed *= 0.5f;
+								GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+							}
+						}
 
-					OnChangedIsAiming.Broadcast(true);
+						CameraComp->SetFieldOfView(80.0f);
+
+						OnChangedIsAiming.Broadcast(false);
+					}
+					else if (MoveState == EMoveState::Running || ActionState == EActionState::Jumping)
+					{
+						CameraComp->SetFieldOfView(100.0f);
+
+						OnChangedIsAiming.Broadcast(true);
+					}
 				}
 				else if (BaseRangedWeapon->GetWeaponState() == EWeaponState::Reloading)
 				{
-					BaseRangedWeapon->SetWeaponState(EWeaponState::Reloading);
 					CameraComp->SetFieldOfView(100.0f);
 
 					OnChangedIsAiming.Broadcast(true);
@@ -404,11 +462,30 @@ void AMyCharacter::StopAim(const FInputActionValue& value)
 {
 	if (!value.Get<bool>())
 	{
-		Cast<ABaseRangedWeapon>(EquippedWeapon)->SetWeaponState(EWeaponState::Base);
-		CameraComp->SetFieldOfView(100.0f);
-
-		OnChangedIsAiming.Broadcast(true);
+		if (EquippedWeapon)
+		{
+			if (ABaseRangedWeapon* BaseRangedWeapon = Cast<ABaseRangedWeapon>(EquippedWeapon))
+			{
+				if (BaseRangedWeapon->GetWeaponState() != EWeaponState::Reloading)
+				{
+					BaseRangedWeapon->SetWeaponState(EWeaponState::Base);
+				}
+			}
+		}
 	}
+
+	if (GetCharacterMovement())
+	{
+		if (NormalSpeed < 599.0f)
+		{
+			NormalSpeed *= 2.0f;
+			GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+		}
+	}
+
+	CameraComp->SetFieldOfView(100.0f);
+
+	OnChangedIsAiming.Broadcast(true);
 }
 
 void AMyCharacter::Reload(const FInputActionValue& value)
