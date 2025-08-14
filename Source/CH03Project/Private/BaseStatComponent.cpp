@@ -115,6 +115,10 @@ void UBaseStatComponent::AddArmor(int Point)
 	Armor = FMath::Max(0, Armor);	//방어가 0이하로 내려갈 수 있게?
 }
 
+void UBaseStatComponent::SetArmor(int Point)
+{
+	Armor = Point;
+}
 
 void UBaseStatComponent::ImmuneToDamageSet()
 {
