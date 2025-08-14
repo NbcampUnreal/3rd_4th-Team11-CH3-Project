@@ -35,7 +35,7 @@ void UDamageComponent::SetAttackDamage(IBaseWeaponInterface* EquippedWeapon)
 
 void UDamageComponent::SetAttackDamage(int32 NewAttackDamage)
 {
-	AttackDamage = NewAttackDamage;
+	AttackDamage += NewAttackDamage;
 }
 
 int32 UDamageComponent::GetAttackDamage() const

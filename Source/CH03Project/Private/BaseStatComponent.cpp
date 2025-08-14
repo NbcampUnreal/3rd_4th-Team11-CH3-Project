@@ -117,7 +117,7 @@ void UBaseStatComponent::AddArmor(int Point)
 
 void UBaseStatComponent::SetArmor(int Point)
 {
-	Armor = Point;
+	Armor += Point;
 }
 
 void UBaseStatComponent::ImmuneToDamageSet()
