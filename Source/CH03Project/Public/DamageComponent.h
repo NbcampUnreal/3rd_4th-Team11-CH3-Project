@@ -28,6 +28,8 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void SetAttackDamage(IBaseWeaponInterface* EquippedWeapon);
+	void SetAttackDamage(int32 NewAttackDamage); // Overloading
+	int32 GetAttackDamage() const;
 
 	UFUNCTION(BlueprintCallable)
 	void TransDamage(AActor* TargetActor);

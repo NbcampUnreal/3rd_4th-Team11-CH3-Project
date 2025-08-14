@@ -33,6 +33,16 @@ void UDamageComponent::SetAttackDamage(IBaseWeaponInterface* EquippedWeapon)
 	}
 }
 
+void UDamageComponent::SetAttackDamage(int32 NewAttackDamage)
+{
+	AttackDamage = NewAttackDamage;
+}
+
+int32 UDamageComponent::GetAttackDamage() const
+{
+	return AttackDamage;
+}
+
 void UDamageComponent::TransDamage(AActor* TargetActor)
 {
 	if (TargetActor)

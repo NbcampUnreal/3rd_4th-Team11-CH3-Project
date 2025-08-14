@@ -46,6 +46,7 @@ public:
 	void HealHP(float Point); // 체력회복 포션에서 사용
 
 	void AddArmor(int Point);
+	void SetArmor(int Point);
 
 	void ImmuneToDamageSet();
 	void ImmuneToDamageEnd();
