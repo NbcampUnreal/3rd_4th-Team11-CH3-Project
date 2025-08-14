@@ -70,7 +70,7 @@ bool UInventoryComponent::RemoveItem(UBaseItem* Item, int32 Amount)
 	else
 	{
         Item->Quantity -= Amount;
-		Items.Remove(Item);
+		//Items.Remove(Item); // 인벤토리에서 Remove를 호출하면 쿨타임 정보가 사라짐 추후 문제시 수정
 	}
     // 델리게이트 발행
     OnRemoveItemChanged.Broadcast(Item->GetItemData().ItemID, Item->Quantity);
