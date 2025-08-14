@@ -97,6 +97,7 @@ void AMyPlayerController::BeginPlay()
 					QuickSlot->OnAddItemChanged.AddDynamic(this, &AMyPlayerController::HandleAddItemChanged);
 					QuickSlot->OnRemoveItemChanged.AddDynamic(this, &AMyPlayerController::HandleRemoveItemChanged);
 					QuickSlot->OnAddAccessoryChanged.AddDynamic(this, &AMyPlayerController::HandleAddAccessoryChanged);
+					BindCoolTimeInInventory(QuickSlot);
 				}
 
 				MyPlayerCharacter->OnChangedIsAiming.AddDynamic(HUDWidget, &UHUDWidget::SetCrosshairVisible);
@@ -141,6 +142,17 @@ void AMyPlayerController::BindDeligateToSpawnedWeapon(AActor* SpawnedWeapon)
 void AMyPlayerController::HandleAddItemChanged(FName ItemID, int32 Quantity)
 {
 	if (HUDWidget) { HUDWidget->UpdateQuickSlot(ItemID, Quantity); }
+
+	if (AMyCharacter* MC = Cast<AMyCharacter>(GetPawn()))
+	{
+		if (UInventoryComponent* Inv = MC->FindComponentByClass<UInventoryComponent>())
+		{
+			if (UBaseItem* Item = Inv->GetItem(ItemID)) 
+			{
+				BindCoolTimeToItem(Item);
+			}
+		}
+	}
 }
 
 void AMyPlayerController::HandleRemoveItemChanged(FName ItemID, int32 Quantity)
@@ -182,4 +194,32 @@ void AMyPlayerController::HandleBossHpChanged(int32 Current, int32 Max, AActor* 
 			HUDWidget->SetBossHPBarVisible(true);
 		}
 	}
+}
+
+void AMyPlayerController::HandleItemCoolTime(float CoolDuration, FName ItemName)
+{
+	if (HUDWidget)
+	{
+		HUDWidget->UpdateCoolTime(CoolDuration, ItemName);
+	}
+}
+
+void AMyPlayerController::BindCoolTimeToItem(UBaseItem* Item)
+{
+	if (!Item) return;
+	if (!Item->OnCooldownUpdate.IsAlreadyBound(this, &AMyPlayerController::HandleItemCoolTime))
+	{
+		Item->OnCooldownUpdate.AddDynamic(this, &AMyPlayerController::HandleItemCoolTime);
+	}
+}
+
+void AMyPlayerController::BindCoolTimeInInventory(UInventoryComponent* Inv)
+{
+	if (!Inv) return;
+	
+	for (UBaseItem* It : Inv->GetItems()) 
+	{
+		BindCoolTimeToItem(It);
+	}
+
 }
