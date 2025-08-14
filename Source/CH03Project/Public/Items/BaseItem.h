@@ -1,9 +1,12 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "ItemDataRow.h"
+#include "Delegates/Delegate.h"
 #include "BaseItem.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCooldownUpdate, float, RemainingTime, FName, ItemID);
 
 UCLASS(BlueprintType, Blueprintable, EditInlineNew)
 class CH03PROJECT_API UBaseItem : public UObject
@@ -12,6 +15,11 @@ class CH03PROJECT_API UBaseItem : public UObject
 
 public:
 	UBaseItem();
+
+	virtual class UWorld* GetWorld() const override;
+
+	UPROPERTY(BlueprintAssignable, Category = "Item|Delegates")
+	FOnCooldownUpdate OnCooldownUpdate;
 
 	// 아이템 데이터 테이블 참조 핸들
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item")
@@ -27,14 +35,22 @@ public:
 	bool Use(AActor* User);
 	virtual bool Use_Implementation(AActor* User);
 
-	// 쿨타임 상태 변수
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item")
-	bool bIsOnCooldown = false;
 	// 쿨타임 타이머 핸들
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item")
 	FTimerHandle CooldownTimerHandle;
+	// 쿨타임 상태
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Item")
+	bool bIsOnCooldown = false;
+	// 남은 쿨타임 시간
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	float RemainingCooldown;
+	// 전체 쿨타임 시간
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	float CooldownDuration;
 
 	// 쿨타임 해제 함수
 	UFUNCTION(BlueprintCallable, Category="Item")
 	virtual void ResetCooldown();
+
+	// 쿨타임 업데이트 함수
+	void UpdateCooldown();
 };
