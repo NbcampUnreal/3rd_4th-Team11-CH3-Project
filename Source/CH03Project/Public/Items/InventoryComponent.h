@@ -33,6 +33,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	UBaseItem* GetItem(FName ItemID);
 
+	const TArray<UBaseItem*>& GetItems() const { return Items; }
 	
 	FOnAddAccessoryChanged OnAddAccessoryChanged;
 
