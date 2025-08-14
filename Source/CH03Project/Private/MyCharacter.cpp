@@ -40,6 +40,7 @@ AMyCharacter::AMyCharacter()
 	ActionState = EActionState::Idle;
 
 	bIsCrouching = false;
+	bIsAiming = false;
 
 	WeaponClass = nullptr;
 
@@ -146,7 +147,14 @@ void AMyCharacter::EndReload()
 	{
 		if (ABaseRangedWeapon* BaseRangedWeapon = Cast<ABaseRangedWeapon>(EquippedWeapon))
 		{
-			BaseRangedWeapon->SetWeaponState(EWeaponState::Base);
+			if (bIsAiming)
+			{
+				BaseRangedWeapon->SetWeaponState(EWeaponState::Aiming);
+			}
+			else
+			{
+				BaseRangedWeapon->SetWeaponState(EWeaponState::Base);
+			}
 		}
 	}
 }
@@ -429,6 +437,8 @@ void AMyCharacter::StartAim(const FInputActionValue& value)
 						{
 							BaseRangedWeapon->SetWeaponState(EWeaponState::Aiming);
 
+							bIsAiming = true;
+
 							if (GetCharacterMovement())
 							{
 								NormalSpeed *= 0.5f;
@@ -476,12 +486,14 @@ void AMyCharacter::StopAim(const FInputActionValue& value)
 
 	if (GetCharacterMovement())
 	{
-		if (NormalSpeed < 599.0f)
+		if (bIsAiming)
 		{
 			NormalSpeed *= 2.0f;
 			GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 		}
 	}
+
+	bIsAiming = false;
 
 	CameraComp->SetFieldOfView(100.0f);
 
