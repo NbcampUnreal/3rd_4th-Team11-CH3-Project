@@ -72,6 +72,7 @@ protected:
 
 	// State Valiable
 	bool bIsCrouching;
+	bool bIsAiming;
 
 	// TSubclassOf Valiable
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
