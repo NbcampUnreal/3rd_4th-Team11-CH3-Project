@@ -4,6 +4,7 @@
 #include "MyCharacter.h"
 #include "HUDWidget.h"
 #include "BaseStatComponent.h"
+#include "GunAccessory.h"
 #include "PauseWidget.h"
 #include "Items/InventoryComponent.h"
 #include "Items/BaseItem.h" 
@@ -26,6 +27,7 @@ AMyPlayerController::AMyPlayerController()
 	ShootAction = nullptr;
 	InteractionAction = nullptr;
 	PauseAction = nullptr;
+	InvAction = nullptr;
 }
 
 void AMyPlayerController::BeginPlay()
@@ -40,14 +42,6 @@ void AMyPlayerController::BeginPlay()
 			{
 				Subsystem->AddMappingContext(IMC, 0);
 			}
-		}
-	}
-
-	if (UEnhancedInputComponent* EnhancedInputComp = Cast<UEnhancedInputComponent>(InputComponent))
-	{
-		if (PauseAction)
-		{
-			EnhancedInputComp->BindAction(PauseAction, ETriggerEvent::Started, this, &AMyPlayerController::OnPauseMenu);
 		}
 	}
 
@@ -110,10 +104,7 @@ void AMyPlayerController::BeginPlay()
 		{
 			if (UBaseStatComponent* BossStat = BossActors[0]->FindComponentByClass<UBaseStatComponent>())
 			{
-				// 1) HUD 갱신 바인딩
 				BossStat->OnHpChangedEvent.AddDynamic(HUDWidget, &UHUDWidget::UpdateBossHealth);
-
-				// 2) 처음 데미지 때만 바 보이기
 				BossStat->OnHpChangedEvent.AddDynamic(this, &AMyPlayerController::HandleBossHpChanged);
 			}
 		}
@@ -162,9 +153,8 @@ void AMyPlayerController::HandleRemoveItemChanged(FName ItemID, int32 Quantity)
 
 void AMyPlayerController::HandleAddAccessoryChanged(FName ItemID)
 {
-	if (HUDWidget) { HUDWidget->UpdateAccessory(ItemID); }
+	if (GunAccessory) { GunAccessory->UpdateAccessory(ItemID); }
 }
-
 
 void AMyPlayerController::OnPauseMenu()
 {
@@ -182,6 +172,30 @@ void AMyPlayerController::OnPauseMenu()
 	FInputModeUIOnly InputMode;
 	SetInputMode(InputMode);
 	bShowMouseCursor = true;
+}
+
+void AMyPlayerController::OnInvMenu()
+{
+	if (GunAccessory && GunAccessory->IsInViewport())
+	{
+		GunAccessory->RemoveFromParent();
+		SetPause(false);
+		SetInputMode(FInputModeGameOnly());
+		bShowMouseCursor = false;
+		return;
+	}
+
+	if (!GunAccessory && GunAccessoryWidgetClass)
+	{
+		GunAccessory = CreateWidget<UGunAccessory>(this, GunAccessoryWidgetClass);
+	}
+	if (GunAccessory)
+	{
+		GunAccessory->AddToViewport(100);
+		SetPause(true);
+		SetInputMode(FInputModeUIOnly());
+		bShowMouseCursor = true;
+	}
 }
 
 void AMyPlayerController::HandleBossHpChanged(int32 Current, int32 Max, AActor* InstigatorActor)
@@ -222,4 +236,21 @@ void AMyPlayerController::BindCoolTimeInInventory(UInventoryComponent* Inv)
 		BindCoolTimeToItem(It);
 	}
 
+}
+
+void AMyPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		if (PauseAction)
+		{
+			EIC->BindAction(PauseAction, ETriggerEvent::Started, this, &AMyPlayerController::OnPauseMenu);
+		}
+		if (InvAction)
+		{
+			EIC->BindAction(InvAction, ETriggerEvent::Started, this, &AMyPlayerController::OnInvMenu);
+		}
+	}
 }

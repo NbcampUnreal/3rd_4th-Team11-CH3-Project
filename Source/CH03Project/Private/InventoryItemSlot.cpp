@@ -1,6 +1,8 @@
 ﻿#include "InventoryItemSlot.h"
 #include "ItemDragDropOperation.h"
 #include "DragMoveWidget.h"
+#include "Components/Image.h" 
+#include "Blueprint/WidgetBlueprintLibrary.h" 
 
 void UInventoryItemSlot::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {   
