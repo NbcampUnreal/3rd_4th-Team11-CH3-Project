@@ -15,18 +15,12 @@ public:
 	UAdrenaline();
 	virtual bool Use_Implementation(AActor* User) override;
 
-	// 공격력
+	// 증가되는 공격력 수치
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Adrenaline")
-	int32 NewDamageStat;
-	// 캐릭터의 기존 공격력
+	int32 IncreaseDamageStat;
+	// 증가되는 방어력 수치
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Adrenaline")
-	int32 OldDamageStat;
-	// 방어력
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Adrenaline")
-	int32 NewArmorStat;
-	// 캐릭터의 기존 방어력
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Adrenaline")
-	int32 OldArmorStat;
+	int32 IncreaseArmorStat;
 	// 지속시간
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Adrenaline")
 	float Duration;

@@ -5,8 +5,8 @@
 
 UAdrenaline::UAdrenaline()
 {
-	NewDamageStat = 15;
-	NewArmorStat = 3;
+	IncreaseDamageStat = 5;
+	IncreaseArmorStat = 3;
 	Duration = 5.0f;
 }
 
@@ -33,12 +33,10 @@ bool UAdrenaline::Use_Implementation(AActor* User)
 
 		if(StatComponent && DamageComponent)
 		{
-			OldDamageStat = DamageComponent->GetAttackDamage();
-			OldArmorStat = StatComponent->GetArmor();
-			DamageComponent->SetAttackDamage(NewDamageStat);
-			StatComponent->SetArmor(NewArmorStat);
-			UE_LOG(LogTemp, Warning, TEXT("%d -> %d Damage Stat Increase!"), OldDamageStat, NewDamageStat);
-			UE_LOG(LogTemp, Warning, TEXT("%d -> %d Armor Stat Increase!"),OldArmorStat, NewArmorStat);
+			DamageComponent->SetAttackDamage(IncreaseDamageStat);
+			StatComponent->SetArmor(IncreaseArmorStat);
+			UE_LOG(LogTemp, Warning, TEXT("%d Damage Stat Increase!"), IncreaseDamageStat);
+			UE_LOG(LogTemp, Warning, TEXT("%d Armor Stat Increase!"), IncreaseArmorStat);
 		}
 
 		// 타이머 델리게이트 생성해서 파라미터 전달
@@ -65,10 +63,9 @@ void UAdrenaline::ResetAdrenalineEffect(AActor* User)
 		UBaseStatComponent* StatComponent = Player->FindComponentByClass<UBaseStatComponent>();
 		if(StatComponent && DamageComponent)
 		{
-			DamageComponent->SetAttackDamage(OldDamageStat);
-			StatComponent->SetArmor(OldArmorStat);
-			UE_LOG(LogTemp, Warning, TEXT("Adrenaline effect reset. Damage stat restored to %d."), OldDamageStat);
-			UE_LOG(LogTemp, Warning, TEXT("Adrenaline effect reset. Armor stat restored to %d."), OldArmorStat);
+			DamageComponent->SetAttackDamage(-IncreaseDamageStat);
+			StatComponent->SetArmor(-IncreaseArmorStat);
+			UE_LOG(LogTemp, Warning, TEXT("Adrenaline effect reset."));
 		}
 
 	}
