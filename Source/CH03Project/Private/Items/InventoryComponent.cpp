@@ -69,6 +69,7 @@ bool UInventoryComponent::RemoveItem(UBaseItem* Item, int32 Amount)
 	}
 	else
 	{
+        Item->Quantity -= Amount;
 		Items.Remove(Item);
 	}
     // 델리게이트 발행
