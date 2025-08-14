@@ -152,4 +152,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Token")
 	void ReturnAttackToken(int32 Amount);
 
+	ABaseWeapon* GetEquippedWeapon();
+
 };

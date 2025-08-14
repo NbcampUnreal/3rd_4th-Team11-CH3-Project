@@ -7,6 +7,7 @@
 #include "SpawnAreaActor.h"
 #include "Items/PickupItem.h"
 #include "BaseEnemy.h"
+#include "Engine/TriggerVolume.h"
 
 AQuestTypeA::AQuestTypeA()
 {	
@@ -35,6 +36,12 @@ void AQuestTypeA::BeginPlay()
 
 	//타이머 설치해서 10초뒤에 DestroyAllEnemies() 실행
 	//GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AQuestTypeA::DestroyAllEnemies, 10.0f, false);
+
+	if (LastBossTextVolume)
+	{
+		// OnActorBeginOverlap 이벤트에 OnLastBossTextVolumeBeginOverlap 함수를 연결
+		LastBossTextVolume->OnActorBeginOverlap.AddDynamic(this, &AQuestTypeA::OnLastBossTextVolumeBeginOverlap);
+	}
 }
 
 void AQuestTypeA::SetSubTexts()
@@ -84,6 +91,12 @@ void AQuestTypeA::ProgressStarter()
 		break;
 	case 6:
 		Progress06();
+		break;
+	case 7:
+		Progress07();
+		break;
+	case 8:
+		Progress08();
 		break;
 	}
 }
@@ -138,7 +151,16 @@ void AQuestTypeA::Progress06()	//문 열림
 	OnQuestCompleted.Broadcast();
 	GameModePlays->SetMissionText(SubTexts[0]);
 }
-
+void AQuestTypeA::Progress07()	//보스 ㄱㄱ
+{
+	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 7단계"));
+	GameModePlays->SetMissionText(SubTexts[8]);
+}
+void AQuestTypeA::Progress08()	//안정화ㄱㄱ
+{
+	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 8단계"));
+	GameModePlays->SetMissionText(SubTexts[9]);
+}
 
 
 void AQuestTypeA::UpdateKillCount(int32 Points)
@@ -326,5 +348,31 @@ void AQuestTypeA::OpenDoorCount()
 	{
 		OnDoorOpenCount--;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AQuestTypeA::OpenDoorCount, 0.1f, false);
+	}
+}
+
+
+
+void AQuestTypeA::OnLastBossTextVolumeBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
+{
+	if (OtherActor && OtherActor->ActorHasTag("Player"))
+	{
+		if (ProgressStage == 6)
+		{
+			ProgressStage++;
+			ProgressStarter();
+		}
+	}
+}
+
+
+void AQuestTypeA::GameEnding()
+{
+	UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작??"));
+	if (ProgressStage == 8)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작"));
+		ProgressStage++;
+		//엔딩처리
 	}
 }
