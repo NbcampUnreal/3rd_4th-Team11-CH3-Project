@@ -21,6 +21,10 @@ protected:
 	float ShootingRange;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	float ReloadingTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	float RecoilPitchScale;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	float RecoilYawScale;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	UParticleSystem* ShootHitEffect;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
@@ -42,6 +46,8 @@ public:
 	virtual void Attack() override;
 	virtual void Equip() override;
 	virtual void Unequip() override;
+	UFUNCTION(BlueprintCallable, Category = "Behavior")
+	virtual void AddRecoilPitchYaw(float RecoilPitchRange, float RecoilYawRange) override;
 	UFUNCTION(BlueprintCallable, Category = "Behavior")
 	virtual void Reload() override;
 	UFUNCTION(BlueprintCallable, Category = "Get")
