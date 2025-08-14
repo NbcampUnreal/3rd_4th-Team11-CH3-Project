@@ -219,11 +219,11 @@ void UPartEquipSlot::SetEffectAH01(bool bIsPlus)
     UE_LOG(LogTemp, Warning, TEXT("AH01 효과 적용"));
     if (bIsPlus)
     {
-		WeaponAccCompoenent->plusHandle += 1;
+		WeaponAccCompoenent->PlusHandle -= 20;
     }
     else
     {
-        WeaponAccCompoenent->plusHandle -= 1;
+        WeaponAccCompoenent->PlusHandle += 20;
     }
 }
 
@@ -232,11 +232,11 @@ void UPartEquipSlot::SetEffectAH02(bool bIsPlus)
     UE_LOG(LogTemp, Warning, TEXT("AH02 효과 적용"));
     if (bIsPlus)
     {
-        WeaponAccCompoenent->plusHandle += 2;
+        WeaponAccCompoenent->PlusHandle -= 50;
     }
     else
     {
-        WeaponAccCompoenent->plusHandle -= 2;
+        WeaponAccCompoenent->PlusHandle += 50;
     }
 }
 
@@ -245,11 +245,11 @@ void UPartEquipSlot::SetEffectEM01(bool bIsPlus)
     UE_LOG(LogTemp, Warning, TEXT("EM01 효과 적용"));
     if (bIsPlus)
     {
-        WeaponAccCompoenent->plusExtend += 10;
+        WeaponAccCompoenent->PlusAmmo += 10;
     }
     else
     {
-        WeaponAccCompoenent->plusExtend -= 10;
+        WeaponAccCompoenent->PlusAmmo -= 10;
     }
 }
 
@@ -258,11 +258,11 @@ void UPartEquipSlot::SetEffectEM02(bool bIsPlus)
     UE_LOG(LogTemp, Warning, TEXT("EM02 효과 적용"));
     if (bIsPlus)
     {
-        WeaponAccCompoenent->plusExtend += 20;
+        WeaponAccCompoenent->PlusAmmo += 25;
     }
     else
     {
-        WeaponAccCompoenent->plusExtend -= 20;
+        WeaponAccCompoenent->PlusAmmo -= 25;
     }
 }
 
@@ -271,11 +271,11 @@ void UPartEquipSlot::SetEffectSL01(bool bIsPlus)
     UE_LOG(LogTemp, Warning, TEXT("SL01 효과 적용"));
     if (bIsPlus)
     {
-        WeaponAccCompoenent->plusAttack += 1;
+        WeaponAccCompoenent->PlusAttack += 3;
     }
     else
     {
-        WeaponAccCompoenent->plusAttack -= 1;
+        WeaponAccCompoenent->PlusAttack -= 3;
     }
 }
 
@@ -284,11 +284,11 @@ void UPartEquipSlot::SetEffectSL02(bool bIsPlus)
     UE_LOG(LogTemp, Warning, TEXT("SL02 효과 적용"));
     if (bIsPlus)
     {
-        WeaponAccCompoenent->plusAttack += 3;
+        WeaponAccCompoenent->PlusAttack += 5;
     }
     else
     {
-        WeaponAccCompoenent->plusAttack -= 3;
+        WeaponAccCompoenent->PlusAttack -= 5;
     }
 }
 

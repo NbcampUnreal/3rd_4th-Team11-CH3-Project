@@ -15,6 +15,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/Engine.h"
 #include "GameModePlay.h"
+#include "AccDropComponent.h"
 
 
 UBaseStatComponent::UBaseStatComponent()
@@ -166,6 +167,11 @@ void UBaseStatComponent::OnDeath()
 				}
 			}
 		}
+		if (UAccDropComponent* AccDropComp = Cast<UAccDropComponent>(OwnerCharacter->GetComponentByClass(UAccDropComponent::StaticClass())))
+		{
+			AccDropComp->DeathEnemy();
+		}
+
 	}
 	OnDeathEvent.Broadcast(OwnerCharacter);
 	AGameModePlay* GameModePlay = Cast<AGameModePlay>(UGameplayStatics::GetGameMode(GetWorld()));

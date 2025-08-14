@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "BaseWeapon.h"
@@ -67,4 +67,9 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
+	int32 PlusAttack = 0;
+	int32 PlusAmmo = 0;
+	float PlusHandle = 1;
+
+	void UpdateAttack();
 };

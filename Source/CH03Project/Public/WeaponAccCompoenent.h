@@ -13,9 +13,9 @@ class CH03PROJECT_API UWeaponAccCompoenent : public UActorComponent
 public:		
 	UWeaponAccCompoenent();
 
-	int32 plusAttack;
-	int32 plusHandle;
-	int32 plusExtend;
+	int32 PlusAttack = 0;
+	int32 PlusHandle = 100;
+	int32 PlusAmmo = 0;
 
 
 	void UpdateWeaponAcc();

@@ -1,4 +1,4 @@
-#include "BaseRangedWeapon.h"
+﻿#include "BaseRangedWeapon.h"
 #include "MyCharacter.h"
 #include "MyPlayerController.h"
 #include "DamageComponent.h"
@@ -159,8 +159,8 @@ void ABaseRangedWeapon::AddRecoilPitchYaw(float RecoilPitchRange, float RecoilYa
 				RandomRecoilYawScale *= 0.7f;
 			}
 
-			WeaponOwner->AddControllerPitchInput(RandomRecoilPitchScale);
-			WeaponOwner->AddControllerYawInput(RandomRecoilYawScale);
+			WeaponOwner->AddControllerPitchInput(RandomRecoilPitchScale * PlusHandle);
+			WeaponOwner->AddControllerYawInput(RandomRecoilYawScale * PlusHandle);
 
 			FRotator CurrentRotation = WeaponOwner->SceneComp->GetRelativeRotation();
 			float NewPitch = CurrentRotation.Pitch + RandomRecoilPitchScale;
@@ -194,7 +194,7 @@ void ABaseRangedWeapon::Reload()
 			WeaponOwner->GetCharacterAnimInstance()->Montage_Play(CharacterReloadMontage, 1.0f);
 			WeaponOwner->GetWeaponAnimInstance()->Montage_Play(WeaponReloadMontage, 1.0f);
 
-			CurrentAmmo = MaxAmmo;
+			CurrentAmmo = MaxAmmo + PlusAmmo;
 
 			OnChangeCurrentAmmo.Broadcast(CurrentAmmo);
 		}
@@ -226,4 +226,12 @@ void ABaseRangedWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ABaseRangedWeapon::UpdateAttack()
+{
+	if (AMyCharacter* WeaponOwner = Cast<AMyCharacter>(GetOwner()))
+	{
+		WeaponOwner->DamageComp->SetItemPlusAttack(Damage + PlusAttack);
+	}
 }

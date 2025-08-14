@@ -52,7 +52,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	int32 EnemyBossMaxHp;
 
-
-	
-
+	//3개
+	TArray<int32> AccItemList = { 0, 0, 0 };
+	TArray<int32> AccItemCanGetList = { 0, 1, 2 };
 };
