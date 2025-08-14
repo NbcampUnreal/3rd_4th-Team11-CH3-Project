@@ -209,36 +209,6 @@ void UHUDWidget::UpdateQuickSlot(FName Name, int32 Count)
 	}
 }
 
-void UHUDWidget::UpdateAccessory(FName ItemID)
-{
-	if (ItemID == "EM01")
-	{
-		//해당 슬롯의 bIsCanUse를 켜주고
-		//아이콘을 활성화
-	}
-	else if (ItemID == "EM02")
-	{
-
-	}
-	else if (ItemID == "AH01")
-	{
-
-	}
-	else if (ItemID == "AH02")
-	{
-
-	}
-	else if (ItemID == "SL01")
-	{
-
-	}
-	else if (ItemID == "SL02")
-	{
-
-	}
-}
-
-
 void UHUDWidget::SetBossHPBarVisible(bool bVisible)
 {
 	if (BossHealthBar)

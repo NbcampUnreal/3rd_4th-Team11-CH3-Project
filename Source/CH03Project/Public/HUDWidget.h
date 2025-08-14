@@ -29,8 +29,6 @@ public:
 	void UpdateQuickSlot(FName Name, int32 Count);
 
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
-	void UpdateAccessory(FName ItemID);
-	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateSubQuest(const FString& QuestText);
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateHiddenQuest(int32 StatueCount);
