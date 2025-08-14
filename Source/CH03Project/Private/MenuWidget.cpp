@@ -19,7 +19,7 @@ void UMenuWidget::NativeConstruct()
 void UMenuWidget::OnStartClicked()
 {
     RemoveFromParent();
-    UGameplayStatics::OpenLevel(GetWorld(), FName("MainLevel"));
+    UGameplayStatics::OpenLevel(GetWorld(), FName("OpeningLevel"));
 }
 
 void UMenuWidget::OnQuitClicked()
