@@ -41,6 +41,8 @@ AMyCharacter::AMyCharacter()
 
 	bIsCrouching = false;
 	bIsAiming = false;
+	bBugFixFlag = false;
+
 
 	WeaponClass = nullptr;
 
@@ -438,10 +440,11 @@ void AMyCharacter::StartAim(const FInputActionValue& value)
 				{
 					if (MoveState != EMoveState::Running && ActionState != EActionState::Jumping)
 					{
-						if (BaseRangedWeapon->GetWeaponState() != EWeaponState::Aiming)
+						if (BaseRangedWeapon->GetWeaponState() != EWeaponState::Aiming || bBugFixFlag)
 						{
 							BaseRangedWeapon->SetWeaponState(EWeaponState::Aiming);
 
+							bBugFixFlag = false;
 							bIsAiming = true;
 
 							if (GetCharacterMovement())
@@ -464,6 +467,17 @@ void AMyCharacter::StartAim(const FInputActionValue& value)
 				}
 				else if (BaseRangedWeapon->GetWeaponState() == EWeaponState::Reloading)
 				{
+					if (bIsAiming && !bBugFixFlag)
+					{
+						if (GetCharacterMovement())
+						{
+							NormalSpeed *= 2.0f;
+							GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+						}
+
+						bBugFixFlag = true;
+					}
+
 					CameraComp->SetFieldOfView(100.0f);
 
 					OnChangedIsAiming.Broadcast(true);
@@ -484,17 +498,17 @@ void AMyCharacter::StopAim(const FInputActionValue& value)
 				if (BaseRangedWeapon->GetWeaponState() != EWeaponState::Reloading)
 				{
 					BaseRangedWeapon->SetWeaponState(EWeaponState::Base);
+
+					if (bIsAiming)
+					{
+						if (GetCharacterMovement())
+						{
+							NormalSpeed *= 2.0f;
+							GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+						}
+					}
 				}
 			}
-		}
-	}
-
-	if (GetCharacterMovement())
-	{
-		if (bIsAiming)
-		{
-			NormalSpeed *= 2.0f;
-			GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 		}
 	}
 
