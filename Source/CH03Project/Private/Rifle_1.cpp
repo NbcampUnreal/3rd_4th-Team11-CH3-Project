@@ -17,6 +17,8 @@ void ARifle_1::BeginPlay()
 	CurrentAmmo = MaxAmmo;
 	ShootingRange = 10000.0f;
 	ReloadingTime = 3.2f;
+	RecoilPitchScale = 2.0f;
+	RecoilYawScale = 0.4f;
 
 	StaticMeshComp->AttachToComponent(
 		SkeletalMeshComp,

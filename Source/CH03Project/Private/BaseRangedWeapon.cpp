@@ -13,6 +13,8 @@ ABaseRangedWeapon::ABaseRangedWeapon()
 	CurrentAmmo = 0;
 	ShootingRange = 0.0f;
 	ReloadingTime = 0.0f;
+	RecoilPitchScale = 0.0f;
+	RecoilYawScale = 0.0f;
 	ShootHitEffect = nullptr;
 	WeaponState = EWeaponState::Base;
 	CharacterFireMontage = nullptr;
@@ -76,6 +78,8 @@ void ABaseRangedWeapon::Attack()
 						}
 					}
 
+					AddRecoilPitchYaw(0.5f, 0.1f);
+
 					CurrentAmmo--;
 
 					OnChangeCurrentAmmo.Broadcast(CurrentAmmo);
@@ -124,6 +128,49 @@ void ABaseRangedWeapon::Equip()
 void ABaseRangedWeapon::Unequip()
 {
 
+}
+
+void ABaseRangedWeapon::AddRecoilPitchYaw(float RecoilPitchRange, float RecoilYawRange)
+{
+	if (IsValid(GetOwner()))
+	{
+		if (AMyCharacter* WeaponOwner = Cast<AMyCharacter>(GetOwner()))
+		{
+			float RandomRecoilPitchScale = FMath::FRandRange(RecoilPitchScale - RecoilPitchRange, RecoilPitchScale + RecoilPitchRange);
+			float RandomRecoilYawScale = FMath::FRandRange(RecoilYawScale - RecoilYawRange, RecoilYawScale + RecoilYawRange);
+			if (FMath::RandRange(0, 1) == 0)
+			{
+				RandomRecoilYawScale *= -1.0f;
+			}
+			
+			if (WeaponOwner->GetActionState() == EActionState::Crouching)
+			{
+				RandomRecoilPitchScale *= 0.7f;
+				RandomRecoilYawScale *= 0.7f;
+			}
+			else if (WeaponOwner->GetActionState() == EActionState::Jumping)
+			{
+				RandomRecoilPitchScale *= 1.5f;
+				RandomRecoilYawScale *= 1.5f;
+			}
+			if (WeaponOwner->GetActionState() != EActionState::Jumping && WeaponState == EWeaponState::Aiming)
+			{
+				RandomRecoilPitchScale *= 0.7f;
+				RandomRecoilYawScale *= 0.7f;
+			}
+
+			WeaponOwner->AddControllerPitchInput(RandomRecoilPitchScale);
+			WeaponOwner->AddControllerYawInput(RandomRecoilYawScale);
+
+			FRotator CurrentRotation = WeaponOwner->SceneComp->GetRelativeRotation();
+			float NewPitch = CurrentRotation.Pitch + RandomRecoilPitchScale;
+			float NewYaw = CurrentRotation.Yaw + RandomRecoilYawScale;
+			NewPitch = FMath::ClampAngle(NewPitch, NewPitch, 80.0f);
+			NewYaw = FMath::ClampAngle(NewYaw, -30.0f, 30.0f);
+
+			WeaponOwner->SceneComp->SetRelativeRotation(FRotator(NewPitch, NewYaw, CurrentRotation.Roll));
+		}
+	}
 }
 
 void ABaseRangedWeapon::ChangeMaxAmmo(int32 NewMaxAmmo)
