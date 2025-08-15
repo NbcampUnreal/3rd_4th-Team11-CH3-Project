@@ -7,18 +7,26 @@
 #include "BaseWeapon.h"
 
 
+
+void UPartEquipSlot::NativeConstruct()
+{   
+	Super::NativeConstruct();
+    if (ItemIcon == nullptr)
+    {
+        SlotImage->SetBrushFromTexture(DefaultEmptyImage);
+    }
+    
+}
+
+
 void UPartEquipSlot::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
     if (ItemID.IsNone())
     {
-        UE_LOG(LogTemp, Warning, TEXT("슬롯에 아이템이 없어 드래그를 시작할 수 없습니다."));
         OutOperation = nullptr;
         return;
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("드래그 시작: %s"), *ItemID.ToString());
-
-    
     UItemDragDropOperation* DragDropOp = NewObject<UItemDragDropOperation>(this);
     if (!DragDropOp)
     {
@@ -94,7 +102,6 @@ void UPartEquipSlot::NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent
 
 void UPartEquipSlot::SetSlotItem(const FName NewItemID, UTexture2D* NewItemIcon)
 {
-	UE_LOG(LogTemp, Warning, TEXT("슬롯에 아이템 설정: %s"), *NewItemID.ToString());
     ItemID = NewItemID;
     ItemIcon = NewItemIcon;
     if (SlotImage)
@@ -137,7 +144,6 @@ void UPartEquipSlot::SetSlotItem(const FName NewItemID, UTexture2D* NewItemIcon)
 
 void UPartEquipSlot::ClearSlot()
 {
-    UE_LOG(LogTemp, Warning, TEXT("슬롯 아이템 초기화"));
     if (!WeaponAccCompoenent)
     {
         SearchWAC();
@@ -192,7 +198,6 @@ void UPartEquipSlot::SearchWAC()
 
             if (FoundComponent)
             {
-                UE_LOG(LogTemp, Warning, TEXT("UWeaponAccCompoenent를 찾았습니다!"));
                 WeaponAccCompoenent = FoundComponent;
             }
         }
@@ -200,19 +205,19 @@ void UPartEquipSlot::SearchWAC()
 }
 
 //효과구현
-void UPartEquipSlot::ResetEffectAH()
-{   
-    UE_LOG(LogTemp, Warning, TEXT("AH 효과 초기화"));
-}
-
-void UPartEquipSlot::ResetEffectEM()
-{
-    UE_LOG(LogTemp, Warning, TEXT("EM 효과 초기화"));
-}
-void UPartEquipSlot::ResetEffectSL()
-{
-    UE_LOG(LogTemp, Warning, TEXT("SL 효과 초기화"));
-}
+//void UPartEquipSlot::ResetEffectAH()
+//{   
+//    UE_LOG(LogTemp, Warning, TEXT("AH 효과 초기화"));
+//}
+//
+//void UPartEquipSlot::ResetEffectEM()
+//{
+//    UE_LOG(LogTemp, Warning, TEXT("EM 효과 초기화"));
+//}
+//void UPartEquipSlot::ResetEffectSL()
+//{
+//    UE_LOG(LogTemp, Warning, TEXT("SL 효과 초기화"));
+//}
 
 void UPartEquipSlot::SetEffectAH01(bool bIsPlus)
 {

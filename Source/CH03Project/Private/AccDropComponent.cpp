@@ -15,12 +15,7 @@ void UAccDropComponent::DeathEnemy()
 	int32 RandomValue = FMath::RandRange(0, 100);
 	if (RandomValue <= ChanceToDrop)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("아이템이 드랍되었습니다. 확률: %d%%, 랜덤값: %d"), ChanceToDrop, RandomValue);
 		DropItem();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("아이템이 드랍되지 않았습니다. 확률: %d%%, 랜덤값: %d"), ChanceToDrop, RandomValue);
 	}
 }
 
@@ -31,13 +26,11 @@ void UAccDropComponent::DropItem()
 	//일단 게임스테이트 참조
 	AGameStatePlay* GameState = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
 	if (!GameState)
-	{	
-		UE_LOG(LogTemp, Warning, TEXT("게임스테이트를 찾을 수 없습니다."));
+	{
 		return;
 	}
 	if (GameState->AccItemCanGetList.Num() < 1)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("드랍 가능한 아이템이 없습니다."));
 		return;
 	}
 
@@ -47,8 +40,6 @@ void UAccDropComponent::DropItem()
 
 	if (GameState->AccItemList[DroppedItem] > 1)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("이미 아이템이 최대치입니다. 드랍되지 않습니다."));
-		
 		GameState->AccItemCanGetList.Remove(DroppedItem);
 		return;
 	}
