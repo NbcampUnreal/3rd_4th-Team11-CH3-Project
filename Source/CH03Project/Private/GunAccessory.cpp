@@ -1,41 +1,41 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "GunAccessory.h"
 #include "InventoryItemSlot.h"
 
-void UGunAccessory::ActivateSlot(UInventoryItemSlot* InSlot, FName InItemID)
+void UGunAccessory::ActivateSlot(UInventoryItemSlot* InSlot)
 {
     if (!InSlot) return;
 
-    InSlot->ItemID = InItemID;
+    //InSlot->ItemID = InItemID;
     InSlot->bIsCanUse = true;
 }
 
 void UGunAccessory::UpdateAccessory(FName ItemID)
 {
-    if (ItemID == "EMUp")
+    if (ItemID == "EM01")
     {
-        ActivateSlot(EM0, ItemID);
+        ActivateSlot(EM0);
     }
-    else if (ItemID == "EMDown")
+    else if (ItemID == "EM02")
     {
-        ActivateSlot(EM1, ItemID);
+        ActivateSlot(EM1);
     }
-    if (ItemID == "AHUp")
+    if (ItemID == "AH01")
     {
-        ActivateSlot(EM0, ItemID);
+        ActivateSlot(EM0);
     }
-    else if (ItemID == "AHDown")
+    else if (ItemID == "AH02")
     {
-        ActivateSlot(EM1, ItemID);
+        ActivateSlot(EM1);
     }
-    if (ItemID == "SLUp")
+    if (ItemID == "SL01")
     {
-        ActivateSlot(EM0, ItemID);
+        ActivateSlot(EM0);
     }
-    else if (ItemID == "SLDown")
+    else if (ItemID == "SL02")
     {
-        ActivateSlot(EM1, ItemID);
+        ActivateSlot(EM1);
     }
 }

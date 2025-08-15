@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -42,5 +42,5 @@ public:
 	void UpdateAccessory(FName ItemID);
 
 protected:
-	void ActivateSlot(UInventoryItemSlot* InSlot, FName InItemID);
+	void ActivateSlot(UInventoryItemSlot* InSlot);
 };
