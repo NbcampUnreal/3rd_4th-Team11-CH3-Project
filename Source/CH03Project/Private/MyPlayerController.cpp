@@ -91,6 +91,7 @@ void AMyPlayerController::BeginPlay()
 					QuickSlot->OnAddItemChanged.AddDynamic(this, &AMyPlayerController::HandleAddItemChanged);
 					QuickSlot->OnRemoveItemChanged.AddDynamic(this, &AMyPlayerController::HandleRemoveItemChanged);
 					QuickSlot->OnAddAccessoryChanged.AddDynamic(this, &AMyPlayerController::HandleAddAccessoryChanged);
+					UE_LOG(LogTemp, Warning, TEXT("QuickSlot Component Found!"));
 					BindCoolTimeInInventory(QuickSlot);
 				}
 
@@ -153,7 +154,15 @@ void AMyPlayerController::HandleRemoveItemChanged(FName ItemID, int32 Quantity)
 
 void AMyPlayerController::HandleAddAccessoryChanged(FName ItemID)
 {
-	if (GunAccessory) { GunAccessory->UpdateAccessory(ItemID); }
+	if (GunAccessory)
+	{
+		GunAccessory->UpdateAccessory(ItemID);
+	}
+	else
+	{
+		GunAccessory = CreateWidget<UGunAccessory>(this, GunAccessoryWidgetClass);
+		GunAccessory->UpdateAccessory(ItemID);
+	}
 }
 
 void AMyPlayerController::OnPauseMenu()
