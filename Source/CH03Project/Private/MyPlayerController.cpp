@@ -3,6 +3,7 @@
 #include "EnhancedInputComponent.h"
 #include "MyCharacter.h"
 #include "HUDWidget.h"
+#include "EndMenuWidget.h"
 #include "BaseStatComponent.h"
 #include "GunAccessory.h"
 #include "PauseWidget.h"

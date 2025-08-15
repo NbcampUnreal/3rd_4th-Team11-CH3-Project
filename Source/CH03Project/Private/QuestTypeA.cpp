@@ -3,6 +3,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DataTable.h"
 #include "SubTextDataRow.h"
+#include "EndMenuWidget.h"
+#include "MyPlayerController.h"
 #include "GameStatePlay.h"
 #include "SpawnAreaActor.h"
 #include "Items/PickupItem.h"
@@ -373,6 +375,22 @@ void AQuestTypeA::GameEnding()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작"));
 		ProgressStage++;
-		//엔딩처리
+		
+		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		AMyPlayerController* MyController = Cast<AMyPlayerController>(PC);
+		if (MyController)
+		{
+			MyController->EndMenuWidget = CreateWidget<UEndMenuWidget>(MyController, MyController->EndMenuWidgetClass);
+			AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
+			if (MyController->EndMenuWidget)
+			{
+				MyController->EndMenuWidget->AddToViewport();
+				if (GameStatePlay)
+				{
+					GameStatePlay->OnScoreChanged.AddDynamic(MyController->EndMenuWidget, &UEndMenuWidget::UpdateEndScore);
+					MyController->EndMenuWidget->UpdateEndScore(GameStatePlay->Score);
+				}
+			}
+		}
 	}
 }
