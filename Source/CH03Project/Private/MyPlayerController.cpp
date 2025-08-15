@@ -41,6 +41,10 @@ void AMyPlayerController::BeginPlay()
 			if (IMC)
 			{
 				Subsystem->AddMappingContext(IMC, 0);
+				if (InvAction)
+				{
+					InvAction->bTriggerWhenPaused = true;
+				}
 			}
 		}
 	}
@@ -191,6 +195,9 @@ void AMyPlayerController::OnInvMenu()
 		SetPause(false);
 		SetInputMode(FInputModeGameOnly());
 		bShowMouseCursor = false;
+
+		SetIgnoreMoveInput(false);
+		SetIgnoreLookInput(false);
 		return;
 	}
 
@@ -202,8 +209,11 @@ void AMyPlayerController::OnInvMenu()
 	{
 		GunAccessory->AddToViewport(100);
 		SetPause(true);
-		SetInputMode(FInputModeUIOnly());
+		SetInputMode(FInputModeGameAndUI());
 		bShowMouseCursor = true;
+
+		SetIgnoreMoveInput(true);
+		SetIgnoreLookInput(true);
 	}
 }
 
