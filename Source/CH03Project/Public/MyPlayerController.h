@@ -1,8 +1,10 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "EndMenuWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "MyPlayerController.generated.h"
+
 
 class UInputMappingContext;
 class UInputAction;
@@ -57,6 +59,10 @@ public:
 	TSubclassOf<class UGunAccessory> GunAccessoryWidgetClass;
 	UPROPERTY(BlueprintReadWrite, Category = "UI")
 	UGunAccessory* GunAccessory;
+	UPROPERTY(BlueprintReadWrite, Category = "UI")
+	UEndMenuWidget* EndMenuWidget = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
+	TSubclassOf<class UEndMenuWidget> EndMenuWidgetClass;
 
 	UFUNCTION()
 	void HandleAddItemChanged(FName ItemID, int32 Quantity);
