@@ -12,6 +12,9 @@ class CH03PROJECT_API UPartEquipSlot : public UUserWidget
 	GENERATED_BODY()
 
 public:
+
+	virtual void NativeConstruct() override;
+
 	void NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
 	bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;

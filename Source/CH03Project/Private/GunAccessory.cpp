@@ -8,7 +8,7 @@ void UGunAccessory::ActivateSlot(UInventoryItemSlot* InSlot)
 {
     if (!InSlot) return;
 
-    //InSlot->ItemID = InItemID;
+    InSlot->ShowSlotImage();
     InSlot->bIsCanUse = true;
 }
 
@@ -24,18 +24,18 @@ void UGunAccessory::UpdateAccessory(FName ItemID)
     }
     if (ItemID == "AH01")
     {
-        ActivateSlot(EM0);
+        ActivateSlot(AH0);
     }
     else if (ItemID == "AH02")
     {
-        ActivateSlot(EM1);
+        ActivateSlot(AH1);
     }
     if (ItemID == "SL01")
     {
-        ActivateSlot(EM0);
+        ActivateSlot(SL0);
     }
     else if (ItemID == "SL02")
     {
-        ActivateSlot(EM1);
+        ActivateSlot(SL1);
     }
 }

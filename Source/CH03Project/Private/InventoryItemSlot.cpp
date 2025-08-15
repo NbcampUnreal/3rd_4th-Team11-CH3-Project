@@ -11,8 +11,6 @@ void UInventoryItemSlot::NativeOnDragDetected(const FGeometry& InGeometry, const
         OutOperation = nullptr;
         return;
     }
-
-	UE_LOG(LogTemp, Warning, TEXT("드래그 시작: %s"), *ItemID.ToString());
     UItemDragDropOperation* DragDropOp = NewObject<UItemDragDropOperation>(this);
     
     DragDropOp->ItemID = ItemID;
@@ -37,4 +35,14 @@ void UInventoryItemSlot::NativeOnDragDetected(const FGeometry& InGeometry, const
     }
 
     OutOperation = DragDropOp;
+}
+
+
+void UInventoryItemSlot::ShowSlotImage()
+{
+    if (SlotImage)
+    {
+        SlotImage->SetBrushFromTexture(ItemIcon);
+        SlotImage->SetVisibility(ESlateVisibility::Visible);
+    }
 }

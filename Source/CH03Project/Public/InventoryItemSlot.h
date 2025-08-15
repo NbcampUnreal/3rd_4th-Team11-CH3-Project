@@ -30,4 +30,6 @@ public:
 
     UPROPERTY(meta = (BindWidgetOptional))
     UImage* SlotImage;
+
+    void ShowSlotImage();
 };

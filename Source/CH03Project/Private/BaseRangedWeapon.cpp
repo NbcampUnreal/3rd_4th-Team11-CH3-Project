@@ -185,6 +185,10 @@ int32 ABaseRangedWeapon::GetCurrnentAmmo() const
 
 void ABaseRangedWeapon::Reload()
 {
+	if (CurrentAmmo >= MaxAmmo + PlusAmmo)
+	{
+		return;
+	}
 	if (AMyCharacter* WeaponOwner = Cast<AMyCharacter>(GetOwner()))
 	{
 		if (WeaponOwner->GetCharacterAnimInstance() && CharacterReloadMontage && WeaponOwner->GetWeaponAnimInstance() && WeaponReloadMontage)
