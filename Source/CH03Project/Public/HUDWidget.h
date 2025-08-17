@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "TimerManager.h"
+#include "Sound/SoundBase.h"
 #include "Components/Image.h"
 #include "HUDWidget.generated.h"
 
@@ -51,6 +52,16 @@ public:
 	void HideHitMarker();
 	void HideKillMarker();
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SFX|HitMarker")
+	USoundBase* HitSound = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SFX|HitMarker", meta = (ClampMin = "0.0", ClampMax = "3.0"))
+	float HitSoundVolume = 0.9f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SFX|HitMarker")
+	float HitSoundPitchMin = 0.98f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SFX|HitMarker")
+	float HitSoundPitchMax = 1.02f;
 
 protected:
 	virtual void NativeConstruct() override;

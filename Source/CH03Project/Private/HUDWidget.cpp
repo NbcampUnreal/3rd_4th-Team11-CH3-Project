@@ -93,6 +93,21 @@ void UHUDWidget::ShowHitMarker()
 			PlayAnimation(ScaleUp, 0.f, 1);
 		}
 
+		if (HitSound)
+		{
+			const float Pitch = FMath::FRandRange(HitSoundPitchMin, HitSoundPitchMax);
+			UGameplayStatics::SpawnSound2D(
+				this,                 
+				HitSound,           
+				HitSoundVolume,   
+				Pitch,               
+				0.f,                 
+				nullptr,
+				false,
+				true
+			);
+		}
+
 		GetWorld()->GetTimerManager().ClearTimer(HitMarkerTimerHandle);
 		if (!GetWorld()->GetTimerManager().IsTimerActive(HitMarkerTimerHandle))
 		{
