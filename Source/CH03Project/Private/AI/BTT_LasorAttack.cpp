@@ -21,6 +21,7 @@ UBTT_LasorAttack::UBTT_LasorAttack()
 {
 	NodeName = TEXT("Laser Attack (Turn L or R)");
 	bNotifyTick = true;
+	DamageAmountPS = 60.f;
 }
 
 EBTNodeResult::Type UBTT_LasorAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -207,16 +208,15 @@ void UBTT_LasorAttack::UpdateLaserAndDamage(FState& St, float DeltaSeconds) cons
 
 	TArray<FHitResult> Hits;
 	const ETraceTypeQuery TT = UEngineTypes::ConvertToTraceType(TraceChannel);
-	if (UKismetSystemLibrary::SphereTraceMulti(World, SrcWS, EndWS, BeamDamageRadius, TT, false, {}, EDrawDebugTrace::None, Hits, true))
+	if (UKismetSystemLibrary::SphereTraceMulti(World, SrcWS, EndWS, BeamDamageRadius, TT, false, {}, EDrawDebugTrace::ForDuration, Hits, true))
 	{
-		const float Dmg = DamageAmountPS * DeltaSeconds;
 		for (const FHitResult& H : Hits)
 		{
 			if (AActor* A = H.GetActor())
 			{
 				if (A->ActorHasTag(PlayerTag) && A != St.Boss.Get())
 				{
-					ApplyTransDamageOrFallback(A, Dmg);
+					ApplyTransDamageOrFallback(A, DamageAmountPS);
 				}
 			}
 		}
@@ -244,13 +244,13 @@ void UBTT_LasorAttack::SetNiagaraVec3(UNiagaraComponent* NC, const FName& Param,
 	}
 }
 
-void UBTT_LasorAttack::ApplyTransDamageOrFallback(AActor* Target, float Amount)
+void UBTT_LasorAttack::ApplyTransDamageOrFallback(AActor* Target, float Damage)
 {
 	if (!Target) return;
 
 	if (UBaseStatComponent* Stat = Target->FindComponentByClass<UBaseStatComponent>())
 	{
-		Stat->AddHp(-static_cast<int32>(Amount));
+		Stat->AddHp(-static_cast<int32>(Damage));
 		UE_LOG(LogLaserAttack, Warning, TEXT("Laser Attack hit %s"), *Target->GetName());
 	}
 }
