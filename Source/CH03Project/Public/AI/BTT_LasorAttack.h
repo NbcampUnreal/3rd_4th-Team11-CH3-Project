@@ -79,7 +79,7 @@ private:
 
 
 	UPROPERTY(EditAnywhere, Category = "Damage", meta = (AllowPrivateAccess = "true"))
-	float DamageAmountPS = 30.f;
+	float DamageAmountPS;
 	UPROPERTY(EditAnywhere, Category = "Damage", meta = (AllowPrivateAccess = "true"))
 	FName PlayerTag = TEXT("Player");
 
@@ -101,5 +101,5 @@ private:
 
 	static void SetNiagaraVec3(UNiagaraComponent* NC, const FName& Param, const FVector& V);
 
-	static void ApplyTransDamageOrFallback(AActor* Target, float Amount);
+	static void ApplyTransDamageOrFallback(AActor* Target, float Damage);
 };
