@@ -54,12 +54,22 @@ void UAccDropComponent::DropItem()
 	//ItemClass를 현재 액터 위치에 스폰시킴ㅇㅇㅇㅇㅇ
 	FHitResult Hit;
 	FVector StartLocation = GetOwner()->GetActorLocation();
-	FVector EndLocation = StartLocation - FVector(0.0f, 0.0f, 100.0f); // 아래로 100 유닛 탐색
+	FVector EndLocation = StartLocation - FVector(0.0f, 0.0f, 100.0f);
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(GetOwner());
 	APickupItem* SpawnedItem = nullptr;
 
+	// 1. "Item" 태그를 가진 모든 액터를 찾습니다.
+	TArray<AActor*> ItemsToIgnore;
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Item"), ItemsToIgnore);
 
+	// 2. 찾은 액터들을 LineTrace 파라미터에 추가합니다.
+	for (AActor* ItemActor : ItemsToIgnore)
+	{
+		Params.AddIgnoredActor(ItemActor);
+	}
+
+	// 3. LineTraceSingleByChannel을 실행합니다.
 	if (GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, ECC_Visibility, Params))
 	{
 		SpawnedItem = GetWorld()->SpawnActor<APickupItem>(ItemClass, Hit.Location, FRotator::ZeroRotator);
