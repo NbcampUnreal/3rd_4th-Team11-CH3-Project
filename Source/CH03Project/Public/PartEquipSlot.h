@@ -61,6 +61,6 @@ public:
 	void SetEffectSL01(bool bIsPlus);
 	void SetEffectSL02(bool bIsPlus);
 
-
+	void SetEffects(FName ItemIDs, bool bIsPlus);
 	
 };

@@ -102,6 +102,8 @@ void UPartEquipSlot::NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent
 
 void UPartEquipSlot::SetSlotItem(const FName NewItemID, UTexture2D* NewItemIcon)
 {
+    ClearSlot();
+
     ItemID = NewItemID;
     ItemIcon = NewItemIcon;
     if (SlotImage)
@@ -114,31 +116,7 @@ void UPartEquipSlot::SetSlotItem(const FName NewItemID, UTexture2D* NewItemIcon)
         SearchWAC();
     }
 
-    if (ItemID == "EM01")
-    {
-        SetEffectEM01(true);
-    }
-    else if (ItemID == "EM02")
-    {
-        SetEffectEM02(true);
-    }
-    else if (ItemID == "AH01")
-    {
-        SetEffectAH01(true);
-    }
-    else if (ItemID == "AH02")
-    {
-        SetEffectAH02(true);
-    }
-    else if (ItemID == "SL01")
-    {
-        SetEffectSL01(true);
-    }
-    else if (ItemID == "SL02")
-    {
-		SetEffectSL02(true);
-    }
-    WeaponAccCompoenent->UpdateWeaponAcc();
+	SetEffects(ItemID, true);
 }
 
 
@@ -154,31 +132,8 @@ void UPartEquipSlot::ClearSlot()
         SlotImage->SetBrushFromTexture(DefaultEmptyImage);
     }
 
-    if (ItemID == "EM01")
-    {
-        SetEffectEM01(false);
-    }
-    else if (ItemID == "EM02")
-    {
-        SetEffectEM02(false);
-    }
-    else if (ItemID == "AH01")
-    {
-        SetEffectAH01(false);
-    }
-    else if (ItemID == "AH02")
-    {
-        SetEffectAH02(false);
-    }
-    else if (ItemID == "SL01")
-    {
-        SetEffectSL01(false);
-    }
-    else if (ItemID == "SL02")
-    {
-        SetEffectSL02(false);
-    }
-    WeaponAccCompoenent->UpdateWeaponAcc();
+    SetEffects(ItemID, false);
+    
 
     ItemID = NAME_None; // 아이템 ID를 초기화
     ItemIcon = nullptr; // 아이콘 레퍼런스를 해제
@@ -221,7 +176,8 @@ void UPartEquipSlot::SearchWAC()
 
 void UPartEquipSlot::SetEffectAH01(bool bIsPlus)
 {
-    UE_LOG(LogTemp, Warning, TEXT("AH01 효과 적용"));
+    //불값 표시
+    UE_LOG(LogTemp, Warning, TEXT("AH01 효과 적용: %s"), bIsPlus ? TEXT("True") : TEXT("False"));
     if (bIsPlus)
     {
 		WeaponAccCompoenent->PlusHandle -= 20;
@@ -234,7 +190,7 @@ void UPartEquipSlot::SetEffectAH01(bool bIsPlus)
 
 void UPartEquipSlot::SetEffectAH02(bool bIsPlus)
 {
-    UE_LOG(LogTemp, Warning, TEXT("AH02 효과 적용"));
+    UE_LOG(LogTemp, Warning, TEXT("AH02 효과 적용: %s"), bIsPlus ? TEXT("True") : TEXT("False"));
     if (bIsPlus)
     {
         WeaponAccCompoenent->PlusHandle -= 50;
@@ -247,7 +203,7 @@ void UPartEquipSlot::SetEffectAH02(bool bIsPlus)
 
 void UPartEquipSlot::SetEffectEM01(bool bIsPlus)
 {
-    UE_LOG(LogTemp, Warning, TEXT("EM01 효과 적용"));
+    UE_LOG(LogTemp, Warning, TEXT("EM01 효과 적용: %s"), bIsPlus ? TEXT("True") : TEXT("False"));
     if (bIsPlus)
     {
         WeaponAccCompoenent->PlusAmmo += 10;
@@ -260,7 +216,7 @@ void UPartEquipSlot::SetEffectEM01(bool bIsPlus)
 
 void UPartEquipSlot::SetEffectEM02(bool bIsPlus)
 {
-    UE_LOG(LogTemp, Warning, TEXT("EM02 효과 적용"));
+    UE_LOG(LogTemp, Warning, TEXT("EM02 효과 적용: %s"), bIsPlus ? TEXT("True") : TEXT("False"));
     if (bIsPlus)
     {
         WeaponAccCompoenent->PlusAmmo += 25;
@@ -273,7 +229,7 @@ void UPartEquipSlot::SetEffectEM02(bool bIsPlus)
 
 void UPartEquipSlot::SetEffectSL01(bool bIsPlus)
 {
-    UE_LOG(LogTemp, Warning, TEXT("SL01 효과 적용"));
+    UE_LOG(LogTemp, Warning, TEXT("SL01 효과 적용: %s"), bIsPlus ? TEXT("True") : TEXT("False"));
     if (bIsPlus)
     {
         WeaponAccCompoenent->PlusAttack += 3;
@@ -286,14 +242,43 @@ void UPartEquipSlot::SetEffectSL01(bool bIsPlus)
 
 void UPartEquipSlot::SetEffectSL02(bool bIsPlus)
 {
-    UE_LOG(LogTemp, Warning, TEXT("SL02 효과 적용"));
+    UE_LOG(LogTemp, Warning, TEXT("SL02 효과 적용: %s"), bIsPlus ? TEXT("True") : TEXT("False"));
     if (bIsPlus)
     {
-        WeaponAccCompoenent->PlusAttack += 5;
+        WeaponAccCompoenent->PlusAttack += 8;
     }
     else
     {
-        WeaponAccCompoenent->PlusAttack -= 5;
+        WeaponAccCompoenent->PlusAttack -= 8;
     }
 }
 
+
+void UPartEquipSlot::SetEffects(FName ItemIDs, bool bIsPlus)
+{
+    if (ItemIDs == "EM01")
+    {
+        SetEffectEM01(bIsPlus);
+    }
+    else if (ItemIDs == "EM02")
+    {
+        SetEffectEM02(bIsPlus);
+    }
+    else if (ItemIDs == "AH01")
+    {
+        SetEffectAH01(bIsPlus);
+    }
+    else if (ItemIDs == "AH02")
+    {
+        SetEffectAH02(bIsPlus);
+    }
+    else if (ItemIDs == "SL01")
+    {
+        SetEffectSL01(bIsPlus);
+    }
+    else if (ItemIDs == "SL02")
+    {
+        SetEffectSL02(bIsPlus);
+	}
+    WeaponAccCompoenent->UpdateWeaponAcc();
+}
