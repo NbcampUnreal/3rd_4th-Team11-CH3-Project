@@ -109,6 +109,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuestTypeA")
 	ATriggerVolume* LastBossTextVolume;
 
+	UFUNCTION()
 	void OnLastBossTextVolumeBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
 

@@ -41,6 +41,7 @@ void AQuestTypeA::BeginPlay()
 
 	if (LastBossTextVolume)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("트리거볼륨잡앗?"));
 		// OnActorBeginOverlap 이벤트에 OnLastBossTextVolumeBeginOverlap 함수를 연결
 		LastBossTextVolume->OnActorBeginOverlap.AddDynamic(this, &AQuestTypeA::OnLastBossTextVolumeBeginOverlap);
 	}
@@ -357,6 +358,7 @@ void AQuestTypeA::OpenDoorCount()
 
 void AQuestTypeA::OnLastBossTextVolumeBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
+	UE_LOG(LogTemp, Warning, TEXT("헤이트리거"));
 	if (OtherActor && OtherActor->ActorHasTag("Player"))
 	{
 		if (ProgressStage == 6)
@@ -380,13 +382,16 @@ void AQuestTypeA::GameEnding()
 		AMyPlayerController* MyController = Cast<AMyPlayerController>(PC);
 		if (MyController)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작2"));
 			MyController->EndMenuWidget = CreateWidget<UEndMenuWidget>(MyController, MyController->EndMenuWidgetClass);
 			AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
 			if (MyController->EndMenuWidget)
 			{
+				UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작3"));
 				MyController->EndMenuWidget->AddToViewport();
 				if (GameStatePlay)
 				{
+					UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작4"));
 					GameStatePlay->OnScoreChanged.AddDynamic(MyController->EndMenuWidget, &UEndMenuWidget::UpdateEndScore);
 					MyController->EndMenuWidget->UpdateEndScore(GameStatePlay->Score);
 				}
