@@ -12,6 +12,7 @@
 #include "Perception/AISenseConfig_Damage.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "BaseEnemy.h"
 
 
@@ -92,6 +93,12 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 
 			SetStateAsPassive();
 		}
+	}
+
+	if (ControlledEnemy->ActorHasTag(FName("ForceTargetActorBeginning")))
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("ForceTargetActorBeginning tag found on ControlledEnemy. Targeting player..."));
+		TryForceTargetPlayer();
 	}
 }
 
@@ -255,4 +262,17 @@ EEnemyState AEnemyAIController::GetCurrentState() const
 	}
 
 	return EEnemyState::Passive;
+}
+
+void AEnemyAIController::TryForceTargetPlayer()
+{
+	AActor* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (!PlayerPawn)
+	{
+		GetWorldTimerManager().SetTimerForNextTick(this, &AEnemyAIController::TryForceTargetPlayer);
+		return;
+	}
+
+	//(LogTemp, Warning, TEXT("Setting TargetActor to PlayerPawn: %s"), *PlayerPawn->GetName());
+	SetStateAsAttacking(PlayerPawn);
 }

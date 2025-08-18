@@ -89,4 +89,7 @@ public:
 	AActor* TargetActor;
 
 	EEnemyState GetCurrentState() const;
+
+private:
+	void TryForceTargetPlayer();
 };

@@ -74,9 +74,9 @@ EBTNodeResult::Type UBTT_ChargeAttack::ExecuteTask(UBehaviorTreeComponent& Owner
 
 void UBTT_ChargeAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	AAIController* AICon = OwnerComp.GetAIOwner(); 
+	AAIController* AICon = OwnerComp.GetAIOwner();
 	if (!AICon) { FinishLatentTask(OwnerComp, EBTNodeResult::Failed); return; }
-	ACharacter* Char = Cast<ACharacter>(AICon->GetPawn()); 
+	ACharacter* Char = Cast<ACharacter>(AICon->GetPawn());
 	if (!Char) { FinishLatentTask(OwnerComp, EBTNodeResult::Failed); return; }
 
 	FState& St = *S(NodeMemory);
@@ -112,7 +112,8 @@ void UBTT_ChargeAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 		if (St.T >= St.JumpUpDur)
 		{
-			St.Phase = EPhase::Dash; St.T = 0.f;
+			St.Phase = EPhase::Dash;
+			St.T = 0.f;
 			EnterDash(Char, St);
 		}
 		break;
@@ -132,11 +133,9 @@ void UBTT_ChargeAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 		if (Traveled + KINDA_SMALL_NUMBER >= St.Distance)
 		{
-			FHitResult Hit;
-			Char->SetActorLocation(St.Dest, true, &Hit);
 			ForceStopCharacter(Char);
 			St.Phase = EPhase::Finish; St.T = 0.f;
-			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+			EndCharge(OwnerComp, NodeMemory, EBTNodeResult::Succeeded);
 			break;
 		}
 
@@ -144,36 +143,39 @@ void UBTT_ChargeAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		{
 			ForceStopCharacter(Char);
 			St.Phase = EPhase::Finish; St.T = 0.f;
-			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+			EndCharge(OwnerComp, NodeMemory, EBTNodeResult::Succeeded);
 			break;
 		}
 
-		if (Char->Tags.Contains(TEXT("ChargeHitOnce")) && St.bHitOnce && St.T >= GraceTimeAfterHit)
+		if (Char->Tags.Contains(TEXT("ChargeHitOnce")) && St.T >= GraceTimeAfterHit)
 		{
 			ForceStopCharacter(Char);
 			St.Phase = EPhase::Finish; St.T = 0.f;
-			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+			EndCharge(OwnerComp, NodeMemory, EBTNodeResult::Succeeded);
 		}
 		break;
 	}
 	case EPhase::Finish:
 	default:
-		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		EndCharge(OwnerComp, NodeMemory, EBTNodeResult::Succeeded);
 		break;
 	}
 }
 
-void UBTT_ChargeAttack::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type Result)
+EBTNodeResult::Type UBTT_ChargeAttack::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (AAIController* AICon = OwnerComp.GetAIOwner())
+	FState& St = *S(NodeMemory);
+	if (!St.bEnded)
 	{
-		if (ACharacter* Char = Cast<ACharacter>(AICon->GetPawn()))
-		{
-			FState& St = *S(NodeMemory);
-			RestoreFocusAfterDash(AICon, OwnerComp.GetBlackboardComponent(), St);
-			ExitAll(Char, St);
-		}
+		if (AAIController* AICon = OwnerComp.GetAIOwner())
+			if (ACharacter* Char = Cast<ACharacter>(AICon->GetPawn()))
+			{
+				RestoreFocusAfterDash(AICon, OwnerComp.GetBlackboardComponent(), St);
+				ExitAll(Char, St);
+			}
+		St.bEnded = true;
 	}
+	return EBTNodeResult::Aborted;
 }
 
 bool UBTT_ChargeAttack::ProjectToGround(UWorld* World, const FVector& InLoc, FVector& OutLoc) const
@@ -353,6 +355,22 @@ void UBTT_ChargeAttack::EnterDash(ACharacter* Char, FState& St)
 	}
 }
 
+void UBTT_ChargeAttack::EndCharge(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type Result)
+{
+	FState& St = *S(NodeMemory);
+	if (St.bEnded) return;
+	St.bEnded = true;
+
+	if (AAIController* AICon = OwnerComp.GetAIOwner())
+		if (ACharacter* Char = Cast<ACharacter>(AICon->GetPawn()))
+		{
+			RestoreFocusAfterDash(AICon, OwnerComp.GetBlackboardComponent(), St);
+			ExitAll(Char, St);
+		}
+
+	FinishLatentTask(OwnerComp, Result);
+}
+
 void UBTT_ChargeAttack::ExitAll(ACharacter* Char, FState& St)
 {
 	if (UCapsuleComponent* Cap = Char->GetCapsuleComponent())
@@ -490,15 +508,11 @@ void UBTT_ChargeAttack::ForceStopCharacter(ACharacter* Char) const
 	{
 		Move->StopMovementImmediately();
 		Move->ClearAccumulatedForces();
+		Move->PendingLaunchVelocity = FVector::ZeroVector;
 		Move->Velocity = FVector::ZeroVector;
-
-		if (Move->MovementMode != MOVE_Walking && Move->MovementMode != MOVE_Walking)
-		{
-			Move->SetMovementMode(MOVE_Walking);
-		}
+		Move->SetMovementMode(MOVE_None);
+		Move->bJustTeleported = true;
 	}
-
-	Char->LaunchCharacter(FVector::ZeroVector, true, true);
 
 	if (UAnimInstance* Anim = Char->GetMesh() ? Char->GetMesh()->GetAnimInstance() : nullptr)
 	{
@@ -510,4 +524,6 @@ void UBTT_ChargeAttack::ForceStopCharacter(ACharacter* Char) const
 		Cap->SetPhysicsLinearVelocity(FVector::ZeroVector);
 		Cap->SetAllPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
 	}
+
+	Char->Tags.AddUnique(TEXT("ChargeHitOnce"));
 }
