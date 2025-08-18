@@ -52,7 +52,23 @@ void UAccDropComponent::DropItem()
 	}
 
 	//ItemClass를 현재 액터 위치에 스폰시킴ㅇㅇㅇㅇㅇ
-	APickupItem* SpawnedItem = GetWorld()->SpawnActor<APickupItem>(ItemClass, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
+	FHitResult Hit;
+	FVector StartLocation = GetOwner()->GetActorLocation();
+	FVector EndLocation = StartLocation - FVector(0.0f, 0.0f, 100.0f); // 아래로 100 유닛 탐색
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(GetOwner());
+	APickupItem* SpawnedItem = nullptr;
+
+
+	if (GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, ECC_Visibility, Params))
+	{
+		SpawnedItem = GetWorld()->SpawnActor<APickupItem>(ItemClass, Hit.Location, FRotator::ZeroRotator);
+	}
+	else
+	{
+		SpawnedItem = GetWorld()->SpawnActor<APickupItem>(ItemClass, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
+		UE_LOG(LogTemp, Warning, TEXT("바닥을 찾지 못해 원래 위치에 스폰했습니다."));
+	}
 	
 	if (DroppedItem == 0 && GameState->AccItemList[DroppedItem] == 1)
 	{

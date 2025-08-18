@@ -89,6 +89,19 @@ bool UInventoryComponent::FindItem(FName ItemID) const
     return false;
 }
 
+int32 UInventoryComponent::CountItem(FName ItemID) const
+{
+    for (UBaseItem* Item : Items)
+    {
+        if (Item && Item->ItemDataHandle.RowName == ItemID)
+        {
+            return Item->Quantity;
+        }
+    }
+    return 0;
+}
+
+
 UBaseItem* UInventoryComponent::GetItem(FName ItemID)
 {
     for(UBaseItem* Item : Items)

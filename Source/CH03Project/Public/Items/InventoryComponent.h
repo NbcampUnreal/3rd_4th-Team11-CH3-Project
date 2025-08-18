@@ -30,6 +30,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	bool FindItem(FName ItemID) const;
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int32 CountItem(FName ItemID) const;
+
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	UBaseItem* GetItem(FName ItemID);
 
