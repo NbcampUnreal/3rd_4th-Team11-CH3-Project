@@ -7,6 +7,7 @@
 #include "BehaviorTree/BTTaskNode.h"
 #include "BTT_ChargeAttack.generated.h"
 
+
 class UAnimMontage;
 class UDecalComponent;
 class UMaterialInterface;
@@ -27,7 +28,7 @@ public:
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type Result) override;
+	virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 private:
 	enum class EPhase : uint8 { Ready, JumpUp, Dash, Finish };
@@ -54,6 +55,7 @@ private:
 		bool                          bClearedFocus = false;
 
 		bool                          bPathLocked = false;
+		bool						  bEnded = false;	
 	};
 
 	FORCEINLINE FState* S(uint8* NodeMemory) const { return reinterpret_cast<FState*>(NodeMemory); }
@@ -74,7 +76,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Charge", meta = (ClampMin = "100.0", AllowPrivateAccess = "true"))
 	float ChargeSpeed = 3000.f;
 	UPROPERTY(EditAnywhere, Category = "Charge", meta = (AllowPrivateAccess = "true"))
-	float GraceTimeAfterHit = 0.15f;
+	float GraceTimeAfterHit = 0.05f;
 
 	UPROPERTY(EditAnywhere, Category = "Damage", meta = (AllowPrivateAccess = "true"))
 	float DamageAmount = 30.f;
@@ -122,6 +124,7 @@ private:
 	void EnterTelegraph(class ACharacter* Char, FState& St, UBlackboardComponent* BB);
 	void EnterJumpUp(class ACharacter* Char, FState& St);
 	void EnterDash(class ACharacter* Char, FState& St);
+	void EndCharge(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type Result);
 	void ExitAll(class ACharacter* Char, FState& St);
 
 	void ClearFocusForDash(class AAIController* AICon, class ACharacter* Char, FState& St);

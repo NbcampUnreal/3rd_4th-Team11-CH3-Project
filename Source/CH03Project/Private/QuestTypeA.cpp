@@ -9,6 +9,7 @@
 #include "SpawnAreaActor.h"
 #include "Items/PickupItem.h"
 #include "BaseEnemy.h"
+#include "AI/EnemyAIController.h"
 #include "Engine/TriggerVolume.h"
 
 AQuestTypeA::AQuestTypeA()
@@ -260,7 +261,12 @@ void AQuestTypeA::SpawnEnemy()
 				FActorSpawnParameters SpawnParams;
 				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-				AActor* SpawnedEnemy = GetWorld()->SpawnActor<AActor>(CurrentEnemyRow->EnemyClass, SpawnLocationPoint, SpawnRotation, SpawnParams);
+				ACharacter* SpawnedEnemy = GetWorld()->SpawnActor<ACharacter>(CurrentEnemyRow->EnemyClass, SpawnLocationPoint, SpawnRotation, SpawnParams);
+				if (SpawnedEnemy)
+				{
+					SpawnedEnemy->Tags.AddUnique(FName("ForceTargetActorBeginning"));
+				}
+
 			}
 		}
 	}
