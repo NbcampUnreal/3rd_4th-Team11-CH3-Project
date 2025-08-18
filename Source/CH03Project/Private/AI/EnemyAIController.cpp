@@ -95,12 +95,12 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 		}
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("비긴플레이ㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣ"));
+	/*UE_LOG(LogTemp, Warning, TEXT("비긴플레이ㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣ"));
 	if (ControlledEnemy->ActorHasTag(FName("ForceTargetActorBeginning")))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ForceTargetActorBeginning tag found on ControlledEnemy. Targeting player..."));
 		TryForceTargetPlayer();
-	}
+	}*/
 }
 
 void AEnemyAIController::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
