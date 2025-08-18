@@ -173,6 +173,7 @@ void UBaseStatComponent::OnDeath()
 		}
 
 	}
+
 	OnDeathEvent.Broadcast(OwnerCharacter);
 	AGameModePlay* GameModePlay = Cast<AGameModePlay>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameModePlay)
@@ -201,6 +202,14 @@ void UBaseStatComponent::OnDeath()
 			MenuWidget->SetScoreNumText(true, FinalScore);
 			PC->SetInputMode(FInputModeUIOnly());
 			PC->bShowMouseCursor = true;
+		}
+	}
+
+	if (OwnerCharacter->IsPlayerControlled())
+	{
+		if (AGameModePlay* GM = Cast<AGameModePlay>(UGameplayStatics::GetGameMode(GetWorld())))
+		{
+			GM->ClearEnemiesOnPlayerDeath();
 		}
 	}
 
