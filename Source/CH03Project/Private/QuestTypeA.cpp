@@ -5,7 +5,9 @@
 #include "SubTextDataRow.h"
 #include "EndMenuWidget.h"
 #include "MyPlayerController.h"
+#include "GameFramework/PlayerController.h"
 #include "GameStatePlay.h"
+#include "EnhancedInputSubsystems.h"
 #include "SpawnAreaActor.h"
 #include "Items/PickupItem.h"
 #include "BaseEnemy.h"
@@ -395,6 +397,19 @@ void AQuestTypeA::GameEnding()
 			{
 				UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작3"));
 				MyController->EndMenuWidget->AddToViewport();
+				FInputModeUIOnly InputMode;
+				
+				FInputModeUIOnly Mode;
+				if (MyController && MyController->EndMenuWidget)
+				{
+					Mode.SetWidgetToFocus(MyController->EndMenuWidget->TakeWidget());
+				}
+				Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+				PC->SetInputMode(Mode);
+				PC->bShowMouseCursor = true;
+				PC->SetPause(true);
+
 				if (GameStatePlay)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작4"));
