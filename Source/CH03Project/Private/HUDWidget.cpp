@@ -264,3 +264,12 @@ void UHUDWidget::UpdateCoolTime(float CoolTime, FName Name)
 		Show(AdrenalineCoolTime);
 	}
 }
+
+
+void UHUDWidget::PlayAdHardAnimation(float Duration)
+{
+	if (AdHard)
+	{
+		PlayAnimation(AdHard, 0.f, 1, EUMGSequencePlayMode::Forward, 1.f / Duration, false);
+	}
+}

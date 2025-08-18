@@ -5,6 +5,7 @@
 #include "TimerManager.h"
 #include "Sound/SoundBase.h"
 #include "Components/Image.h"
+#include "Animation/WidgetAnimation.h"
 #include "HUDWidget.generated.h"
 
 class UProgressBar;
@@ -62,6 +63,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SFX|HitMarker")
 	float HitSoundPitchMax = 1.02f;
+
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	TObjectPtr<UWidgetAnimation> AdHard;
+	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
+	void PlayAdHardAnimation(float Duration);
+
 
 protected:
 	virtual void NativeConstruct() override;
