@@ -21,7 +21,7 @@ UBTT_LasorAttack::UBTT_LasorAttack()
 {
 	NodeName = TEXT("Laser Attack (Turn L or R)");
 	bNotifyTick = true;
-	DamageAmountPS = 60.f;
+	DamageAmountPS = 50.f;
 }
 
 EBTNodeResult::Type UBTT_LasorAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -121,8 +121,23 @@ void UBTT_LasorAttack::EnterReady(FState& St) const
 	{
 		if (UAnimInstance* Anim = Boss->GetMesh() ? Boss->GetMesh()->GetAnimInstance() : nullptr)
 		{
-			if (St.bTurnRight && Montage_rt)        Anim->Montage_Play(Montage_rt, 1.f);
-			else if (!St.bTurnRight && Montage_lft) Anim->Montage_Play(Montage_lft, 1.f);
+			UAnimMontage* M = St.bTurnRight ? Montage_rt : Montage_lft;
+			if (!M)
+			{
+				UE_LOG(LogLaserAttack, Warning, TEXT("Laser: Montage is NULL (rt:%d lft:%d)"), Montage_rt != nullptr, Montage_lft != nullptr);
+				return;
+			}
+
+			M->bEnableAutoBlendOut = false;
+			Anim->Montage_Stop(0.05f);
+
+			const float PlayedLen = Anim->Montage_Play(M, 1.f);
+
+			if (M->CompositeSections.Num() > 0)
+			{
+				const FName Sec = M->CompositeSections[0].SectionName;
+				Anim->Montage_SetNextSection(Sec, Sec, M);
+			}
 		}
 	}
 }
@@ -208,7 +223,7 @@ void UBTT_LasorAttack::UpdateLaserAndDamage(FState& St, float DeltaSeconds) cons
 
 	TArray<FHitResult> Hits;
 	const ETraceTypeQuery TT = UEngineTypes::ConvertToTraceType(TraceChannel);
-	if (UKismetSystemLibrary::SphereTraceMulti(World, SrcWS, EndWS, BeamDamageRadius, TT, false, {}, EDrawDebugTrace::ForDuration, Hits, true))
+	if (UKismetSystemLibrary::SphereTraceMulti(World, SrcWS, EndWS, BeamDamageRadius, TT, false, {}, EDrawDebugTrace::None, Hits, true))
 	{
 		for (const FHitResult& H : Hits)
 		{

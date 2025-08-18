@@ -6,8 +6,12 @@
 #include "GameFramework/Character.h"
 #include "Animation/AnimInstance.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "AITypes.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Actor.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h" 
 
 static FORCEINLINE bool IsMontagePlaying(ACharacter* Char, UAnimMontage* Montage)
 {
@@ -39,23 +43,28 @@ EBTNodeResult::Type UBTT_TravelToCenter::ExecuteTask(UBehaviorTreeComponent& Own
 	St.Boss = Boss;
 	St.AI = AI;
 
-	FVector Center = FVector::ZeroVector;
-	bool bHasCenter = false;
+	FVector Center = Boss->GetActorLocation();
 
 	if (BB->IsVectorValueSet(CenterKey.SelectedKeyName))
 	{
-		Center = BB->GetValueAsVector(CenterKey.SelectedKeyName);
-		bHasCenter = true;
-	}
-	else if (AActor* CenterActor = Cast<AActor>(BB->GetValueAsObject(CenterKey.SelectedKeyName)))
-	{
-		Center = CenterActor->GetActorLocation();
-		bHasCenter = true;
-	}
+		const FVector RawCenter = BB->GetValueAsVector(CenterKey.SelectedKeyName);
 
-	if (!bHasCenter)
-	{
-		Center = Boss->GetActorLocation();
+		if (UNavigationSystemV1* Nav = FNavigationSystem::GetCurrent<UNavigationSystemV1>(Boss->GetWorld()))
+		{
+			FNavLocation Out;
+			if (Nav->ProjectPointToNavigation(RawCenter, Out, FVector(2000.f, 2000.f, 3000.f)))
+			{
+				Center = Out.Location;
+			}
+			else
+			{
+				Center = FVector(RawCenter.X, RawCenter.Y, Boss->GetActorLocation().Z);
+			}
+		}
+		else
+		{
+			Center = FVector(RawCenter.X, RawCenter.Y, Boss->GetActorLocation().Z);
+		}
 	}
 
 	St.TargetLocation = Center;
@@ -188,6 +197,7 @@ void UBTT_TravelToCenter::EnterTravel(FState& St) const
 		FAIMoveRequest Req(St.TargetLocation);
 		Req.SetAcceptanceRadius(AcceptRadius);
 		Req.SetUsePathfinding(true);
+		Req.SetAllowPartialPath(true);
 		St.MoveId = St.AI->MoveTo(Req);
 	}
 

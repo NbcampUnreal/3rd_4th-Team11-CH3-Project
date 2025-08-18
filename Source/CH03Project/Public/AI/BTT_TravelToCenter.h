@@ -30,7 +30,7 @@ private:
 		EPhase Phase = EPhase::Ready;
 		float  T = 0.f;
 
-		int32 MoveId = 0;
+		FAIRequestID MoveId;
 
 		TWeakObjectPtr<ACharacter>  Boss;
 		TWeakObjectPtr<AAIController> AI;
