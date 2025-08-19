@@ -8,7 +8,6 @@
 #include "GameFramework/Character.h"
 #include "BaseStatComponent.h"
 #include "BaseEnemy.h"
-#include "BaseActor.h"
 #include "Delegates/DelegateCombinations.h"
 
 AGameModePlay::AGameModePlay()
