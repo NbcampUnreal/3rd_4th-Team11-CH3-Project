@@ -32,8 +32,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateSubQuest(const FString& QuestText);
-	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
-	void UpdateHiddenQuest(int32 StatueCount);
 
 	UFUNCTION(BlueprintCallable, Category = "UI|HUD")
 	void UpdateCoolTime(float CoolTime, FName Name);
@@ -88,12 +86,6 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* SubQuestText;
-	UPROPERTY(meta = (BindWidget))
-	UImage* HiddenQuestOutline;
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* StatueNum;
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* HiddenQuestText;
 
 	UPROPERTY(meta = (BindWidget))
 	UImage* HitMarkerImage;
