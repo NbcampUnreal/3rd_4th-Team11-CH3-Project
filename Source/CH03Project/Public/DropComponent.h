@@ -52,9 +52,9 @@ private:
     bool  bCacheBuilt = false;
     FRandomStream RNG;
 
-    void BuildCacheIfNeeded();
+    int32 PickIndexByWeight(const TArray<FDropItemRow>& Rows) const;
     int32 RollDropCount() const;
-    const FCachedEntry* PickOne();
+    void  SpawnItemClass(TSubclassOf<AActor> Cls, const FVector& Center);
     bool FindGround(const FVector& Around, FVector& Out) const;
     void SpawnItem(const FCachedEntry& E, const FVector& Center);
 
