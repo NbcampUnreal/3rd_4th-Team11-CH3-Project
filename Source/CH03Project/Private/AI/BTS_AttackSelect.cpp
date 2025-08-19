@@ -4,13 +4,15 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 
+DEFINE_LOG_CATEGORY(LogAttackSelect);
+
 UBTS_AttackSelect::UBTS_AttackSelect()
 {
     NodeName = "Attack Selector";
     bCreateNodeInstance = true;
 
     Phase1Pattern = { 1, 2, 1, 3, 3, 2, 1, 1, 2 }; // 1=Primary, 2=LRM, 3=Charge
-    Phase2Pattern = { 4, 1, 3, 3, 1, 4, 1, 3, 4 }; // 4=Missile
+    Phase2Pattern = { 1, 4, 3, 3, 1, 4, 1, 3, 4 }; // 4=Missile
     Phase3Pattern = { 3, 2, 5, 4, 3, 1, 2, 5, 1 }; // 5=Lasor
 }
 
@@ -24,18 +26,33 @@ void UBTS_AttackSelect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
     FMem* Mem = M(NodeMemory);
     const bool bAttacking = BB->GetValueAsBool(IsAttackingKey.SelectedKeyName);
 
+    int32 Phase = BB->GetValueAsInt(PhaseKey.SelectedKeyName);
+    int32 Index = BB->GetValueAsInt(PhaseIndexKey.SelectedKeyName);
+
+    if (Mem->PrevPhase != Phase)
+    {
+        Index = 0;
+        BB->SetValueAsInt(PhaseIndexKey.SelectedKeyName, Index);
+        Mem->PrevPhase = Phase;
+        Mem->bPrevAttacking = false;
+    }
+
     if (Mem->bPrevAttacking && !bAttacking)
     {
-        int32 Index = BB->GetValueAsInt(PhaseIndexKey.SelectedKeyName);
-        const int32 N = Phase1Pattern.Num();
-        Index = (N > 0) ? Index % N : 0;
+        const int32 N = GetPatternLength(Phase);
+        Index = (N > 0) ? (Index + 1) % N : 0;
         BB->SetValueAsInt(PhaseIndexKey.SelectedKeyName, Index);
     }
+
+
     Mem->bPrevAttacking = bAttacking;
+    Mem->PrevIndex = Index;
 
-    if (bAttacking) return;
+    if (bAttacking)
+    {
+        return;
+    }
 
-    const int32 Phase = BB->GetValueAsInt(PhaseKey.SelectedKeyName);
     switch (Phase)
     {
     case 1:
@@ -74,22 +91,18 @@ void UBTS_AttackSelect::SelectAttackByPattern(UBehaviorTreeComponent& OwnerComp,
         return;
     }
 
-    const int32 BaseIndex = BB->GetValueAsInt(PhaseIndexKey.SelectedKeyName);
+    const int32 Index = BB->GetValueAsInt(PhaseIndexKey.SelectedKeyName);
+    const uint8 Attack = Pattern.IsValidIndex(Index) ? Pattern[Index] : 0;
 
-    for (int32 i = 0; i < N; ++i)
+
+    if (IsAllowedAttack(Attack, BB))
     {
-        const int32 TryIndex = (BaseIndex + i) % N;
-        const uint8 Attack = Pattern[TryIndex];
-
-        if (IsAllowedAttack(Attack, BB))
-        {
-            BB->SetValueAsEnum(AttackTypeKey.SelectedKeyName, Attack);
-            BB->SetValueAsInt(PhaseIndexKey.SelectedKeyName, (TryIndex + 1) % N);
-            return;
-        }
+        BB->SetValueAsEnum(AttackTypeKey.SelectedKeyName, Attack);
     }
-
-    BB->SetValueAsEnum(AttackTypeKey.SelectedKeyName, 0);
+    else
+    {
+        BB->SetValueAsEnum(AttackTypeKey.SelectedKeyName, 0);
+    }
 }
 
 bool UBTS_AttackSelect::IsAllowedAttack(uint8 AttackId, UBlackboardComponent* BB) const
@@ -104,3 +117,15 @@ bool UBTS_AttackSelect::IsAllowedAttack(uint8 AttackId, UBlackboardComponent* BB
     default: return false;
     }
 }
+
+int32 UBTS_AttackSelect::GetPatternLength(int32 Phase) const
+{
+    switch (Phase)
+    {
+    case 1: return Phase1Pattern.Num();
+    case 2: return Phase2Pattern.Num();
+    case 3: return Phase3Pattern.Num();
+    default: return Phase1Pattern.Num();
+    }
+}
+ 
