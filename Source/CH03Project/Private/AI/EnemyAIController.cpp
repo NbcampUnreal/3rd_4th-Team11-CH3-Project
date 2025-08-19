@@ -270,11 +270,11 @@ void AEnemyAIController::TryForceTargetPlayer()
 	AActor* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	if (!PlayerPawn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerPawn is null. Retrying in next tick."));
+		//UE_LOG(LogTemp, Warning, TEXT("PlayerPawn is null. Retrying in next tick."));
 		GetWorldTimerManager().SetTimerForNextTick(this, &AEnemyAIController::TryForceTargetPlayer);
 		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("PlayerPawn is null. Retrying in next tick.!!!!!!"));
+	//UE_LOG(LogTemp, Warning, TEXT("PlayerPawn is null. Retrying in next tick.!!!!!!"));
 
 	//(LogTemp, Warning, TEXT("Setting TargetActor to PlayerPawn: %s"), *PlayerPawn->GetName());
 	SetStateAsAttacking(PlayerPawn);

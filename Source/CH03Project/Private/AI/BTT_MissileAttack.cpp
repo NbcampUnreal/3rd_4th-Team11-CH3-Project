@@ -385,7 +385,7 @@ void UBTT_MissileAttack::DoImpact(FState& St) const
 				{
 					if (UBaseStatComponent* Stat = A->FindComponentByClass<UBaseStatComponent>())
 					{
-						UE_LOG(LogTemp, Verbose, TEXT("MissileAttack hit %s"), *A->GetName());
+						//UE_LOG(LogTemp, Verbose, TEXT("MissileAttack hit %s"), *A->GetName());
 						Stat->AddHp(-Damage);
 					}
 				}

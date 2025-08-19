@@ -266,6 +266,6 @@ void UBTT_LasorAttack::ApplyTransDamageOrFallback(AActor* Target, float Damage)
 	if (UBaseStatComponent* Stat = Target->FindComponentByClass<UBaseStatComponent>())
 	{
 		Stat->AddHp(-static_cast<int32>(Damage));
-		UE_LOG(LogLaserAttack, Warning, TEXT("Laser Attack hit %s"), *Target->GetName());
+		//UE_LOG(LogLaserAttack, Warning, TEXT("Laser Attack hit %s"), *Target->GetName());
 	}
 }
