@@ -31,7 +31,7 @@ bool UCatStatue::Use_Implementation(AActor* User)
     }
 
     // 사운드 경로 설정 확인
-    if(!ItemRow->PickupSound.ToSoftObjectPath().IsValid())
+    if(!ItemRow->UseSound.ToSoftObjectPath().IsValid())
     {
         //UE_LOG(LogTemp, Warning, TEXT("CatStatue: PickupSound path is not set for %s"), *ItemDataHandle.RowName.ToString());
         return false;
@@ -39,15 +39,15 @@ bool UCatStatue::Use_Implementation(AActor* User)
 
     // 메모리 상에 로드가 안 되어있으면 LoadSynchronous
     USoundBase* Sound = nullptr;
-    if(ItemRow->PickupSound.IsValid())
+    if(ItemRow->UseSound.IsValid())
     {
         // 이미 메모리에 로드됨
-        Sound = ItemRow->PickupSound.Get();
+        Sound = ItemRow->UseSound.Get();
     }
     else
     {
         // 로드되지 않았으면 동기 로드
-        Sound = ItemRow->PickupSound.LoadSynchronous();
+        Sound = ItemRow->UseSound.LoadSynchronous();
     }
 
     // 재생

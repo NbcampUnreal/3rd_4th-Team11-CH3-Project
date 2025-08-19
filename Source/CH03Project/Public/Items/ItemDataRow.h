@@ -28,7 +28,7 @@ public:
 	TSoftObjectPtr<UTexture2D> Icon;
 	// 사운드
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Data")
-	TSoftObjectPtr<USoundBase> PickupSound;
+	TSoftObjectPtr<USoundBase> UseSound;
 	// 최대 수량
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Data")
 	int32 MaxStackSize;
