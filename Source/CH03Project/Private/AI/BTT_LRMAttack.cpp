@@ -53,7 +53,7 @@ EBTNodeResult::Type UBTT_LRMAttack::AbortTask(UBehaviorTreeComponent& OwnerComp,
 	{
 		if (UAnimInstance* Anim = St.Boss->GetMesh()->GetAnimInstance())
 		{
-			Anim->Montage_Stop(0.1f);
+			Anim->StopAllMontages(0.f);
 		}
 	}
 	DestroyDecal(St);
