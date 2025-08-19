@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BaseEnemy.h"
@@ -6,7 +6,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "WayPointSpawner.h"
-#include "EnemyAIController.h"
+#include "AI/EnemyAIController.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/SphereComponent.h"
 
 ABaseEnemy::ABaseEnemy()
 {
@@ -18,6 +20,11 @@ ABaseEnemy::ABaseEnemy()
 	AIControllerClass = AEnemyAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	
+	HeadCollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("HeadCollisionComp"));
+	HeadCollisionComp->SetSphereRadius(10.0f);
+	HeadCollisionComp->SetCollisionProfileName(TEXT("OverlapAll"));
+	HeadCollisionComp->ComponentTags.Add(TEXT("head"));
+
 }
 
 void ABaseEnemy::BeginPlay()
@@ -34,6 +41,8 @@ void ABaseEnemy::BeginPlay()
 	}
 
 	WaySpawner->GenerateWaypointVectorsForActor(this, TargetPoints);
+
+	AttachToHeadSocket();
 }
 
 void ABaseEnemy::IncrementPatrolRoute()
@@ -107,4 +116,20 @@ void ABaseEnemy::GetIdealRadius_Implementation(float& OutAttackRadius, float& Ou
 
 void ABaseEnemy::Attack_Implementation(AActor* AttackTarget)
 {
+}
+
+void ABaseEnemy::AttachToHeadSocket()
+{
+	if (GetMesh())
+	{
+		FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
+
+		HeadCollisionComp->AttachToComponent(
+			GetMesh(),
+			Rules,
+			HeadBoneSocketName
+		);
+
+		HeadCollisionComp->SetRelativeLocation(HeadCollisionOffset);
+	}
 }

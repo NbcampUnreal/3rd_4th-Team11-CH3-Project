@@ -1,0 +1,109 @@
+﻿#include "AccDropComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameStatePlay.h"
+#include "Items/PickupItem.h"
+
+UAccDropComponent::UAccDropComponent()
+{
+	PrimaryComponentTick.bCanEverTick = false;
+}
+
+
+
+void UAccDropComponent::DeathEnemy()
+{
+	int32 RandomValue = FMath::RandRange(0, 100);
+	if (RandomValue <= ChanceToDrop)
+	{
+		DropItem();
+	}
+}
+
+
+void UAccDropComponent::DropItem()
+{
+	//게임스테이트를 참조해서 드랍되지 않은 아이템 중 하나 드랍함ㅇㅋ?
+	//일단 게임스테이트 참조
+	AGameStatePlay* GameState = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
+	if (!GameState)
+	{
+		return;
+	}
+	if (GameState->AccItemCanGetList.Num() < 1)
+	{
+		return;
+	}
+
+	//AccItemCanGetList카운트 중 랜덤으로 1개 뽑음
+	int32 RandomIndex = FMath::RandRange(0, GameState->AccItemCanGetList.Num() - 1);
+	int32 DroppedItem = GameState->AccItemCanGetList[RandomIndex];
+
+	if (GameState->AccItemList[DroppedItem] > 1)
+	{
+		GameState->AccItemCanGetList.Remove(DroppedItem);
+		return;
+	}
+
+	GameState->AccItemList[DroppedItem]++;
+	
+	if (GameState->AccItemList[DroppedItem] > 1)
+	{
+		GameState->AccItemCanGetList.Remove(DroppedItem);
+	}
+
+	//ItemClass를 현재 액터 위치에 스폰시킴ㅇㅇㅇㅇㅇ
+	FHitResult Hit;
+	FVector StartLocation = GetOwner()->GetActorLocation();
+	FVector EndLocation = StartLocation - FVector(0.0f, 0.0f, 100.0f);
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(GetOwner());
+	APickupItem* SpawnedItem = nullptr;
+
+	// 1. "Item" 태그를 가진 모든 액터를 찾습니다.
+	TArray<AActor*> ItemsToIgnore;
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Item"), ItemsToIgnore);
+
+	// 2. 찾은 액터들을 LineTrace 파라미터에 추가합니다.
+	for (AActor* ItemActor : ItemsToIgnore)
+	{
+		Params.AddIgnoredActor(ItemActor);
+	}
+
+	// 3. LineTraceSingleByChannel을 실행합니다.
+	if (GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, ECC_Visibility, Params))
+	{
+		SpawnedItem = GetWorld()->SpawnActor<APickupItem>(ItemClass, Hit.Location, FRotator::ZeroRotator);
+	}
+	else
+	{
+		SpawnedItem = GetWorld()->SpawnActor<APickupItem>(ItemClass, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
+		UE_LOG(LogTemp, Warning, TEXT("바닥을 찾지 못해 원래 위치에 스폰했습니다."));
+	}
+	
+	if (DroppedItem == 0 && GameState->AccItemList[DroppedItem] == 1)
+	{
+		SpawnedItem->ItemData->ItemDataHandle.RowName = "SL";
+	}
+	else if (DroppedItem == 0 && GameState->AccItemList[DroppedItem] == 2)
+	{
+		SpawnedItem->ItemData->ItemDataHandle.RowName = "SL2";
+	}
+	else if (DroppedItem == 1 && GameState->AccItemList[DroppedItem] == 1)
+	{
+		SpawnedItem->ItemData->ItemDataHandle.RowName = "AH";
+	}
+	else if (DroppedItem == 1 && GameState->AccItemList[DroppedItem] == 2)
+	{
+		SpawnedItem->ItemData->ItemDataHandle.RowName = "AH2";
+	}
+	else if (DroppedItem == 2 && GameState->AccItemList[DroppedItem] == 1)
+	{
+		SpawnedItem->ItemData->ItemDataHandle.RowName = "EM";
+	}
+	else if (DroppedItem == 2 && GameState->AccItemList[DroppedItem] == 2)
+	{
+		SpawnedItem->ItemData->ItemDataHandle.RowName = "EM2";
+	}
+}
+
+

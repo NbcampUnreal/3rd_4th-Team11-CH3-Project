@@ -37,14 +37,19 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BaseStat")
 	int32 KillScore;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BaseStat")
+	int32 HeadShotScore;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BaseStat")
+	int32 CriticalDamage;
 
-public:
-	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
+public:	
+	void AddHpCritical(int Point);
 	void AddHp(int Point);
 	void AddMaxHp(int Point);
+	void HealHP(float Point); // 체력회복 포션에서 사용
 
 	void AddArmor(int Point);
+	void SetArmor(int Point);
 
 	void ImmuneToDamageSet();
 	void ImmuneToDamageEnd();
@@ -63,4 +68,15 @@ public:
 
 private:
 	bool bIsDead;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	FName ShouldStunBBKeyName = TEXT("ShouldStun");
+
+	UPROPERTY(VisibleInstanceOnly, Category = "AI")
+	bool bTriggeredStun70 = false;
+
+	UPROPERTY(VisibleInstanceOnly, Category = "AI")
+	bool bTriggeredStun38 = false;
+
+	void RaiseStunOnAI();
 };

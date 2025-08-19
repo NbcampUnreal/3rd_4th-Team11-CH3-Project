@@ -5,7 +5,10 @@
 #include "GameStatePlay.h"
 #include "QuestTypeA.h"
 #include "Kismet/GameplayStatics.h"
-#include "BaseActor.h"
+#include "GameFramework/Character.h"
+#include "BaseStatComponent.h"
+#include "BaseEnemy.h"
+#include "Delegates/DelegateCombinations.h"
 
 AGameModePlay::AGameModePlay()
 {
@@ -33,17 +36,14 @@ void AGameModePlay::AddKillCount(int32 Points)
 	GameStatePlays->AddKillCount(Points);
 }
 
+void AGameModePlay::SetLastLocation(FVector LastLocation)
+{
+	GameStatePlays->SetLastLocation(LastLocation);
+}
 
 void AGameModePlay::SetMissionText(FString Text)
 {	
 	GameStatePlays->SetMissionText(Text);
-}
-
-
-void AGameModePlay::AddItemCount(int32 Point, int32 SlotIndex)
-{
-	GameStatePlays->AddItemCount(Point, SlotIndex);
-	//타이머 0.1f float로
 }
 
 
@@ -53,5 +53,19 @@ void AGameModePlay::SetGameStatePlay()
 	if (GameStatePlays == nullptr)
 	{
 		GameStatePlays = GetGameState<AGameStatePlay>();
+	}
+}
+
+void AGameModePlay::ClearEnemiesOnPlayerDeath()
+{
+	TArray<AActor*> Enemies;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseEnemy::StaticClass(), Enemies);
+
+	for (AActor* Enemy : Enemies)
+	{
+		if (Enemy)
+		{
+			Enemy->Destroy();
+		}
 	}
 }

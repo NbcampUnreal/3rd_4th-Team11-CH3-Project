@@ -16,19 +16,39 @@ ABaseWeapon::ABaseWeapon()
 	AttackSpeed = 0.0f;
 }
 
-void ABaseWeapon::Attack(AActor* TargetActor)
+void ABaseWeapon::Attack()
 {
 
 }
 
-void ABaseWeapon::Equip(AActor* TargetActor)
+void ABaseWeapon::Equip()
 {
 
 }
 
-void ABaseWeapon::Unequip(AActor* TargetActor)
+void ABaseWeapon::Unequip()
 {
+	
+}
 
+FName ABaseWeapon::GetWeaponType() const
+{
+	return WeaponType;
+}
+
+FName ABaseWeapon::GetWeaponName() const
+{
+	return WeaponName;
+}
+
+int32 ABaseWeapon::GetDamage() const
+{
+	return Damage;
+}
+
+float ABaseWeapon::GetAttackSpeed() const
+{
+	return AttackSpeed;
 }
 
 void ABaseWeapon::ChangeDamage(int32 NewDamage)
@@ -45,6 +65,7 @@ void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	SetActorHiddenInGame(true);
 }
 
 void ABaseWeapon::Tick(float DeltaTime)

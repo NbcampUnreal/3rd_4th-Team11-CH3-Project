@@ -1,11 +1,14 @@
 ﻿#include "MyCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "MyPlayerController.h"
+#include "BaseWeapon.h"
+#include "BaseRangedWeapon.h"
 #include "BaseStatComponent.h"
 #include "DamageComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Items/PickupItem.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AMyCharacter::AMyCharacter()
@@ -30,45 +33,75 @@ AMyCharacter::AMyCharacter()
 
 	DamageComp = CreateDefaultSubobject<UDamageComponent>(TEXT("DamageComponent"));
 
-	AnimInstance = nullptr;
-	FireMontage = nullptr;
+	CharacterAnimInstance = nullptr;
+	WeaponAnimInstance = nullptr;
 
-	ShootHitEffect = nullptr;
+	MoveSound = nullptr;
+	JumpingSound = nullptr;
+	LandingSound = nullptr;
 
-	CharacterState = ECharacterState::Idle;
-	WeaponState = EWeaponState::Base;
+	MoveState = EMoveState::Idle;
+	ActionState = EActionState::Idle;
+
+	bIsMoving = false;
+	bIsCrouching = false;
+	bIsAiming = false;
+	bBugFixFlag = false;
+
+
+	WeaponClass = nullptr;
 
 	PlayerController = nullptr;
+
+	EquippedWeapon = nullptr;
 
 	NormalSpeed = 600.0f;
 	RunSpeedMultiplier = 1.7f;
 	RunSpeed = NormalSpeed * RunSpeedMultiplier;
+	StepInterval = 0.44f;
 }
 
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SkeletalMeshComp2->AttachToComponent(
-		SkeletalMeshComp1,
-		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-		TEXT("ik_hand_gun")
-	);
-
-	StaticMeshComp->AttachToComponent(
-		SkeletalMeshComp2,
-		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-		TEXT("magazine")
-	);
-
 	if (SkeletalMeshComp1)
 	{
-		AnimInstance = SkeletalMeshComp1->GetAnimInstance();
+		if (SkeletalMeshComp1->GetAnimInstance())
+		{
+			CharacterAnimInstance = SkeletalMeshComp1->GetAnimInstance();
+		}
 	}
 
 	if (GetCharacterMovement())
 	{
 		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+	}
+
+	DamageComp->AttackTokenCount = 1;
+
+	if (GetWorld() && WeaponClass)
+	{
+		EquippedWeapon = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClass, FTransform::Identity);
+
+		if (EquippedWeapon)
+		{
+			EquippedWeapon->SetOwner(this);
+			EquippedWeapon->Equip();
+
+			if (SkeletalMeshComp2)
+			{
+				if (SkeletalMeshComp2->GetAnimInstance())
+				{
+					WeaponAnimInstance = SkeletalMeshComp2->GetAnimInstance();
+				}
+			}
+
+			if (PlayerController)
+			{
+				PlayerController->BindDeligateToSpawnedWeapon(EquippedWeapon);
+			}
+		}
 	}
 }
 
@@ -89,57 +122,103 @@ void AMyCharacter::Tick(float DeltaTime)
 
 }
 
-void AMyCharacter::Shoot()
+AMyPlayerController* AMyCharacter::GetMyPlayerController() const
 {
-	if (CharacterState != ECharacterState::Running)
+	return PlayerController;
+}
+
+EMoveState AMyCharacter::GetMoveState() const
+{
+	return MoveState;
+}
+
+EActionState AMyCharacter::GetActionState() const
+{
+	return ActionState;
+}
+
+UAnimInstance* AMyCharacter::GetCharacterAnimInstance() const
+{
+	return CharacterAnimInstance;
+}
+
+UAnimInstance* AMyCharacter::GetWeaponAnimInstance() const
+{
+	return WeaponAnimInstance;
+}
+
+void AMyCharacter::Attack()
+{
+	if (!EquippedWeapon) return;
+
+	EquippedWeapon->Attack();
+}
+
+void AMyCharacter::EndReload()
+{
+	if (EquippedWeapon)
 	{
-		if (AnimInstance && FireMontage)
+		if (ABaseRangedWeapon* BaseRangedWeapon = Cast<ABaseRangedWeapon>(EquippedWeapon))
 		{
-			AnimInstance->Montage_Play(FireMontage, 1.0f);
-		}
-
-		if (!PlayerController) return;
-
-		FVector Location;
-		FRotator Rotation;
-		PlayerController->GetPlayerViewPoint(Location, Rotation);
-		FVector End = Location + (Rotation.Vector() * 10000.0f); // 10000.0f weapon shootdistance
-
-		FHitResult Hit;
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-
-		bool bHit = GetWorld()->LineTraceSingleByChannel(
-			Hit,
-			Location,
-			End,
-			ECC_GameTraceChannel2,
-			Params
-		);
-
-		if (ShootHitEffect)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(),
-				ShootHitEffect,
-				Hit.ImpactPoint,
-				Hit.ImpactNormal.Rotation()
-			);
-		}
-
-		if (bHit)
-		{
-			AActor* HitActor = Hit.GetActor();
-
-			if (HitActor && HitActor->ActorHasTag("Enemy"))
+			if (bIsAiming)
 			{
-				if (DamageComp)
+				BaseRangedWeapon->SetWeaponState(EWeaponState::Aiming);
+
+				if (MoveState != EMoveState::Running)
 				{
-					DamageComp->TransDamage(HitActor);
+					StepInterval *= 2.0f;
 				}
+			}
+			else
+			{
+				BaseRangedWeapon->SetWeaponState(EWeaponState::Base);
 			}
 		}
 	}
+}
+
+void AMyCharacter::Landed(const FHitResult& Hit)
+{
+	if (LandingSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			LandingSound,
+			SkeletalMeshComp1->GetSocketLocation("root")
+		);
+	}
+
+	if (bIsCrouching)
+	{
+		ActionState = EActionState::Crouching;
+	}
+	else
+	{
+		ActionState = EActionState::Idle;
+	}
+}
+
+void AMyCharacter::MoveSoundPlay()
+{
+	if (!bIsMoving || ActionState == EActionState::Jumping) return;
+
+	if (MoveSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			MoveSound,
+			SkeletalMeshComp1->GetSocketLocation("root"),
+			1.3f
+		);
+	}
+
+	GetWorldTimerManager().SetTimer(
+		MoveSoundTimerHandle,
+		this,
+		&AMyCharacter::MoveSoundPlay,
+		StepInterval,
+		false
+	);
 }
 
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -156,7 +235,14 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					PlayerController->MoveAction,
 					ETriggerEvent::Triggered,
 					this,
-					&AMyCharacter::Move
+					&AMyCharacter::StartMove
+				);
+
+				EnhancedInput->BindAction(
+					PlayerController->MoveAction,
+					ETriggerEvent::Completed,
+					this,
+					&AMyCharacter::StopMove
 				);
 			}
 
@@ -247,21 +333,31 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					PlayerController->ShootAction,
 					ETriggerEvent::Started,
 					this,
-					&AMyCharacter::StartShoot
+					&AMyCharacter::StartAttack
 				);
 
 				EnhancedInput->BindAction(
 					PlayerController->ShootAction,
 					ETriggerEvent::Completed,
 					this,
-					&AMyCharacter::StopShoot
+					&AMyCharacter::StopAttack
+				);
+			}
+
+			if(PlayerController->InteractionAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->InteractionAction,
+					ETriggerEvent::Triggered,
+					this,
+					&AMyCharacter::OnInteract
 				);
 			}
 		}
 	}
 }
 
-void AMyCharacter::Move(const FInputActionValue& value)
+void AMyCharacter::StartMove(const FInputActionValue& value)
 {
 	if (!PlayerController) return;
 
@@ -276,25 +372,63 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	{
 		AddMovementInput(GetActorRightVector(), MoveInput.X);
 	}
+
+	if (!bIsMoving && ActionState != EActionState::Jumping)
+	{
+		bIsMoving = true;
+
+		MoveSoundPlay();
+	}
+}
+
+void AMyCharacter::StopMove(const FInputActionValue& value)
+{
+	bIsMoving = false;
 }
 
 void AMyCharacter::StartRun(const FInputActionValue& value)
 {
-	CharacterState = ECharacterState::Running;
-
-	if (GetCharacterMovement())
+	if (ActionState != EActionState::Jumping && ActionState != EActionState::Crouching && ActionState != EActionState::Cling)
 	{
-		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+		if (MoveState != EMoveState::Running)
+		{
+			MoveState = EMoveState::Running;
+
+			if (GetCharacterMovement())
+			{
+				GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+			}
+
+			StepInterval *= 0.5f;
+
+			if (Cast<ABaseRangedWeapon>(EquippedWeapon)->GetWeaponState() == EWeaponState::Aiming)
+			{
+				StepInterval *= 0.5f;
+			}
+		}
 	}
 }
 
 void AMyCharacter::StopRun(const FInputActionValue& value)
 {
-	CharacterState = ECharacterState::Idle;
-
-	if (GetCharacterMovement())
+	if (MoveState == EMoveState::Running)
 	{
-		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+		MoveState = EMoveState::Idle;
+
+		if (ActionState != EActionState::Crouching)
+		{
+			if (GetCharacterMovement())
+			{
+				GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+			}
+
+			StepInterval *= 2.0f;
+
+			if (Cast<ABaseRangedWeapon>(EquippedWeapon)->GetWeaponState() == EWeaponState::Aiming)
+			{
+				StepInterval *= 2.0f;
+			}
+		}
 	}
 }
 
@@ -302,6 +436,19 @@ void AMyCharacter::StartJump(const FInputActionValue& value)
 {
 	if (value.Get<bool>())
 	{
+		bIsMoving = false;	
+
+		ActionState = EActionState::Jumping;
+
+		if (JumpingSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				JumpingSound,
+				SkeletalMeshComp1->GetSocketLocation("root")
+			);
+		}
+
 		Jump();
 	}
 }
@@ -318,7 +465,60 @@ void AMyCharacter::Crouch(const FInputActionValue& value)
 {
 	if (value.Get<bool>())
 	{
+		if (!bIsCrouching)
+		{
+			if (MoveState == EMoveState::Running)
+			{
+				MoveState = EMoveState::Idle;
 
+				if (Cast<ABaseRangedWeapon>(EquippedWeapon)->GetWeaponState() == EWeaponState::Aiming)
+				{
+					StepInterval *= 8.0f;
+				}
+				else
+				{
+					StepInterval *= 4.0f;
+				}
+			}
+			else
+			{
+				StepInterval *= 2.0f;
+			}
+
+			ActionState = EActionState::Crouching;
+
+			bIsCrouching = true;
+
+			if (GetCapsuleComponent())
+			{
+				GetCapsuleComponent()->SetCapsuleHalfHeight(44.0f, true);
+			}
+
+			if (GetCharacterMovement())
+			{
+				NormalSpeed *= 0.5f;
+				GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+			}
+		}
+		else 
+		{
+			ActionState = EActionState::Idle;
+
+			bIsCrouching = false;
+
+			if (GetCapsuleComponent())
+			{
+				GetCapsuleComponent()->SetCapsuleHalfHeight(88.0f, true);
+			}
+
+			if (GetCharacterMovement())
+			{
+				NormalSpeed *= 2.0f;
+				GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+
+				StepInterval *= 0.5f;
+			}
+		}
 	}
 }
 
@@ -341,17 +541,71 @@ void AMyCharacter::Look(const FInputActionValue& value)
 
 void AMyCharacter::StartAim(const FInputActionValue& value)
 {
-	if (CharacterState != ECharacterState::Running)
+	if (value.Get<bool>())
 	{
-		if (value.Get<bool>())
+		if (EquippedWeapon)
 		{
-			WeaponState = EWeaponState::Aiming;
-			CameraComp->SetFieldOfView(80.0f);
+			if (ABaseRangedWeapon* BaseRangedWeapon = Cast<ABaseRangedWeapon>(EquippedWeapon))
+			{
+				if (BaseRangedWeapon->GetWeaponState() != EWeaponState::Reloading)
+				{
+					if (MoveState != EMoveState::Running && ActionState != EActionState::Jumping)
+					{
+						if (BaseRangedWeapon->GetWeaponState() != EWeaponState::Aiming || bBugFixFlag)
+						{
+							BaseRangedWeapon->SetWeaponState(EWeaponState::Aiming);
+
+							bBugFixFlag = false;
+
+							if (!bIsAiming)
+							{
+								bIsAiming = true;
+
+								StepInterval *= 2.0f;
+							}
+
+							if (GetCharacterMovement())
+							{
+								NormalSpeed *= 0.5f;
+								GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+							}
+						}
+
+						CameraComp->SetFieldOfView(80.0f);
+
+						OnChangedIsAiming.Broadcast(false);
+					}
+					else if (MoveState == EMoveState::Running || ActionState == EActionState::Jumping)
+					{
+						CameraComp->SetFieldOfView(100.0f);
+
+						OnChangedIsAiming.Broadcast(true);
+					}
+				}
+				else if (BaseRangedWeapon->GetWeaponState() == EWeaponState::Reloading)
+				{
+					if (bIsAiming && !bBugFixFlag)
+					{
+						if (GetCharacterMovement())
+						{
+							NormalSpeed *= 2.0f;
+							GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+
+							if (MoveState != EMoveState::Running)
+							{
+								StepInterval *= 0.5f;
+							}
+						}
+
+						bBugFixFlag = true;
+					}
+
+					CameraComp->SetFieldOfView(100.0f);
+
+					OnChangedIsAiming.Broadcast(true);
+				}
+			}
 		}
-	}
-	else if (CharacterState == ECharacterState::Running)
-	{
-		CameraComp->SetFieldOfView(100.0f);
 	}
 }
 
@@ -359,44 +613,116 @@ void AMyCharacter::StopAim(const FInputActionValue& value)
 {
 	if (!value.Get<bool>())
 	{
-		WeaponState = EWeaponState::Base;
-		CameraComp->SetFieldOfView(100.0f);
+		if (EquippedWeapon)
+		{
+			if (ABaseRangedWeapon* BaseRangedWeapon = Cast<ABaseRangedWeapon>(EquippedWeapon))
+			{
+				if (BaseRangedWeapon->GetWeaponState() != EWeaponState::Reloading)
+				{
+					BaseRangedWeapon->SetWeaponState(EWeaponState::Base);
+
+					if (bIsAiming)
+					{
+						if (GetCharacterMovement())
+						{
+							if (!FMath::IsNearlyEqual(NormalSpeed, 600.0f))
+							{
+								NormalSpeed *= 2.0f;
+								GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+							}
+
+							if (MoveState != EMoveState::Running)
+							{
+								StepInterval *= 0.5f;
+							}
+						}
+					}
+				}
+			}
+		}
 	}
+
+	bIsAiming = false;
+
+	CameraComp->SetFieldOfView(100.0f);
+
+	OnChangedIsAiming.Broadcast(true);
 }
 
 void AMyCharacter::Reload(const FInputActionValue& value)
 {
 	if (value.Get<bool>())
 	{
+		if (EquippedWeapon)
+		{
+			if (ABaseRangedWeapon* BaseRangedWeapon = Cast<ABaseRangedWeapon>(EquippedWeapon))
+			{
+				if (BaseRangedWeapon->GetWeaponState() != EWeaponState::Reloading)
+				{
+					BaseRangedWeapon->Reload();
 
+					GetWorldTimerManager().SetTimer(
+						ReloadTimerHandle,
+						this,
+						&AMyCharacter::EndReload,
+						BaseRangedWeapon->GetReloadingTime(),
+						false
+					);
+				}
+			}
+		}
 	}
 }
 
-void AMyCharacter::StartShoot(const FInputActionValue& value)
+void AMyCharacter::StartAttack(const FInputActionValue& value)
 {
 	if (value.Get<bool>())
 	{
-		Shoot();
+		Attack();
 
-		GetWorldTimerManager().SetTimer(
-			ShootTimerHandle,
-			this,
-			&AMyCharacter::Shoot,
-			0.2f,
-			true
-		);
+		if (EquippedWeapon)
+		{
+			GetWorldTimerManager().SetTimer(
+				AttackTimerHandle,
+				this,
+				&AMyCharacter::Attack,
+				EquippedWeapon->GetAttackSpeed(),
+				true
+			);
+		}
 	}
 }
 
-void AMyCharacter::StopShoot(const FInputActionValue& value)
+void AMyCharacter::StopAttack(const FInputActionValue& value)
 {
 	if (!value.Get<bool>())
 	{
-		GetWorldTimerManager().ClearTimer(ShootTimerHandle);
+		GetWorldTimerManager().ClearTimer(AttackTimerHandle);
 	}
 }
 
+void AMyCharacter::OnInteract(const FInputActionValue& value)
+{
+	FVector StartLocation = CameraComp->GetComponentLocation();
+	FVector EndLocation = StartLocation + (CameraComp->GetForwardVector() * 88.0f);
 
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	if(GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		StartLocation,
+		EndLocation,
+		ECollisionChannel::ECC_GameTraceChannel3,
+		Params))
+	{
+		if(APickupItem* PickupItem = Cast<APickupItem>(HitResult.GetActor()))
+		{
+			PickupItem->Interact();
+		}
+	}
+}
 
 
 
@@ -416,4 +742,9 @@ void AMyCharacter::ReturnAttackToken(int32 Amount)
 	{
 		DamageComp->ReturnAttackToken(Amount);
 	}
+}
+
+ABaseWeapon* AMyCharacter::GetEquippedWeapon()
+{
+	return EquippedWeapon;
 }

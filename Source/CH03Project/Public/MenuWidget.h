@@ -6,7 +6,7 @@
 
 class UButton;
 class UTextBlock;
-
+class USoundBase;
 
 UCLASS()
 class CH03PROJECT_API UMenuWidget : public UUserWidget
@@ -32,13 +32,16 @@ public:
 	void SetTileText(bool bIsGameOver);
 
 	UFUNCTION(BlueprintCallable)
-	void SetScoreNumText(bool bIsGameOver);
+	void SetScoreNumText(bool bIsGameOver, int Score);
 
 	UFUNCTION(BlueprintCallable)
 	void SetScoreText(bool bIsGameOver);
 
 	UFUNCTION()
-	void SetMenuState(bool bIsGameOver);
+	void SetMenuState(bool bIsGameOver, int score);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayGameOverSound();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -58,4 +61,7 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ScoreText;
+
+	UPROPERTY(EditAnywhere, Category="Sound")
+	USoundBase* GameOverSound;
 };

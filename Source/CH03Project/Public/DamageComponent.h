@@ -5,6 +5,7 @@
 #include "BaseStatComponent.h"
 #include "DamageComponent.generated.h"
 
+class IBaseWeaponInterface;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CH03PROJECT_API UDamageComponent : public UActorComponent
@@ -26,6 +27,11 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void SetAttackDamage(IBaseWeaponInterface* EquippedWeapon);
+	void SetItemPlusAttack(int32 NewItemPlusAttack);
+	void SetItemPlusDamage(int32 NewItemPlusDamage); // Overloading
+	//int32 GetAttackDamage() const;
+
 	UFUNCTION(BlueprintCallable)
 	void TransDamage(AActor* TargetActor);
 
@@ -34,4 +40,11 @@ public:
 
 	UFUNCTION()
 	void ReturnAttackToken(int32 Amount);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	int ItemPlusDamage;
+
+	UFUNCTION(BlueprintCallable)
+	void TransDamageCritical(AActor* TargetActor);
+	
 };

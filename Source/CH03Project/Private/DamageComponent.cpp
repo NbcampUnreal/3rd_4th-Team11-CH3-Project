@@ -4,6 +4,8 @@
 #include "GameFramework/PlayerController.h"
 #include "MyPlayerController.h"
 #include "HUDWidget.h"
+#include "BaseWeaponInterface.h"
+#include "Perception/AISense_Damage.h"
 
 UDamageComponent::UDamageComponent()
 {
@@ -23,6 +25,28 @@ void UDamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+void UDamageComponent::SetAttackDamage(IBaseWeaponInterface* EquippedWeapon)
+{
+	if (EquippedWeapon)
+	{
+		AttackDamage = EquippedWeapon->GetDamage();
+	}
+}
+
+void UDamageComponent::SetItemPlusAttack(int32 NewItemPlusAttack)
+{
+	AttackDamage = NewItemPlusAttack;
+}
+
+void UDamageComponent::SetItemPlusDamage(int32 NewItemPlusDamage)
+{
+	ItemPlusDamage = NewItemPlusDamage;
+}
+
+//int32 UDamageComponent::GetAttackDamage() const
+//{
+//	return AttackDamage;
+//}
 
 void UDamageComponent::TransDamage(AActor* TargetActor)
 {
@@ -31,9 +55,20 @@ void UDamageComponent::TransDamage(AActor* TargetActor)
 		UBaseStatComponent* TargetStatComponent = TargetActor->FindComponentByClass<UBaseStatComponent>();
 		if (TargetStatComponent)
 		{
-			TargetStatComponent->AddHp(-AttackDamage);
+			TargetStatComponent->AddHp(-(AttackDamage + ItemPlusDamage));
 
-			
+			APawn* InstigatorPawn = Cast<APawn>(GetOwner());
+			if (InstigatorPawn && TargetActor->HasAuthority())
+			{
+				UAISense_Damage::ReportDamageEvent(
+					GetWorld(),
+					TargetActor,           
+					InstigatorPawn,          
+					static_cast<float>(AttackDamage),
+					TargetActor->GetActorLocation(),
+					InstigatorPawn->GetActorLocation()
+				);
+			}
 		}
 	}
 }
@@ -51,4 +86,30 @@ bool UDamageComponent::StoreAttackToken(int32 Amount)
 void UDamageComponent::ReturnAttackToken(int32 Amount)
 {
 	AttackTokenCount += Amount;
+}
+
+void UDamageComponent::TransDamageCritical(AActor* TargetActor)
+{
+	UE_LOG(LogTemp, Warning, TEXT("크리티컬"));
+	if (TargetActor)
+	{
+		UBaseStatComponent* TargetStatComponent = TargetActor->FindComponentByClass<UBaseStatComponent>();
+		if (TargetStatComponent)
+		{
+			TargetStatComponent->AddHpCritical(-(AttackDamage + ItemPlusDamage));
+
+			APawn* InstigatorPawn = Cast<APawn>(GetOwner());
+			if (InstigatorPawn && TargetActor->HasAuthority())
+			{
+				UAISense_Damage::ReportDamageEvent(
+					GetWorld(),
+					TargetActor,
+					InstigatorPawn,
+					static_cast<float>(AttackDamage),
+					TargetActor->GetActorLocation(),
+					InstigatorPawn->GetActorLocation()
+				);
+			}
+		}
+	}
 }

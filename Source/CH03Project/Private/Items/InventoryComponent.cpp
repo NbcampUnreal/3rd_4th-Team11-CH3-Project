@@ -1,0 +1,115 @@
+﻿#include "Items/InventoryComponent.h"
+#include "Engine/DataTable.h"
+
+UInventoryComponent::UInventoryComponent()
+{
+	MaxInventorySize = 20; // 기본 인벤토리 칸
+}
+
+bool UInventoryComponent::AddItem(UBaseItem* NewItem)
+{
+    if(!NewItem)
+        return false;
+
+
+    if (NewItem->Quantity == 99)
+    {
+		OnAddAccessoryChanged.Broadcast(NewItem->GetItemData().ItemID);
+        return true;
+    }
+
+
+    // 같은 아이템 여부 확인
+    for(UBaseItem* Item : Items)
+    {
+        if(Item && Item->ItemDataHandle.RowName == NewItem->ItemDataHandle.RowName)
+        {
+            // 수량 증가
+            Item->Quantity += NewItem->Quantity;
+
+            // 델리게이트 발행
+            OnAddItemChanged.Broadcast(Item->GetItemData().ItemID, Item->Quantity);
+
+            /*UE_LOG(LogTemp, Log, TEXT("[%s] 수량 증가: %d"),
+                   *Item->GetItemData().ItemName.ToString(),
+                   Item->Quantity
+            );*/
+            return true;
+        }
+    }
+
+    // 새 아이템 추가
+    if(Items.Num() < MaxInventorySize)
+    {
+        // 새 아이템 추가
+        Items.Add(NewItem);
+
+        // 델리게이트 발행
+        OnAddItemChanged.Broadcast(NewItem->GetItemData().ItemID, NewItem->Quantity);
+
+        /*UE_LOG(LogTemp, Log, TEXT("[%s] 수량 증가: %d"),
+               *NewItem->GetItemData().ItemName.ToString(),
+               NewItem->Quantity
+        );*/
+        return true;
+    }
+
+    //UE_LOG(LogTemp, Warning, TEXT("Inventory is full!"));
+    return false;
+}
+
+bool UInventoryComponent::RemoveItem(UBaseItem* Item, int32 Amount)
+{
+	if(!Item)
+		return false;
+
+	if(Item->Quantity > Amount)
+	{
+		Item->Quantity -= Amount;
+	}
+	else
+	{
+        Item->Quantity -= Amount;
+		//Items.Remove(Item); // 인벤토리에서 Remove를 호출하면 쿨타임 정보가 사라짐 추후 문제시 수정
+	}
+    // 델리게이트 발행
+    OnRemoveItemChanged.Broadcast(Item->GetItemData().ItemID, Item->Quantity);
+    return true;
+}
+
+bool UInventoryComponent::FindItem(FName ItemID) const
+{
+    for(UBaseItem* Item : Items)
+    {
+        if(Item && Item->ItemDataHandle.RowName == ItemID)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+int32 UInventoryComponent::CountItem(FName ItemID) const
+{
+    for (UBaseItem* Item : Items)
+    {
+        if (Item && Item->ItemDataHandle.RowName == ItemID)
+        {
+            return Item->Quantity;
+        }
+    }
+    return 0;
+}
+
+
+UBaseItem* UInventoryComponent::GetItem(FName ItemID)
+{
+    for(UBaseItem* Item : Items)
+    {
+        if(Item && Item->ItemDataHandle.RowName == ItemID)
+        {
+            return Item;
+        }
+    }
+    return nullptr;
+}

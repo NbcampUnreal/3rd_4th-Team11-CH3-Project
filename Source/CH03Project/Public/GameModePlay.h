@@ -29,13 +29,15 @@ public:
 	void AddScore(int32 Points);
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
+	void SetLastLocation(FVector LastLocation);
+
+	UFUNCTION(BlueprintCallable, Category = "UI")
 	void AddKillCount(int32 Points);
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void SetMissionText(FString Text);
 
 
-	void AddItemCount(int32 Point, int32 SlotIndex);
 
 	void SetGameStatePlay();
 	
@@ -44,4 +46,8 @@ private:
 	
 	
 	AGameStatePlay* GameStatePlays;
+
+public:
+
+	void ClearEnemiesOnPlayerDeath();
 };

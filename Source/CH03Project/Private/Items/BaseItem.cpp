@@ -1,141 +1,154 @@
 #include "Items/BaseItem.h"
+#include "Engine/DataTable.h"
 #include "Items/ItemDataRow.h"
-#include "Components/WidgetComponent.h"
-#include "Components/StaticMeshComponent.h"
-#include "Components/SphereComponent.h"
-#include "GameStatePlay.h"
+#include "TimerManager.h"
+#include "Engine/World.h"
 
-ABaseItem::ABaseItem()
+UBaseItem::UBaseItem()
 {
-	PrimaryActorTick.bCanEverTick = false;
-
-	// 컴포넌트 
-	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
-	SetRootComponent(Scene);
-
-	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-	StaticMesh->SetupAttachment(Scene);
-
-	Collision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
-	Collision->SetupAttachment(Scene);
-	Collision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-
-	// 이벤트 바인딩
-	Collision->OnComponentBeginOverlap.AddDynamic(this, &ABaseItem::OnItemOverlap);
-	Collision->OnComponentEndOverlap.AddDynamic(this, &ABaseItem::OnItemEndOverlap);
-
-	// 상호작용 UI
-	InteractUI = CreateDefaultSubobject<UWidgetComponent>(TEXT("InteractUI"));
-	InteractUI->SetupAttachment(Scene);
-	InteractUI->SetWidgetSpace(EWidgetSpace::Screen);
-	InteractUI->SetVisibility(false);
+	Quantity = 1;
+	RemainingCooldown = 0.f;
+	CooldownDuration = 0.f;
 }
 
-// 아이템마다의 점수를 반환하는 함수
-int32 ABaseItem::GetItemScore() const
+UWorld* UBaseItem::GetWorld() const
 {
-	// 데이터 테이블 핸들이 유효한지 확인
-	if(!ItemDataHandle.DataTable)
+	if (const UObject* MyOuter = GetOuter())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ItemDataHandle is Null"));
-		return 0;
+		return MyOuter->GetWorld();
 	}
-
-	const FItemDataRow* ItemRow = ItemDataHandle.GetRow<FItemDataRow>("GetItemScore");
-
-	// FItemDataRow를 정상적으로 오는지 확인
-	if(ItemRow)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Item Score: %d"), ItemRow->Score);
-		return ItemRow->Score;
-	}
-
-	return 0;
+	return nullptr;
 }
 
-// 오버랩 됐을 때 아이템 위에 상호작용 UI를 띄울 함수
-void ABaseItem::ShowWidget()
+FItemDataRow UBaseItem::GetItemData() const
 {
-	if(InteractUI)
+	if (ItemDataHandle.DataTable)
 	{
-		InteractUI->SetVisibility(true);
-	}
-}
-
-// 오버랩이 끝났을 때 아이템 위에 상호작용 UI를 숨길 함수
-void ABaseItem::HideWidget()
-{
-	if(InteractUI)
-	{
-		InteractUI->SetVisibility(false);
-	}
-}
-
-// 아이템과 오버랩 상태에서 E키를 누를때 해당 함수를 호출함
-void ABaseItem::Interact()
-{
-	// GameState 가져오기
-	AGameStatePlay* GameState = GetWorld()->GetGameState<AGameStatePlay>();
-
-	// 데이터 테이블 핸들이 유효한지 확인
-	if (!ItemDataHandle.DataTable)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ItemDataHandle is Null"));
-		Destroy(); // 아이템 데이터를 찾을 수 없어도 상호작용은 완료된 것으로 처리
-		return;
-	}
-
-	// 데이터 테이블에서 아이템 정보 가져오기
-	const FItemDataRow* ItemRow = ItemDataHandle.GetRow<FItemDataRow>("Interact");
-
-	// GameState와 ItemRow가 모두 유효한지 확인
-	if (GameState && ItemRow)
-	{
-		// ItemCounts 배열의 유효한 인덱스인지 확인
-		if (GameState->ItemCounts.IsValidIndex(ItemRow->ItemID))
+		const FItemDataRow* Row = ItemDataHandle.GetRow<FItemDataRow>(TEXT("UBaseItem::GetItemData"));
+		if (Row)
 		{
-			// 해당 아이템 ID의 카운트 증가
-			GameState->ItemCounts[ItemRow->ItemID]++;
-			UE_LOG(LogTemp, Log, TEXT("Item ID: %d count is now %d"), ItemRow->ItemID, GameState->ItemCounts[ItemRow->ItemID]);
+			return *Row;
 		}
+	}
+	// 기본값 또는 빈 구조체 반환
+	return FItemDataRow();
+}
+
+bool UBaseItem::Use_Implementation(AActor* User)
+{
+	// 아이템 수량이 0 이하인 경우 사용 불가
+	if (Quantity <= 0)
+	{
+		return false;
+	}
+	// 쿨타임 상태일 때
+	if (bIsOnCooldown)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("%s: Item is on cooldown. Remaining: %f"), *GetName(), RemainingCooldown);
+		return false;
+	}
+
+	// 아이템 데이터 테이블에서 쿨타임 가져오기
+	if (ItemDataHandle.DataTable && ItemDataHandle.RowName.IsValid())
+	{
+		FItemDataRow* ItemRow = ItemDataHandle.DataTable->FindRow<FItemDataRow>(ItemDataHandle.RowName, TEXT("Use_Implementation"));
+		if (ItemRow)
+		{
+			CooldownDuration = ItemRow->CooldownTime;
+		}
+	}
+
+	if (CooldownDuration > 0.f)
+	{
+		bIsOnCooldown = true;
+		RemainingCooldown = CooldownDuration;
+		if (GetWorld())
+		{
+			GetWorld()->GetTimerManager().SetTimer(
+				CooldownTimerHandle,
+				this,
+				&UBaseItem::UpdateCooldown,
+				0.1f, true
+			);
+			//UE_LOG(LogTemp, Log, TEXT("%s: Started %f second cooldown."), *GetName(), CooldownDuration);
+		}
+
+		OnCooldownUpdate.Broadcast(RemainingCooldown, ItemDataHandle.RowName);
+		if (CooldownDuration <= 0.f)
+		{
+			bIsOnCooldown = false;
+			CooldownRemaining = 0.f;
+			OnCooldownUpdate.Broadcast(0.f, ItemDataHandle.RowName);
+			return true;
+		}
+
+		CooldownRemaining = CooldownDuration;
+		// 플레이어 존재 여부 체크
+		if (User && User->GetWorld())
+		{
+			User->GetWorld()->GetTimerManager().SetTimer(
+				CooldownTimerHandle,
+				this,
+				&UBaseItem::ResetCooldown,
+				CooldownDuration,
+				false
+			);
+
+			User->GetWorld()->GetTimerManager().SetTimer(
+				CooldownTickTimerHandle,
+				this,
+				&UBaseItem::CooldownTick,
+				0.1f,
+				true
+			);
+		}
+
+		OnCooldownUpdate.Broadcast(CooldownRemaining, ItemDataHandle.RowName);
+		return true;
+	}
+	return true;
+}
+
+	// 쿨타임 업데이트 함수
+	void UBaseItem::UpdateCooldown()
+	{
+		// 0.1초마다 쿨타임 업데이트
+		RemainingCooldown -= 0.1f;
+		if (RemainingCooldown > 0.f)
+		{
+			//UE_LOG(LogTemp, Log, TEXT("%s: Cooldown remaining: %f seconds"), *GetName(), RemainingCooldown);
+			OnCooldownUpdate.Broadcast(RemainingCooldown, ItemDataHandle.RowName);
+		}
+
+		// 쿨타임이 0 이하가 되면 타이머를 중지하고 쿨타임을 초기화
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Item ID %d is not a valid index in ItemCounts array."), ItemRow->ItemID);
+			if (GetWorld())
+			{
+				GetWorld()->GetTimerManager().ClearTimer(CooldownTimerHandle);
+			}
+			ResetCooldown();
 		}
 	}
-	else
+
+	void UBaseItem::CooldownTick()
 	{
-		if(!GameState) UE_LOG(LogTemp, Warning, TEXT("GameStatePlay is not valid!"));
-		if(!ItemRow) UE_LOG(LogTemp, Warning, TEXT("ItemRow is not valid!"));
+		CooldownRemaining = FMath::Max(0.f, CooldownRemaining - 0.1f);
+		OnCooldownUpdate.Broadcast(CooldownRemaining, ItemDataHandle.RowName);
 	}
 
-	// 상호작용이 끝났으므로 UI를 숨기고 객체를 파괴
-	HideWidget();
-	Destroy();
-}
-
-// 오버랩 됐을 때 위젯을 표시
-void ABaseItem::OnItemOverlap(
-	UPrimitiveComponent* OverlappedComp,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex,
-	bool bFromSweep,
-	const FHitResult& SweepResult)
-{
-	if(OtherActor && OtherActor->ActorHasTag("Player"))
+	void UBaseItem::ResetCooldown()
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("overlap")));
-		ShowWidget();
-	}
-}
+		bIsOnCooldown = false;
+		CooldownRemaining = 0.f;
+		if (UWorld* World = GetWorld())
+		{
+			World->GetTimerManager().ClearTimer(CooldownTimerHandle);
+			World->GetTimerManager().ClearTimer(CooldownTickTimerHandle);
+		}
 
-// 오버랩이 끝났을 때 위젯을 숨김
-void ABaseItem::OnItemEndOverlap(
-	UPrimitiveComponent* OverlappedComp,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex)
-{
-	HideWidget();
-}
+		OnCooldownUpdate.Broadcast(0.f, ItemDataHandle.RowName);
+		RemainingCooldown = 0.f;
+		//UE_LOG(LogTemp, Log, TEXT("%s: Cooldown finished."), *GetName());
+		OnCooldownUpdate.Broadcast(RemainingCooldown, ItemDataHandle.RowName);
+	}

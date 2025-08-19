@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/PlayerController.h"
+#include "Sound/SoundBase.h"
 
 void UMenuWidget::NativeConstruct()
 {
@@ -19,7 +20,7 @@ void UMenuWidget::NativeConstruct()
 void UMenuWidget::OnStartClicked()
 {
     RemoveFromParent();
-    UGameplayStatics::OpenLevel(GetWorld(), FName("MainLevel"));
+    UGameplayStatics::OpenLevel(GetWorld(), FName("OpeningLevel"));
 }
 
 void UMenuWidget::OnQuitClicked()
@@ -46,13 +47,14 @@ void UMenuWidget::SetTileText(bool bIsGameOver)
     }
 }
 
-void UMenuWidget::SetScoreNumText(bool bIsGameOver)
+void UMenuWidget::SetScoreNumText(bool bIsGameOver, int Score)
 {
     if (bIsGameOver)
     {
         if (ScoreNumText)
         {
             ScoreNumText->SetVisibility(ESlateVisibility::Visible);
+            ScoreNumText->SetText(FText::AsNumber(Score));
         }
     }
     else
@@ -82,10 +84,18 @@ void UMenuWidget::SetScoreText(bool bIsGameOver)
     }
 }
 
-void UMenuWidget::SetMenuState(bool bIsGameOver)
+void UMenuWidget::SetMenuState(bool bIsGameOver, int score)
 {
     SetStartButtonText(bIsGameOver);
     SetTileText(bIsGameOver);
-    SetScoreNumText(bIsGameOver);
+    SetScoreNumText(bIsGameOver, score);
     SetScoreText(bIsGameOver);
+}
+
+void UMenuWidget::PlayGameOverSound()
+{
+    if(GameOverSound)
+    {
+        UGameplayStatics::PlaySound2D(this, GameOverSound);
+    }
 }

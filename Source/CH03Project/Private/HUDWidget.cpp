@@ -1,4 +1,4 @@
-#include "HUDWidget.h"
+﻿#include "HUDWidget.h"
 #include "DamageWidget.h"
 #include "MyPlayerController.h"
 #include "TimerManager.h"
@@ -12,7 +12,13 @@
 
 void UHUDWidget::NativeConstruct()
 {
-	Super::NativeConstruct();
+	if (UWorld* World = GetWorld())
+	{
+		FTimerManager& TM = World->GetTimerManager();
+		TM.ClearTimer(HitMarkerTimerHandle);
+		TM.ClearTimer(KillMarkerTimerHandle);
+	}
+	Super::NativeDestruct();
 
 }
 void UHUDWidget::UpdateHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Instigator)
@@ -29,20 +35,20 @@ void UHUDWidget::UpdateHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Inst
 	}
 }
 
+void UHUDWidget::UpdateBossHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Instigator)
+{
+	if (BossHealthBar)
+	{
+		BossHealthBar->SetPercent(1 - static_cast<float>(CurrentHealth) / MaxHealth);
+		SetBossHPBarVisible(true);
+	}
+}
 
 void UHUDWidget::UpdateBullet(int32 CurrentBullet)
 {
 	if (BulletText)
 	{
 		BulletText->SetText(FText::AsNumber(CurrentBullet));
-	}
-}
-
-void UHUDWidget::UpdateBossHP(int CurrentBossHealth, int MaxBossHealth)
-{
-	if (BossHealthBar)
-	{
-		BossHealthBar->SetPercent(CurrentBossHealth / MaxBossHealth);
 	}
 }
 
@@ -54,31 +60,11 @@ void UHUDWidget::UpdateScore(int32 CurrentScore)
 	}
 }
 
-void UHUDWidget::UpdateSubQuest(int32 QuestIndex, const TArray<FString>& MissionTexts)
+void UHUDWidget::UpdateSubQuest(const FString& QuestText)
 {
-	if (SubQuestText && MissionTexts.IsValidIndex(QuestIndex))
+	if (SubQuestText)
 	{
-		FString QuestText = MissionTexts[QuestIndex];
 		SubQuestText->SetText(FText::FromString(QuestText));
-	}
-}
-
-void UHUDWidget::UpdateHiddenQuest(bool bIsGetStatue, int32 StatueCount)
-{
-	if (HiddenQuestText)
-	{
-		HiddenQuestText->SetVisibility(ESlateVisibility::Visible);
-	}
-
-	if (StatueNum)
-	{
-		StatueNum->SetVisibility(ESlateVisibility::Visible);
-		StatueNum->SetText(FText::AsNumber(StatueCount));
-	}
-
-	if (HiddenQuestOutline)
-	{
-		HiddenQuestOutline->SetVisibility(ESlateVisibility::Visible);
 	}
 }
 
@@ -94,22 +80,38 @@ void UHUDWidget::ShowHitMarker()
 			PlayAnimation(ScaleUp, 0.f, 1);
 		}
 
-		GetWorld()->GetTimerManager().ClearTimer(HitMarkerTimerHandle);
-		if (!GetWorld()->GetTimerManager().IsTimerActive(HitMarkerTimerHandle))
+		if (HitSound)
 		{
-			GetWorld()->GetTimerManager().SetTimer(
-				HitMarkerTimerHandle,
-				this,
-				&UHUDWidget::HideHitMarker,
-				0.2f,
-				false
+			const float Pitch = FMath::FRandRange(HitSoundPitchMin, HitSoundPitchMax);
+			UGameplayStatics::SpawnSound2D(
+				this,                 
+				HitSound,           
+				HitSoundVolume,   
+				Pitch,               
+				0.f,                 
+				nullptr,
+				false,
+				true
 			);
 		}
+
+		GetWorld()->GetTimerManager().ClearTimer(HitMarkerTimerHandle);
+		GetWorld()->GetTimerManager().SetTimer(
+			HitMarkerTimerHandle,
+			this,
+			&UHUDWidget::HideHitMarker,
+			0.2f,
+			false
+			);
 	}
 }
 
 void UHUDWidget::HideHitMarker()
 {
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(HitMarkerTimerHandle);
+	}
 	if (HitMarkerImage)
 	{
 		HitMarkerImage->SetVisibility(ESlateVisibility::Hidden);
@@ -160,7 +162,6 @@ void UHUDWidget::ShowDamageText(int32 DamageAmount, const FVector& WorldLocation
 			DamageWidget->SetDamageText(DamageAmount);
 			DamageWidget->SetScreenPosition(ScreenPosition);
 
-			// ���� Ÿ�̸�
 			FTimerHandle RemoveTimer;
 			FTimerDelegate RemoveDelegate = FTimerDelegate::CreateLambda([DamageWidget]()
 				{
@@ -180,5 +181,83 @@ void UHUDWidget::SetCrosshairVisible(bool bVisible)
 	if (NormalCrossHair)
 	{
 		NormalCrossHair->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+}
+
+void UHUDWidget::UpdateQuickSlot(FName Name, int32 Count)
+{
+	if (Name == "HealthPotion")
+	{
+		Potion->SetVisibility(ESlateVisibility::Visible);
+		PotionText->SetVisibility(ESlateVisibility::Visible);
+		PotionText->SetText(FText::AsNumber(Count));
+	}
+	else if(Name == "Adrenaline")
+	{
+		Adrenaline->SetVisibility(ESlateVisibility::Visible);
+		AdrenalineText->SetVisibility(ESlateVisibility::Visible);
+		AdrenalineText->SetText(FText::AsNumber(Count));
+	}
+	else if (Name == "CardKey")
+	{
+		CardKey->SetVisibility(ESlateVisibility::Visible);
+		CardKeyText->SetVisibility(ESlateVisibility::Visible);
+		CardKeyText->SetText(FText::AsNumber(Count));
+	}
+	else if (Name == "CatStatue")
+	{
+		Statue->SetVisibility(ESlateVisibility::Visible);
+		StatueText->SetVisibility(ESlateVisibility::Visible);
+		StatueText->SetText(FText::AsNumber(Count));
+	}
+}
+
+void UHUDWidget::SetBossHPBarVisible(bool bVisible)
+{
+	if (BossHealthBar)
+	{
+		BossHealthBar->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+	if (BossNameText)
+	{
+		BossNameText->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+}
+
+void UHUDWidget::UpdateCoolTime(float CoolTime, FName Name)
+{
+	auto Show = [&](UTextBlock* T) 
+	{
+		if (!T) return;
+
+		if (CoolTime > KINDA_SMALL_NUMBER) 
+		{
+			T->SetVisibility(ESlateVisibility::Visible);
+			float Rounded = FMath::RoundToFloat(CoolTime * 10.f) / 10.f;
+			T->SetText(FText::AsNumber(Rounded));
+		}
+		else 
+		{
+			T->SetVisibility(ESlateVisibility::Hidden);
+			T->SetText(FText::GetEmpty());
+		}
+	};
+
+	if (Name == "HealthPotion")
+	{
+		Show(PotionCoolTime);
+	}
+	else if (Name == "Adrenaline") 
+	{
+		Show(AdrenalineCoolTime);
+	}
+}
+
+
+void UHUDWidget::PlayAdHardAnimation(float Duration)
+{
+	if (AdHard)
+	{
+		PlayAnimation(AdHard, 0.f, 1, EUMGSequencePlayMode::Forward, 1.f / Duration, false);
 	}
 }

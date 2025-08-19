@@ -1,7 +1,15 @@
 ﻿#include "MyPlayerController.h"
 #include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
 #include "MyCharacter.h"
 #include "HUDWidget.h"
+#include "EndMenuWidget.h"
+#include "BaseStatComponent.h"
+#include "GunAccessory.h"
+#include "PauseWidget.h"
+#include "Items/InventoryComponent.h"
+#include "Items/BaseItem.h" 
+#include "BaseRangedWeapon.h"
 #include "BaseStatComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
@@ -19,7 +27,8 @@ AMyPlayerController::AMyPlayerController()
 	ReloadAction = nullptr;
 	ShootAction = nullptr;
 	InteractionAction = nullptr;
-	MyCharacter = nullptr;
+	PauseAction = nullptr;
+	InvAction = nullptr;
 }
 
 void AMyPlayerController::BeginPlay()
@@ -33,11 +42,13 @@ void AMyPlayerController::BeginPlay()
 			if (IMC)
 			{
 				Subsystem->AddMappingContext(IMC, 0);
+				if (InvAction)
+				{
+					InvAction->bTriggerWhenPaused = true;
+				}
 			}
 		}
 	}
-
-    
 
 	FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(GetWorld());
 
@@ -70,18 +81,196 @@ void AMyPlayerController::BeginPlay()
 					StatComponent->OnHpChangedEvent.AddDynamic(HUDWidget, &UHUDWidget::UpdateHealth);
 					HUDWidget->UpdateHealth(StatComponent->GetHp(), StatComponent->GetMaxHp(), GetPawn());
 				}
+
 				AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
 				if (GameStatePlay)
 				{
 					GameStatePlay->OnScoreChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateScore);
 					HUDWidget->UpdateScore(GameStatePlay->Score);
-					//GameStatePlay->OnMissionTextChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateSubQuest);
-					//HUDWidget->UpdateSubQuest(GameStatePlay->GetCurrentMissionText());
+					GameStatePlay->OnMissionTextChanged.AddDynamic(HUDWidget, &UHUDWidget::UpdateSubQuest);
+					HUDWidget->UpdateSubQuest(GameStatePlay->GetMissionText());
 				}
+
+				if (UInventoryComponent* QuickSlot = MyPlayerCharacter->FindComponentByClass<UInventoryComponent>())
+				{
+					QuickSlot->OnAddItemChanged.AddDynamic(this, &AMyPlayerController::HandleAddItemChanged);
+					QuickSlot->OnRemoveItemChanged.AddDynamic(this, &AMyPlayerController::HandleRemoveItemChanged);
+					QuickSlot->OnAddAccessoryChanged.AddDynamic(this, &AMyPlayerController::HandleAddAccessoryChanged);
+					UE_LOG(LogTemp, Warning, TEXT("QuickSlot Component Found!"));
+					BindCoolTimeInInventory(QuickSlot);
+				}
+
+				MyPlayerCharacter->OnChangedIsAiming.AddDynamic(HUDWidget, &UHUDWidget::SetCrosshairVisible);
+			}
+		}
+
+		TArray<AActor*> BossActors;
+		UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("Boss"), BossActors);
+		if (BossActors.Num() > 0)
+		{
+			if (UBaseStatComponent* BossStat = BossActors[0]->FindComponentByClass<UBaseStatComponent>())
+			{
+				BossStat->OnHpChangedEvent.AddDynamic(HUDWidget, &UHUDWidget::UpdateBossHealth);
+				BossStat->OnHpChangedEvent.AddDynamic(this, &AMyPlayerController::HandleBossHpChanged);
 			}
 		}
 
 		SetInputMode(FInputModeGameOnly());
 		bShowMouseCursor = false;
+	}
+}
+
+
+void AMyPlayerController::BindDeligateToSpawnedWeapon(AActor* SpawnedWeapon)
+{
+	if (SpawnedWeapon)
+	{
+		ABaseRangedWeapon* Weapon = Cast<ABaseRangedWeapon>(SpawnedWeapon);
+		if (Weapon)
+		{
+			if (HUDWidget)
+			{
+				Weapon->OnChangeCurrentAmmo.AddDynamic(HUDWidget, &UHUDWidget::UpdateBullet);
+			}
+		}
+	}
+}
+
+void AMyPlayerController::HandleAddItemChanged(FName ItemID, int32 Quantity)
+{
+	if (HUDWidget) { HUDWidget->UpdateQuickSlot(ItemID, Quantity); }
+
+	if (AMyCharacter* MC = Cast<AMyCharacter>(GetPawn()))
+	{
+		if (UInventoryComponent* Inv = MC->FindComponentByClass<UInventoryComponent>())
+		{
+			if (UBaseItem* Item = Inv->GetItem(ItemID)) 
+			{
+				BindCoolTimeToItem(Item);
+			}
+		}
+	}
+}
+
+void AMyPlayerController::HandleRemoveItemChanged(FName ItemID, int32 Quantity)
+{
+	if (HUDWidget) { HUDWidget->UpdateQuickSlot(ItemID, Quantity); }
+}
+
+void AMyPlayerController::HandleAddAccessoryChanged(FName ItemID)
+{
+	if (GunAccessory)
+	{
+		GunAccessory->UpdateAccessory(ItemID);
+	}
+	else
+	{
+		GunAccessory = CreateWidget<UGunAccessory>(this, GunAccessoryWidgetClass);
+		GunAccessory->UpdateAccessory(ItemID);
+	}
+}
+
+void AMyPlayerController::OnPauseMenu()
+{
+	PauseWidget = CreateWidget<UPauseWidget>(this, PauseWidgetClass);
+	if (PauseWidget)
+	{
+		AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
+		if (GameStatePlay)
+		{
+			PauseWidget->UpdateScore(GameStatePlay->Score);	
+		}
+	}
+	PauseWidget->AddToViewport();
+	SetPause(true);
+	FInputModeUIOnly InputMode;
+	SetInputMode(InputMode);
+	bShowMouseCursor = true;
+}
+
+void AMyPlayerController::OnInvMenu()
+{
+	if (GunAccessory && GunAccessory->IsInViewport())
+	{
+		GunAccessory->RemoveFromParent();
+		SetPause(false);
+		SetInputMode(FInputModeGameOnly());
+		bShowMouseCursor = false;
+
+		SetIgnoreMoveInput(false);
+		SetIgnoreLookInput(false);
+		return;
+	}
+
+	if (!GunAccessory && GunAccessoryWidgetClass)
+	{
+		GunAccessory = CreateWidget<UGunAccessory>(this, GunAccessoryWidgetClass);
+	}
+	if (GunAccessory)
+	{
+		GunAccessory->AddToViewport(100);
+		SetPause(true);
+		SetInputMode(FInputModeGameAndUI());
+		bShowMouseCursor = true;
+
+		SetIgnoreMoveInput(true);
+		SetIgnoreLookInput(true);
+	}
+}
+
+void AMyPlayerController::HandleBossHpChanged(int32 Current, int32 Max, AActor* InstigatorActor)
+{
+	if (!bBossHPBarShown && Current < Max) // '첫 데미지' 시점만
+	{
+		bBossHPBarShown = true;
+		if (HUDWidget)
+		{
+			HUDWidget->SetBossHPBarVisible(true);
+		}
+	}
+}
+
+void AMyPlayerController::HandleItemCoolTime(float CoolDuration, FName ItemName)
+{
+	if (HUDWidget)
+	{
+		HUDWidget->UpdateCoolTime(CoolDuration, ItemName);
+	}
+}
+
+void AMyPlayerController::BindCoolTimeToItem(UBaseItem* Item)
+{
+	if (!Item) return;
+	if (!Item->OnCooldownUpdate.IsAlreadyBound(this, &AMyPlayerController::HandleItemCoolTime))
+	{
+		Item->OnCooldownUpdate.AddDynamic(this, &AMyPlayerController::HandleItemCoolTime);
+	}
+}
+
+void AMyPlayerController::BindCoolTimeInInventory(UInventoryComponent* Inv)
+{
+	if (!Inv) return;
+	
+	for (UBaseItem* It : Inv->GetItems()) 
+	{
+		BindCoolTimeToItem(It);
+	}
+
+}
+
+void AMyPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		if (PauseAction)
+		{
+			EIC->BindAction(PauseAction, ETriggerEvent::Started, this, &AMyPlayerController::OnPauseMenu);
+		}
+		if (InvAction)
+		{
+			EIC->BindAction(InvAction, ETriggerEvent::Started, this, &AMyPlayerController::OnInvMenu);
+		}
 	}
 }

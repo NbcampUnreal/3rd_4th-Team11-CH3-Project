@@ -5,13 +5,19 @@
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "MyPlayerController.h"
+#include "GameStatePlay.h"
 #include "GameFramework/Character.h"
 #include "AIController.h"
 #include "BrainComponent.h"
 #include "BaseEnemy.h"
-#include "EnemyAIController.h"
+#include "AIController.h"
+#include "AI/EnemyAIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/Engine.h"
 #include "GameModePlay.h"
+#include "AccDropComponent.h"
+#include "MyCharacter.h"
+#include "InputActionValue.h"
 
 
 UBaseStatComponent::UBaseStatComponent()
@@ -32,10 +38,17 @@ void UBaseStatComponent::BeginPlay()
 
 
 
-//void UBaseStatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-//{
-//	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-//}
+void UBaseStatComponent::AddHpCritical(int Point)
+{	
+	int32 lastDamage = (Point * CriticalDamage / 10);
+	UE_LOG(LogTemp, Warning, TEXT("크리티컬 Hp %d"), lastDamage);
+	AddHp(lastDamage);
+	AGameModePlay* GameModePlay = Cast<AGameModePlay>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameModePlay)
+	{
+		GameModePlay->AddScore(HeadShotScore);
+	}
+}
 
 void UBaseStatComponent::AddHp(int Point)
 {
@@ -51,7 +64,10 @@ void UBaseStatComponent::AddHp(int Point)
 
 		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 		AMyPlayerController* MyController = Cast<AMyPlayerController>(PC);
-		if (!bIsDead)
+
+		ACharacter* MyPlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+		AActor* DamagedActor = GetOwner();
+		if (!bIsDead && DamagedActor != MyPlayerCharacter)
 		{
 			FVector DamageLocation = GetOwner()->GetActorLocation() + FVector(1, 1, 100.0f);
 			if (MyController && MyController->HUDWidget)
@@ -69,6 +85,17 @@ void UBaseStatComponent::AddHp(int Point)
 	//캐릭터와 보스	
 	OnHpChangedEvent.Broadcast(Hp, MaxHp, GetOwner());
 
+	const float HPRatio = (float)Hp / FMath::Max(1, MaxHp);
+	if (!bTriggeredStun70 && HPRatio <= 0.70f)
+	{
+		bTriggeredStun70 = true;
+		RaiseStunOnAI();
+	} else if (!bTriggeredStun38 && HPRatio <= 0.38f)
+	{
+		bTriggeredStun38 = true;
+		RaiseStunOnAI();
+	}
+
 	if (Hp <= 0)
 	{
 		OnDeath();
@@ -84,12 +111,24 @@ void UBaseStatComponent::AddMaxHp(int Point)
 	//현재 체력도 같은 포인트 늘려줄지 고민해봐야한다.
 }
 
+void UBaseStatComponent::HealHP(float Point)
+{
+	Hp += Point;
+	Hp = FMath::Clamp(Hp, 0, MaxHp);
+
+	OnHpChangedEvent.Broadcast(Hp, MaxHp, GetOwner()); //델리게이트
+}
+
 void UBaseStatComponent::AddArmor(int Point)
 {
 	Armor += Point;
 	Armor = FMath::Max(0, Armor);	//방어가 0이하로 내려갈 수 있게?
 }
 
+void UBaseStatComponent::SetArmor(int Point)
+{
+	Armor += Point;
+}
 
 void UBaseStatComponent::ImmuneToDamageSet()
 {
@@ -120,10 +159,10 @@ void UBaseStatComponent::OnDeath()
 	{
 		if (AEnemyAIController* EnemyAICon = Cast<AEnemyAIController>(AICon))
 		{
-			if (GEngine)
+			/*if (GEngine)
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Enemy is dead!"));
-			}
+			}*/
 			EnemyAICon->SetStateAsDead();
 			if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
 			{
@@ -137,27 +176,59 @@ void UBaseStatComponent::OnDeath()
 				}
 			}
 		}
+		if (UAccDropComponent* AccDropComp = Cast<UAccDropComponent>(OwnerCharacter->GetComponentByClass(UAccDropComponent::StaticClass())))
+		{
+			AccDropComp->DeathEnemy();
+		}
+
 	}
+
 	OnDeathEvent.Broadcast(OwnerCharacter);
 	AGameModePlay* GameModePlay = Cast<AGameModePlay>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameModePlay)
 	{
 		GameModePlay->AddScore(KillScore);
-		//킬로그 전송필요
-		//처치UI필요
+		GameModePlay->SetLastLocation(OwnerCharacter->GetActorLocation());
+		GameModePlay->AddKillCount(1);		
 	}
 
 
 	AMyPlayerController* PC = Cast<AMyPlayerController>(OwnerCharacter->GetController());
 	if (PC && PC->MainMenuWidgetClass)
 	{
+		AMyCharacter* MyCharacter = Cast<AMyCharacter>(OwnerCharacter);
+		if (MyCharacter)
+		{
+			MyCharacter->StopAttack(FInputActionValue(false));
+		}
+
+
+
 		UMenuWidget* MenuWidget = CreateWidget<UMenuWidget>(PC, PC->MainMenuWidgetClass);
 		if (MenuWidget)
 		{
 			MenuWidget->AddToViewport();
-			MenuWidget->SetMenuState(true);
+			MenuWidget->SetMenuState(true, 0);
+
+			int32 FinalScore = 0;
+			if (AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld())))
+			{
+				FinalScore = GameStatePlay->Score;
+			}
+
+			MenuWidget->SetScoreNumText(true, FinalScore);
 			PC->SetInputMode(FInputModeUIOnly());
 			PC->bShowMouseCursor = true;
+
+			MenuWidget->PlayGameOverSound();
+		}
+	}
+
+	if (OwnerCharacter->IsPlayerControlled())
+	{
+		if (AGameModePlay* GM = Cast<AGameModePlay>(UGameplayStatics::GetGameMode(GetWorld())))
+		{
+			GM->ClearEnemiesOnPlayerDeath();
 		}
 	}
 
@@ -178,3 +249,19 @@ int UBaseStatComponent::GetArmor()
 {
 	return Armor;
 }
+
+void UBaseStatComponent::RaiseStunOnAI()
+{
+	AActor* OwnerActor = GetOwner();
+	if (!OwnerActor) return;
+	if (!OwnerActor->HasAuthority()) return;
+	APawn* Pawn = Cast<APawn>(OwnerActor);
+	if (!Pawn) return;
+	AAIController* AIC = Cast<AAIController>(Pawn->GetController());
+	if (!AIC) return;
+	UBlackboardComponent* BB = AIC->GetBlackboardComponent();
+	if (!BB) return;
+
+	BB->SetValueAsBool(ShouldStunBBKeyName, true);
+}
+

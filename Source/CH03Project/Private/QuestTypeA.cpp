@@ -3,14 +3,24 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DataTable.h"
 #include "SubTextDataRow.h"
+#include "EndMenuWidget.h"
+#include "MyPlayerController.h"
+#include "GameFramework/PlayerController.h"
 #include "GameStatePlay.h"
+#include "EnhancedInputSubsystems.h"
+#include "SpawnAreaActor.h"
+#include "Items/PickupItem.h"
+#include "BaseEnemy.h"
+#include "AI/EnemyAIController.h"
+#include "Engine/TriggerVolume.h"
+#include "TimerManager.h"
 
 AQuestTypeA::AQuestTypeA()
 {	
 	PrimaryActorTick.bCanEverTick = false;
 	ProgressStage = 0;
 	FirstAreaTargetKillCount = 0;
-	//생성자에서 하나 생성
+	
 	QuestStartCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("QuestStartCollision"));
 }
 
@@ -24,11 +34,21 @@ void AQuestTypeA::BeginPlay()
 	if (GameStatePlay)
 	{
 		GameStatePlay->OnKillCountChanged.AddDynamic(this, &AQuestTypeA::UpdateKillCount);
-		GameStatePlay->OnKeyItemChanged.AddDynamic(this, &AQuestTypeA::UpdateKeyItemCount);
 	}
 	ProgressStarter();	//생성주기 때문에 문제가 될 수도 있다. 발생하면 변경.
 
 	QuestStartCollision->OnComponentBeginOverlap.AddDynamic(this, &AQuestTypeA::OnOverlapBegin);
+
+
+	//타이머 설치해서 10초뒤에 DestroyAllEnemies() 실행
+	//GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AQuestTypeA::DestroyAllEnemies, 10.0f, false);
+
+	if (LastBossTextVolume)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("트리거볼륨잡앗?"));
+		// OnActorBeginOverlap 이벤트에 OnLastBossTextVolumeBeginOverlap 함수를 연결
+		LastBossTextVolume->OnActorBeginOverlap.AddDynamic(this, &AQuestTypeA::OnLastBossTextVolumeBeginOverlap);
+	}
 }
 
 void AQuestTypeA::SetSubTexts()
@@ -67,6 +87,24 @@ void AQuestTypeA::ProgressStarter()
 	case 2:
 		Progress02();
 		break;
+	case 3:
+		Progress03();
+		break;
+	case 4:
+		Progress04();
+		break;
+	case 5:	
+		Progress05();
+		break;
+	case 6:
+		Progress06();
+		break;
+	case 7:
+		Progress07();
+		break;
+	case 8:
+		Progress08();
+		break;
 	}
 }
 
@@ -74,7 +112,7 @@ void AQuestTypeA::Progress00()	//시작
 {
 	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 0단계"));
 	GameModePlays->SetGameStatePlay();
-	GameModePlays->SetMissionText(SubTexts[1]);
+	GameModePlays->SetMissionText(SubTexts[0]);
 }
 
 
@@ -107,18 +145,38 @@ void AQuestTypeA::Progress04()	//키얻음 문여쇼
 	GameModePlays->SetMissionText(SubTexts[2]);
 
 	//적 스폰 필요
+	SpawnEnemy();
 }
 void AQuestTypeA::Progress05()	//문 오픈대기 : 시간시간
 {
 	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 5단계"));
-	GameModePlays->SetMissionText(SubTexts[4]);
+	OpenDoorCount();	
 }
 void AQuestTypeA::Progress06()	//문 열림
 {
-	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 5단계"));
-	GameModePlays->SetMissionText(SubTexts[4]);
+	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 6단계"));
+	OnQuestCompleted.Broadcast();
+	GameModePlays->SetMissionText(SubTexts[0]);
 }
-
+void AQuestTypeA::Progress07()	//보스 ㄱㄱ
+{
+	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 7단계"));
+	GameModePlays->SetMissionText(SubTexts[8]);
+	//잡몹소환 배치
+	FTimerManager& TimerManager = GetWorldTimerManager();
+	TimerManager.SetTimer(
+		SpawnTimerHandle,
+		this,
+		&AQuestTypeA::OnEnemySpawn,
+		SpawnDelay,
+		true
+	);
+}
+void AQuestTypeA::Progress08()	//안정화ㄱㄱ
+{
+	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 8단계"));
+	GameModePlays->SetMissionText(SubTexts[9]);
+}
 
 
 void AQuestTypeA::UpdateKillCount(int32 Points)
@@ -129,20 +187,98 @@ void AQuestTypeA::UpdateKillCount(int32 Points)
 		FString MissionText = FString::Printf(TEXT("%s (%d / %d)"), *SubTexts[1], (Points - StartKillCount), FirstAreaTargetKillCount);
 		GameModePlays->SetMissionText(MissionText);
 
-		//일단은 아이템 직접 획득으로 처리함-> 드랍방식으로 변경할 경우 수정
-		if (FirstAreaTargetKillCount < Points - StartKillCount)
+		//드랍방식
+		UE_LOG(LogTemp, Warning, TEXT("킬 카운트 업데이트: %d"), Points - StartKillCount);
+		if (FirstAreaTargetKillCount == Points - StartKillCount)
 		{	
-			GameModePlays->AddItemCount(1, 2);	//키 추가
-			ProgressStage++;
-			ProgressStarter();
+			UE_LOG(LogTemp, Warning, TEXT("아이템스폰"));
+			AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
+			if (!GameStatePlay)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("GameStatePlay가 유효하지 않습니다."));
+				return;
+			}
+			APickupItem* SpawnedItem = GetWorld()->SpawnActor<APickupItem>(KeyItem, GameStatePlay->GetLastLocation(), FRotator::ZeroRotator);
+			if (SpawnedItem)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("아이템이 성공적으로 스폰되었습니다."));
+				GameModePlays->SetMissionText(SubTexts[5]);	//키 주으쇼
+			}
 		}
 	}
 }
 
-void AQuestTypeA::UpdateKeyItemCount(int32 KeyCount)
-{
+void AQuestTypeA::UpdateKeyItemCount()
+{	
 	ProgressStage++;
 	ProgressStarter();
+
+	if (ProgressStage == 8)
+	{
+		//엔드 소환 종료
+		FTimerManager& TimerManager = GetWorldTimerManager();
+		TimerManager.ClearTimer(SpawnTimerHandle);
+	}
+}
+
+
+void AQuestTypeA::OnEnemySpawn()
+{
+	// 근접 몬스터 소환
+	if (SpawnLocationMelee.IsValidIndex(0) && MeleeEnemyClass)
+	{
+		ASpawnAreaActor* SpawnAreaMelee = SpawnLocationMelee[0];
+		if (SpawnAreaMelee)
+		{
+			FVector SpawnLocationPoint = SpawnAreaMelee->GetActorLocation();
+			FRotator SpawnRotation = FRotator::ZeroRotator;
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+			// 몬스터를 스폰하고 포인터를 받아옵니다.
+			ACharacter* SpawnedEnemy = GetWorld()->SpawnActor<ACharacter>(MeleeEnemyClass, SpawnLocationPoint, SpawnRotation, SpawnParams);
+
+			if (SpawnedEnemy)
+			{
+				SpawnedEnemy->Tags.AddUnique(FName("ForceTargetActorBeginning"));
+
+				AEnemyAIController* EnemyAIController = Cast<AEnemyAIController>(SpawnedEnemy->GetController());
+				if (EnemyAIController)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("근접 몬스터의 AI 컨트롤러가 유효합니다."));
+					EnemyAIController->TryForceTargetPlayer();
+				}
+			}
+		}
+	}
+
+	// 원거리 몬스터 소환
+	if (SpawnLocationRanged.IsValidIndex(0) && RangedEnemyClass)
+	{
+		ASpawnAreaActor* SpawnAreaRanged = SpawnLocationRanged[0];
+		if (SpawnAreaRanged)
+		{
+			FVector SpawnLocationPoint = SpawnAreaRanged->GetActorLocation();
+			FRotator SpawnRotation = FRotator::ZeroRotator;
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+			// 몬스터를 스폰하고 포인터를 받아옵니다.
+			ACharacter* SpawnedEnemy = GetWorld()->SpawnActor<ACharacter>(RangedEnemyClass, SpawnLocationPoint, SpawnRotation, SpawnParams);
+
+			if (SpawnedEnemy)
+			{
+				SpawnedEnemy->Tags.AddUnique(FName("ForceTargetActorBeginning"));
+
+				AEnemyAIController* EnemyAIController = Cast<AEnemyAIController>(SpawnedEnemy->GetController());
+				if (EnemyAIController)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("원거리 몬스터의 AI 컨트롤러가 유효합니다."));
+					EnemyAIController->TryForceTargetPlayer();
+				}
+			}
+		}
+	}
 }
 
 //구역2에서 키를 얻으면 아래 함수를 호출
@@ -150,7 +286,7 @@ void AQuestTypeA::SpawnEnemy()
 {
 	UE_LOG(LogTemp, Warning, TEXT("몬스터가 소환이 시작되었습니다."));
 
-	//GameModePlays->SetMissionText(QuestTexts[2].ToString(), 1);
+	
 
 	// 스폰 위치에서 몬스터 소환
 	int32 MaxSpawnCount = FMath::Min(SpawnLocation.Num(), SpawnDataArray.Num());
@@ -158,9 +294,9 @@ void AQuestTypeA::SpawnEnemy()
 	for (int32 i = 0; i < MaxSpawnCount; ++i)
 	{
 		// 해당 인덱스의 SpawnLocation 박스가 유효한지 확인
-		UBoxComponent* CurrentSpawnBox = SpawnLocation[i];
-		if (!CurrentSpawnBox)
-		{	
+		ASpawnAreaActor* CurrentSpawnArea = SpawnLocation[i];
+		if (!CurrentSpawnArea)
+		{
 			continue;
 		}
 
@@ -197,13 +333,23 @@ void AQuestTypeA::SpawnEnemy()
 			// 해당 몬스터 클래스를 SpawnCount만큼 스폰
 			for (int32 j = 0; j < CurrentEnemyRow->SpawnCount; ++j)
 			{
-				FVector SpawnLocationPoint = CurrentSpawnBox->GetComponentLocation();
+				FVector SpawnLocationPoint = CurrentSpawnArea->GetActorLocation();
 				FRotator SpawnRotation = FRotator::ZeroRotator;
 
 				FActorSpawnParameters SpawnParams;
 				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-				AActor* SpawnedEnemy = GetWorld()->SpawnActor<AActor>(CurrentEnemyRow->EnemyClass, SpawnLocationPoint, SpawnRotation, SpawnParams);
+				ACharacter* SpawnedEnemy = GetWorld()->SpawnActor<ACharacter>(CurrentEnemyRow->EnemyClass, SpawnLocationPoint, SpawnRotation, SpawnParams);
+				if (SpawnedEnemy)
+				{
+					SpawnedEnemy->Tags.AddUnique(FName("ForceTargetActorBeginning"));
+					AEnemyAIController* EnemyAIController = Cast<AEnemyAIController>(SpawnedEnemy->GetController());
+					if (EnemyAIController)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("적 AI 컨트롤러가 유효합니다."));
+						EnemyAIController->TryForceTargetPlayer();
+					}
+				}
 			}
 		}
 	}
@@ -238,3 +384,120 @@ void AQuestTypeA::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 }
 
 
+void AQuestTypeA::DestroyAllEnemies()
+{
+	UE_LOG(LogTemp, Warning, TEXT("모든 적을 파괴합니다."));
+	if (EnemyAliveVolume)
+	{	
+		UE_LOG(LogTemp, Warning, TEXT("EnemyAliveVolume이 유효합니다."));
+		TArray<AActor*> FoundEnemies;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseEnemy::StaticClass(), FoundEnemies);
+
+		for (AActor* EnemyActor : FoundEnemies)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("적 액터 발견: %s"), *EnemyActor->GetName());
+			if (!EnemyAliveVolume->IsOverlappingActor(EnemyActor))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("적 액터가 EnemyAliveVolume과 겹치지 않습니다. 파괴합니다."));
+				EnemyActor->Destroy();
+			}
+		}
+	}
+}
+
+
+
+void AQuestTypeA::PassDoor()
+{
+	UE_LOG(LogTemp, Warning, TEXT("문을 통과합니다."));
+	if (ProgressStage == 2)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("문을 통과합니다."));
+		ProgressStage++;
+		ProgressStarter();
+	}
+	else if (ProgressStage == 4)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("문을 통과합니다."));
+		ProgressStage++;
+		ProgressStarter();
+	}
+	
+}
+
+void AQuestTypeA::OpenDoorCount()
+{
+	float OpenSeconds = static_cast<float>(OnDoorOpenCount) / 10.0f;
+	FString MissionText = FString::Printf(TEXT("%s ( %.1f %s)"), *SubTexts[4], OpenSeconds, *SubTexts[6]);
+	GameModePlays->SetMissionText(MissionText);
+	if (OnDoorOpenCount < 0.1f)
+	{
+		//문열림
+		ProgressStage++;
+		ProgressStarter();
+	}
+	else
+	{
+		OnDoorOpenCount--;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AQuestTypeA::OpenDoorCount, 0.1f, false);
+	}
+}
+
+
+
+void AQuestTypeA::OnLastBossTextVolumeBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
+{
+	UE_LOG(LogTemp, Warning, TEXT("헤이트리거"));
+	if (OtherActor && OtherActor->ActorHasTag("Player"))
+	{
+		if (ProgressStage == 6)
+		{
+			ProgressStage++;
+			ProgressStarter();
+		}
+	}
+}
+
+
+void AQuestTypeA::GameEnding()
+{
+	UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작??"));
+	if (ProgressStage == 8)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작"));
+		ProgressStage++;
+
+		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		AMyPlayerController* MyController = Cast<AMyPlayerController>(PC);
+		if (MyController)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작2"));
+			MyController->EndMenuWidget = CreateWidget<UEndMenuWidget>(MyController, MyController->EndMenuWidgetClass);
+			AGameStatePlay* GameStatePlay = Cast<AGameStatePlay>(UGameplayStatics::GetGameState(GetWorld()));
+			if (MyController->EndMenuWidget)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작3"));
+				MyController->EndMenuWidget->AddToViewport();
+				FInputModeUIOnly InputMode;
+				
+				FInputModeUIOnly Mode;
+				if (MyController && MyController->EndMenuWidget)
+				{
+					Mode.SetWidgetToFocus(MyController->EndMenuWidget->TakeWidget());
+				}
+				Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+				PC->SetInputMode(Mode);
+				PC->bShowMouseCursor = true;
+				PC->SetPause(true);
+
+				if (GameStatePlay)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작4"));
+					GameStatePlay->OnScoreChanged.AddDynamic(MyController->EndMenuWidget, &UEndMenuWidget::UpdateEndScore);
+					MyController->EndMenuWidget->UpdateEndScore(GameStatePlay->Score);
+				}
+			}
+		}
+	}
+}

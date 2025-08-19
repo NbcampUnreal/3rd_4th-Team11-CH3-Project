@@ -6,7 +6,8 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "Engine/EngineTypes.h"
-
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
 
 UHitRangedComponent::UHitRangedComponent()
 {
@@ -29,42 +30,65 @@ void UHitRangedComponent::BeginPlay()
 
 void UHitRangedComponent::FireTrace()
 {
-	if (!SkeletalMeshComp)
+	if (!GetWorld())
 	{
 		return;
 	}
-	FVector SocketLocation = SkeletalMeshComp->GetSocketLocation(SocketName);
-	FRotator SocketRotation = SkeletalMeshComp->GetSocketRotation(SocketName);
-	FVector SocketForward = SocketRotation.Vector();
 
-	FVector StartLocation = SocketLocation + (SocketForward * StartOffset.X);
-	FVector EndLocation = StartLocation + (SocketForward * TraceDistance);
-
-	FCollisionQueryParams TraceParams;
-	TraceParams.AddIgnoredActor(GetOwner());
-	TraceParams.bTraceComplex = false;
-
-
-	FHitResult HitResult;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECollisionChannel::ECC_GameTraceChannel1, TraceParams);
-
-	DrawDebugLine(GetWorld(), StartLocation, EndLocation, bHit ? FColor::Red : FColor::Green, false, 2.0f);
-
-	if (bHit)
+	ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (PlayerChar)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s"), *HitResult.GetActor()->GetName());
-		if (HitResult.GetActor() && HitResult.GetActor()->ActorHasTag("Player"))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Hit Player"));
-
-			//나 자신의 대미지 컴포넌트
-			UDamageComponent* DamageComp = GetOwner()->FindComponentByClass<UDamageComponent>();
-			if (DamageComp)
-			{
-				DamageComp->TransDamage(HitResult.GetActor());
-			}
-		}
+		CachedPlayerLocation = PlayerChar->GetActorLocation();
+		UE_LOG(LogTemp, Warning, TEXT("Player Location: %s"), *CachedPlayerLocation.ToString());
+	}
+	else
+	{
+		return;
 	}
 
+	GetWorld()->GetTimerManager().SetTimer(
+		TimerHandle_FireTrace,
+		this,
+		&UHitRangedComponent::StartAttack,
+		AttackDelayTime,
+		false
+	);
 }
 
+void UHitRangedComponent::StartAttack()
+{
+	if (!SkeletalMeshComp || !GetWorld())
+	{
+		return;
+	}
+
+	const FVector StartLocation = SkeletalMeshComp->GetSocketLocation(SocketName);
+	const FVector PlayerLocation = CachedPlayerLocation;
+
+	FVector Direction = (PlayerLocation - StartLocation).GetSafeNormal();
+
+	const float ShootingRange = 2000.0f;
+	const FVector EndLocation = StartLocation + (Direction * ShootingRange);
+
+	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(FireTrace), false, GetOwner());
+	TraceParams.bTraceComplex = false;
+
+	FHitResult HitResult(ForceInit);
+	const bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		StartLocation,
+		EndLocation,
+		ECollisionChannel::ECC_GameTraceChannel1,
+		TraceParams
+	);
+	
+	if (bHit && HitResult.GetActor() && HitResult.GetActor()->ActorHasTag("Player"))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hit Player"));
+
+		if (UDamageComponent* DamageComp = GetOwner()->FindComponentByClass<UDamageComponent>())
+		{
+			DamageComp->TransDamage(HitResult.GetActor());
+		}
+	}
+}

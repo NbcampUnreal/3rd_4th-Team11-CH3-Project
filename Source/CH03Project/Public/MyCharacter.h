@@ -4,30 +4,31 @@
 #include "GameFramework/Character.h"
 #include "MyCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangedIsAiming, bool, bIsAiming);
+
 class UCameraComponent;
 struct FInputActionValue;
 class AMyPlayerController;
 class UBaseStatComponent;
 class UDamageComponent;
+class ABaseWeapon;
 
 UENUM(BlueprintType)
-enum class ECharacterState : uint8
+enum class EMoveState : uint8
 {
 	Idle            UMETA(DisplayName = "Idle"),
 	Walking         UMETA(DisplayName = "Walking"),
-	Running         UMETA(DisplayName = "Running"),
-	Crouchinging    UMETA(DisplayName = "Crouching"),
-	Jumping			UMETA(DisplayName = "Jumping"),
-	Cling			UMETA(DisplayName = "Cling"),
-	Shooting		UMETA(DisplayName = "Shooting"),
-	Dead			UMETA(DisplayName = "Dead")
+	Running         UMETA(DisplayName = "Running")
 };
 
 UENUM(BlueprintType)
-enum class EWeaponState : uint8
+enum class EActionState : uint8
 {
-	Base            UMETA(DisplayName = "Base"),
-	Aiming			UMETA(DisplayName = "Aiming")
+	Idle			UMETA(DisplayName = "Idle"),
+	Crouching		UMETA(DisplayName = "Crouching"),
+	Jumping			UMETA(DisplayName = "Jumping"),
+	Cling			UMETA(DisplayName = "Cling"),
+	Dead			UMETA(DisplayName = "Dead")
 };
 
 UCLASS()
@@ -35,7 +36,7 @@ class CH03PROJECT_API AMyCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	// Component
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	USceneComponent* SceneComp;
@@ -52,44 +53,77 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UDamageComponent* DamageComp;
 
+	// Deligate
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnChangedIsAiming OnChangedIsAiming;
+
+protected:
 	// Animation Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
-	UAnimInstance* AnimInstance;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-	UAnimMontage* FireMontage;
+	UAnimInstance* CharacterAnimInstance;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimInstance* WeaponAnimInstance;
 
-	// Effect Valiable
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	UParticleSystem* ShootHitEffect;
+	// Sound Valiable
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* MoveSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* JumpingSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* LandingSound;
+
 
 	// State Management EnumClass Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	ECharacterState CharacterState;
+	EMoveState MoveState;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	EWeaponState WeaponState;
+	EActionState ActionState;
+
+	// State Valiable
+	bool bIsMoving;
+	bool bIsCrouching;
+	bool bIsAiming;
+	bool bBugFixFlag;
+
+	// TSubclassOf Valiable
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<class ABaseWeapon> WeaponClass;
 
 	// Pointer Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerController")
 	AMyPlayerController* PlayerController;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	ABaseWeapon* EquippedWeapon;
 
 	// General Valiable
 	float NormalSpeed;
 	float RunSpeedMultiplier;
 	float RunSpeed;
+	float StepInterval;
 
 	// Timer
-	FTimerHandle ShootTimerHandle;
-
+	FTimerHandle MoveSoundTimerHandle;
+	FTimerHandle AttackTimerHandle;
+	FTimerHandle ReloadTimerHandle;
 
 public:
 	AMyCharacter();
 
 	// Getter, Setter
-
+	AMyPlayerController* GetMyPlayerController() const;
+	EMoveState GetMoveState() const;
+	EActionState GetActionState() const;
+	UAnimInstance* GetCharacterAnimInstance() const;
+	UAnimInstance* GetWeaponAnimInstance() const;
 
 	// General Function
-	void Shoot();
+	void Attack();
 
+	void EndReload();
+
+	virtual void Landed(const FHitResult& Hit) override;
+
+	void MoveSoundPlay();
 
 
 protected:
@@ -102,7 +136,9 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void Move(const FInputActionValue& value);
+	void StartMove(const FInputActionValue& value);
+
+	void StopMove(const FInputActionValue& value);
 
 	void StartRun(const FInputActionValue& value);
 
@@ -122,9 +158,11 @@ public:
 
 	void Reload(const FInputActionValue& value);
 
-	void StartShoot(const FInputActionValue& value);
+	void StartAttack(const FInputActionValue& value);
 
-	void StopShoot(const FInputActionValue& value);
+	void StopAttack(const FInputActionValue& value);
+
+	void OnInteract(const FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable, Category = "Token")
 	bool StoreAttackToken(int32 Amount);
@@ -132,6 +170,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Token")
 	void ReturnAttackToken(int32 Amount);
 
-
+	ABaseWeapon* GetEquippedWeapon();
 
 };

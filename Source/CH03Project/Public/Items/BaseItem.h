@@ -1,59 +1,61 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "ItemInterface.h"
+#include "UObject/NoExportTypes.h"
 #include "ItemDataRow.h"
+#include "Delegates/Delegate.h"
 #include "BaseItem.generated.h"
 
-// 전방 선언
-class USphereComponent;
-class UWidgetComponent;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCooldownUpdate, float, RemainingTime, FName, ItemID);
 
-UCLASS()
-class CH03PROJECT_API ABaseItem : public AActor, public IItemInterface
+UCLASS(BlueprintType, Blueprintable, EditInlineNew)
+class CH03PROJECT_API UBaseItem : public UObject
 {
 	GENERATED_BODY()
-	
-public:	
-	ABaseItem();
+
+public:
+	UBaseItem();
+
+	virtual class UWorld* GetWorld() const override;
+
+	UPROPERTY(BlueprintAssignable, Category = "Item|Delegates")
+	FOnCooldownUpdate OnCooldownUpdate;
 
 	// 아이템 데이터 테이블 참조 핸들
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Data")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	FDataTableRowHandle ItemDataHandle;
+	// 아이템 개수
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	int32 Quantity;
+	// 아이템 데이터 반환
+	UFUNCTION(BlueprintCallable, Category = "Item")
+	FItemDataRow GetItemData() const;
+	// 아이템 사용
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Item")
+	bool Use(AActor* User);
+	virtual bool Use_Implementation(AActor* User);
 
-	// 아이템 인터페이스 함수
-	virtual void ShowWidget() override;
-	virtual void HideWidget() override;
-	virtual void Interact() override;
-	// 아이템 점수 반환
-	UFUNCTION(BlueprintCallable, Category="Item")
-	int32 GetItemScore() const;
+	// 쿨타임 상태 변수
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	bool bIsOnCooldown = false;
+	// 쿨타임 타이머 핸들
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	FTimerHandle CooldownTimerHandle;
+	// 남은 쿨타임 시간
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	float RemainingCooldown;
+	// 전체 쿨타임 시간
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	float CooldownDuration;
+	FTimerHandle CooldownTickTimerHandle;
 
-protected:
-	// 컴포넌트
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Item|Components")
-	USceneComponent* Scene;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Item|Components")
-	UStaticMeshComponent* StaticMesh;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Item|Components")
-	USphereComponent* Collision;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI")
-	UWidgetComponent* InteractUI;
+	float CooldownRemaining = 0.f;
 
-	// 오버랩 관련 함수
-	UFUNCTION()
-	virtual void OnItemOverlap(
-		UPrimitiveComponent* OverlappedComp,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex,
-		bool bFromSweep,
-		const FHitResult& SweepResult);
-	UFUNCTION()
-	virtual void OnItemEndOverlap(
-		UPrimitiveComponent* OverlappedComp,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex);
+	void CooldownTick();
+	// 쿨타임 해제 함수
+	UFUNCTION(BlueprintCallable, Category = "Item")
+	virtual void ResetCooldown();
+
+	// 쿨타임 업데이트 함수
+	void UpdateCooldown();
 };
