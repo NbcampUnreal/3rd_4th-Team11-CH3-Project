@@ -64,6 +64,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimInstance* WeaponAnimInstance;
 
+	// Sound Valiable
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* MoveSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* JumpingSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* LandingSound;
+
+
 	// State Management EnumClass Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	EMoveState MoveState;
@@ -71,6 +80,7 @@ protected:
 	EActionState ActionState;
 
 	// State Valiable
+	bool bIsMoving;
 	bool bIsCrouching;
 	bool bIsAiming;
 	bool bBugFixFlag;
@@ -89,8 +99,10 @@ protected:
 	float NormalSpeed;
 	float RunSpeedMultiplier;
 	float RunSpeed;
+	float StepInterval;
 
 	// Timer
+	FTimerHandle MoveSoundTimerHandle;
 	FTimerHandle AttackTimerHandle;
 	FTimerHandle ReloadTimerHandle;
 
@@ -111,6 +123,9 @@ public:
 
 	virtual void Landed(const FHitResult& Hit) override;
 
+	void MoveSoundPlay();
+
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -121,7 +136,9 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void Move(const FInputActionValue& value);
+	void StartMove(const FInputActionValue& value);
+
+	void StopMove(const FInputActionValue& value);
 
 	void StartRun(const FInputActionValue& value);
 
