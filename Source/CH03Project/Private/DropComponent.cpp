@@ -44,7 +44,7 @@ int32 UDropComponent::PickIndexByWeight(const TArray<FDropItemRow>& Rows) const
     float TotalW = 0.f;
     for (int32 i = 0; i < Rows.Num(); ++i)
     {
-        if (!Rows[i].ItemClass.IsValid()) continue;
+        if (!Rows[i].ItemClass) continue;
         ValidIdx.Add(i);
         TotalW += FMath::Max(0.f, Rows[i].Weight);
     }
@@ -139,7 +139,7 @@ bool UDropComponent::FindGround(const FVector& Around, FVector& Out) const
 
 void UDropComponent::SpawnItem(const FCachedEntry& E, const FVector& Center)
 {
-    UClass* Cls = E.ItemClass.LoadSynchronous();
+    UClass* Cls = E.ItemClass;
     if (!Cls) return;
 
     FVector SpawnLoc = Center;
@@ -172,7 +172,7 @@ void UDropComponent::DropAtLocation(const FVector& DeathLocation)
         if (RowIdx == INDEX_NONE) continue;
 
         const FDropItemRow& Row = Table->Rows[RowIdx];
-        UClass* Cls = Row.ItemClass.LoadSynchronous();
+        UClass* Cls = Row.ItemClass;
         if (!Cls) continue;
 
         const int32 MinC = FMath::Max(1, Row.MinCount);

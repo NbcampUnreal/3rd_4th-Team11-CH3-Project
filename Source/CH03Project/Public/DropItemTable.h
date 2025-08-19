@@ -12,7 +12,7 @@ struct FDropItemRow
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSoftClassPtr<AActor> ItemClass;
+	TSubclassOf<AActor> ItemClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0"))
 	float Weight = 0.f;

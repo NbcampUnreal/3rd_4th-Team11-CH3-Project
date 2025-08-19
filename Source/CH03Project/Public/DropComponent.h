@@ -41,7 +41,7 @@ protected:
 private:
     struct FCachedEntry
     {
-        TSoftClassPtr<AActor> ItemClass;
+        TSubclassOf<AActor> ItemClass;
         float CumulativeWeight = 0.f;
         int32 MinCount = 1;
         int32 MaxCount = 1;
