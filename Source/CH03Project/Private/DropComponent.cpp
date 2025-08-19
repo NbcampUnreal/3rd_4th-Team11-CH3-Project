@@ -25,8 +25,6 @@ void UDropComponent::BeginPlay()
         {
             const uint64 UID = static_cast<uint64>(Owner->GetUniqueID());
             RNG.Initialize(static_cast<int32>((UID ^ 0x9E3779B97F4A7C15ull) + SeedOffset));
-
-            BuildCacheIfNeeded();
             TryBindDeath();
         }
     }
@@ -38,32 +36,34 @@ void UDropComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
     Super::EndPlay(EndPlayReason);
 }
 
-void UDropComponent::BuildCacheIfNeeded()
+int32 UDropComponent::PickIndexByWeight(const TArray<FDropItemRow>& Rows) const
 {
-    if (bCacheBuilt) return;
+    TArray<int32> ValidIdx;
+    ValidIdx.Reserve(Rows.Num());
 
-    Cached.Reset();
-    TotalWeight = 0.f;
-
-    if (UDropItemTable* Table = DropTable.LoadSynchronous())
+    float TotalW = 0.f;
+    for (int32 i = 0; i < Rows.Num(); ++i)
     {
-        Cached.Reserve(Table->Rows.Num());
-        for (const FDropItemRow& R : Table->Rows)
-        {
-            if (R.Weight <= 0.f || !R.ItemClass.IsValid()) continue;
-
-            TotalWeight += R.Weight;
-
-            FCachedEntry E;
-            E.ItemClass = R.ItemClass;
-            E.CumulativeWeight = TotalWeight;
-            E.MinCount = R.MinCount;
-            E.MaxCount = R.MaxCount;
-            Cached.Add(E);
-        }
+        if (!Rows[i].ItemClass.IsValid()) continue;
+        ValidIdx.Add(i);
+        TotalW += FMath::Max(0.f, Rows[i].Weight);
     }
 
-    bCacheBuilt = true;
+    if (ValidIdx.Num() == 0) return INDEX_NONE;
+
+    if (TotalW <= KINDA_SMALL_NUMBER)
+    {
+        return ValidIdx[RNG.RandRange(0, ValidIdx.Num() - 1)];
+    }
+
+    const float R = RNG.FRand() * TotalW;
+    float Acc = 0.f;
+    for (int32 i : ValidIdx)
+    {
+        Acc += FMath::Max(0.f, Rows[i].Weight);
+        if (R <= Acc) return i;
+    }
+    return ValidIdx.Last();
 }
 
 int32 UDropComponent::RollDropCount() const
@@ -73,20 +73,34 @@ int32 UDropComponent::RollDropCount() const
 
     const int32 Min = FMath::Max(0, Table->MinItemType);
     const int32 Max = FMath::Max(Min, Table->MaxItemType);
-    return RNG.RandRange(Min, Max);
-}
-
-const UDropComponent::FCachedEntry* UDropComponent::PickOne()
-{
-    if (Cached.Num() == 0 || TotalWeight <= 0.f) return nullptr;
-
-    const float R = RNG.FRand() * TotalWeight;
-    for (const FCachedEntry& E : Cached)
+    if (RNG.FRand() < 0.5f)
     {
-        if (R <= E.CumulativeWeight) return &E;
+        return 0;
     }
-    return &Cached.Last();
+
+    return (Max >= Min) ? RNG.RandRange(Min, Max) : 0;
 }
+
+void UDropComponent::SpawnItemClass(TSubclassOf<AActor> Cls, const FVector& Center)
+{
+    if (!Cls) return;
+
+    FVector SpawnLoc = Center;
+    for (int32 Try = 0; Try < MaxGroundProbes; ++Try)
+    {
+        if (FindGround(Center, SpawnLoc)) break;
+    }
+
+    const FRotator Rot(0.f, RNG.FRandRange(0.f, 360.f), 0.f);
+
+    FActorSpawnParameters SP;
+    SP.Owner = GetOwner();
+    SP.Instigator = Cast<APawn>(GetOwner());
+    SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+    GetWorld()->SpawnActor<AActor>(Cls, SpawnLoc, Rot, SP);
+}
+
 bool UDropComponent::FindGround(const FVector& Around, FVector& Out) const
 {
     if (UWorld* World = GetWorld())
@@ -148,14 +162,26 @@ void UDropComponent::DropAtLocation(const FVector& DeathLocation)
 {
     if (!GetOwner() || !GetOwner()->HasAuthority()) return;
 
-    BuildCacheIfNeeded();
+    const UDropItemTable* Table = DropTable.LoadSynchronous();
+    if (!Table || Table->Rows.Num() == 0) return;
 
-    const int32 NumDrops = RollDropCount();
-    for (int32 i = 0; i < NumDrops; ++i)
+    const int32 TypeCount = RollDropCount();
+    for (int32 t = 0; t < TypeCount; ++t)
     {
-        if (const FCachedEntry* Pick = PickOne())
+        const int32 RowIdx = PickIndexByWeight(Table->Rows);
+        if (RowIdx == INDEX_NONE) continue;
+
+        const FDropItemRow& Row = Table->Rows[RowIdx];
+        UClass* Cls = Row.ItemClass.LoadSynchronous();
+        if (!Cls) continue;
+
+        const int32 MinC = FMath::Max(1, Row.MinCount);
+        const int32 MaxC = FMath::Max(MinC, Row.MaxCount);
+        const int32 CountToSpawn = RNG.RandRange(MinC, MaxC);
+
+        for (int32 i = 0; i < CountToSpawn; ++i)
         {
-            SpawnItem(*Pick, DeathLocation);
+            SpawnItemClass(Cls, DeathLocation);
         }
     }
 }
