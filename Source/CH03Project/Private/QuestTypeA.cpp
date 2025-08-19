@@ -14,6 +14,8 @@
 #include "AI/EnemyAIController.h"
 #include "Engine/TriggerVolume.h"
 
+#include "TimerManager.h"
+
 AQuestTypeA::AQuestTypeA()
 {	
 	PrimaryActorTick.bCanEverTick = false;
@@ -161,6 +163,15 @@ void AQuestTypeA::Progress07()	//보스 ㄱㄱ
 {
 	UE_LOG(LogTemp, Warning, TEXT("퀘스트 진행 7단계"));
 	GameModePlays->SetMissionText(SubTexts[8]);
+	//잡몹소환 배치
+	FTimerManager& TimerManager = GetWorldTimerManager();
+	TimerManager.SetTimer(
+		SpawnTimerHandle,
+		this,
+		&AQuestTypeA::OnEnemySpawn,
+		SpawnDelay,
+		true
+	);
 }
 void AQuestTypeA::Progress08()	//안정화ㄱㄱ
 {
@@ -199,10 +210,76 @@ void AQuestTypeA::UpdateKillCount(int32 Points)
 }
 
 void AQuestTypeA::UpdateKeyItemCount()
-{
-	UE_LOG(LogTemp, Warning, TEXT("키 아이템 수"));
+{	
 	ProgressStage++;
 	ProgressStarter();
+
+	if (ProgressStage == 8)
+	{
+		//엔드 소환 종료
+		FTimerManager& TimerManager = GetWorldTimerManager();
+		TimerManager.ClearTimer(SpawnTimerHandle);
+	}
+}
+
+
+void AQuestTypeA::OnEnemySpawn()
+{
+	// 근접 몬스터 소환
+	if (SpawnLocationMelee.IsValidIndex(0) && MeleeEnemyClass)
+	{
+		ASpawnAreaActor* SpawnAreaMelee = SpawnLocationMelee[0];
+		if (SpawnAreaMelee)
+		{
+			FVector SpawnLocationPoint = SpawnAreaMelee->GetActorLocation();
+			FRotator SpawnRotation = FRotator::ZeroRotator;
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+			// 몬스터를 스폰하고 포인터를 받아옵니다.
+			ACharacter* SpawnedEnemy = GetWorld()->SpawnActor<ACharacter>(MeleeEnemyClass, SpawnLocationPoint, SpawnRotation, SpawnParams);
+
+			if (SpawnedEnemy)
+			{
+				SpawnedEnemy->Tags.AddUnique(FName("ForceTargetActorBeginning"));
+
+				AEnemyAIController* EnemyAIController = Cast<AEnemyAIController>(SpawnedEnemy->GetController());
+				if (EnemyAIController)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("근접 몬스터의 AI 컨트롤러가 유효합니다."));
+					EnemyAIController->TryForceTargetPlayer();
+				}
+			}
+		}
+	}
+
+	// 원거리 몬스터 소환
+	if (SpawnLocationRanged.IsValidIndex(0) && RangedEnemyClass)
+	{
+		ASpawnAreaActor* SpawnAreaRanged = SpawnLocationRanged[0];
+		if (SpawnAreaRanged)
+		{
+			FVector SpawnLocationPoint = SpawnAreaRanged->GetActorLocation();
+			FRotator SpawnRotation = FRotator::ZeroRotator;
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+			// 몬스터를 스폰하고 포인터를 받아옵니다.
+			ACharacter* SpawnedEnemy = GetWorld()->SpawnActor<ACharacter>(RangedEnemyClass, SpawnLocationPoint, SpawnRotation, SpawnParams);
+
+			if (SpawnedEnemy)
+			{
+				SpawnedEnemy->Tags.AddUnique(FName("ForceTargetActorBeginning"));
+
+				AEnemyAIController* EnemyAIController = Cast<AEnemyAIController>(SpawnedEnemy->GetController());
+				if (EnemyAIController)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("원거리 몬스터의 AI 컨트롤러가 유효합니다."));
+					EnemyAIController->TryForceTargetPlayer();
+				}
+			}
+		}
+	}
 }
 
 //구역2에서 키를 얻으면 아래 함수를 호출

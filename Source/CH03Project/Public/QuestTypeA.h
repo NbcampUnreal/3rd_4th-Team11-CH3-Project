@@ -69,6 +69,23 @@ public:
 	TArray<ASpawnAreaActor*> SpawnLocation;
 
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnBossAreas")
+	TArray<ASpawnAreaActor*> SpawnLocationMelee;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnBossAreas")
+	TArray<ASpawnAreaActor*> SpawnLocationRanged;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnBossAreas")
+	TSubclassOf<ACharacter> MeleeEnemyClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnBossAreas")
+	TSubclassOf<ACharacter> RangedEnemyClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnBossAreas")
+	float SpawnDelay = 15.0f;
+
+	FTimerHandle SpawnTimerHandle;
+
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -115,4 +132,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void GameEnding();
+
+	UFUNCTION()
+	void OnEnemySpawn();
+
+
 };
