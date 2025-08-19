@@ -13,7 +13,8 @@
 #include "BaseEnemy.h"
 #include "AI/EnemyAIController.h"
 #include "Engine/TriggerVolume.h"
-
+#include "Components/AudioComponent.h"
+#include "Sound/SoundWave.h"
 #include "TimerManager.h"
 
 AQuestTypeA::AQuestTypeA()
@@ -23,6 +24,9 @@ AQuestTypeA::AQuestTypeA()
 	FirstAreaTargetKillCount = 0;
 	
 	QuestStartCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("QuestStartCollision"));
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	AudioComponent->SetupAttachment(RootComponent);
 }
 
 void AQuestTypeA::BeginPlay()
@@ -468,6 +472,12 @@ void AQuestTypeA::GameEnding()
 		UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작"));
 		ProgressStage++;
 		
+		if(SoundToPlay)
+		{
+			AudioComponent->SetSound(SoundToPlay);
+			AudioComponent->Play();
+		}
+
 		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 		AMyPlayerController* MyController = Cast<AMyPlayerController>(PC);
 		if (MyController)
