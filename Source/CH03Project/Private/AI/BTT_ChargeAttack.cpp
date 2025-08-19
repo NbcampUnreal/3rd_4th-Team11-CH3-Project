@@ -485,7 +485,7 @@ void UBTT_ChargeAttack::OnCapsuleOverlap(UPrimitiveComponent* OverlappedComp, AA
 
 	if (UBaseStatComponent* DamageComp = Other->FindComponentByClass<UBaseStatComponent>())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Charge Attack hit %s"), *Other->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("Charge Attack hit %s"), *Other->GetName());
 		DamageComp->AddHp(-DamageAmount);
 	}
 	SelfChar->Tags.AddUnique(TEXT("ChargeHitOnce"));

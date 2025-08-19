@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseActor.h"
+#include "GameFramework/Character.h"
 #include "AI/EnemyActionInterface.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "Delegates/DelegateCombinations.h" 
@@ -14,7 +14,7 @@ class AAIController;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackEnd);
 
 UCLASS()
-class CH03PROJECT_API ABaseEnemy : public ABaseActor, public IEnemyActionInterface
+class CH03PROJECT_API ABaseEnemy : public ACharacter, public IEnemyActionInterface
 {
 	GENERATED_BODY()
 	
