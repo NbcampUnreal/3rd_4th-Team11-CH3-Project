@@ -7,7 +7,6 @@
 #include "Components/BoxComponent.h"
 #include "GameFramework/Volume.h"
 #include "Kismet/GameplayStatics.h"
-#include "Sound/SoundWave.h"
 #include "QuestTypeA.generated.h"
 
 
@@ -86,12 +85,6 @@ public:
 	float SpawnDelay = 15.0f;
 
 	FTimerHandle SpawnTimerHandle;
-
-	UPROPERTY(EditAnywhere, Category="Sound")
-	USoundWave* SoundToPlay;
-
-	UPROPERTY(VisibleAnywhere, Category="Sound")
-	class UAudioComponent* AudioComponent;
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

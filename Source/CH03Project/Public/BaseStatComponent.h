@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Sound/SoundWave.h"
 #include "BaseStatComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnHpChangedSignature, int32, OldHp, int32, NewHp, AActor*, Instigator);
@@ -66,12 +65,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnDeath OnDeathEvent;
-
-	UPROPERTY(EditAnywhere, Category="Sound")
-	USoundWave* GameOverSound;
-
-	UPROPERTY(VisibleAnywhere, Category="Sound")
-	class UAudioComponent* AudioComponent;
 
 private:
 	bool bIsDead;

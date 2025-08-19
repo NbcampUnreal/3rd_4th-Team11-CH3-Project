@@ -18,8 +18,6 @@
 #include "AccDropComponent.h"
 #include "MyCharacter.h"
 #include "InputActionValue.h"
-#include "Components/AudioComponent.h"
-#include "Sound/SoundWave.h"
 
 
 UBaseStatComponent::UBaseStatComponent()
@@ -29,8 +27,6 @@ UBaseStatComponent::UBaseStatComponent()
 	MaxHp = 100;
 	Hp = MaxHp;
 	bIsDead = false;
-
-	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
 }
 
 
@@ -224,11 +220,7 @@ void UBaseStatComponent::OnDeath()
 			PC->SetInputMode(FInputModeUIOnly());
 			PC->bShowMouseCursor = true;
 
-			if(GameOverSound)
-			{
-				AudioComponent->SetSound(GameOverSound);
-				AudioComponent->Play();
-			}
+			MenuWidget->PlayGameOverSound();
 		}
 	}
 
