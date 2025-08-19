@@ -12,7 +12,13 @@
 
 void UHUDWidget::NativeConstruct()
 {
-	Super::NativeConstruct();
+	if (UWorld* World = GetWorld())
+	{
+		FTimerManager& TM = World->GetTimerManager();
+		TM.ClearTimer(HitMarkerTimerHandle);
+		TM.ClearTimer(KillMarkerTimerHandle);
+	}
+	Super::NativeDestruct();
 
 }
 void UHUDWidget::UpdateHealth(int32 CurrentHealth, int32 MaxHealth, AActor* Instigator)
@@ -62,25 +68,6 @@ void UHUDWidget::UpdateSubQuest(const FString& QuestText)
 	}
 }
 
-void UHUDWidget::UpdateHiddenQuest(int32 StatueCount)
-{
-	if (HiddenQuestText)
-	{
-		HiddenQuestText->SetVisibility(ESlateVisibility::Visible);
-	}
-
-	if (StatueNum)
-	{
-		StatueNum->SetVisibility(ESlateVisibility::Visible);
-		StatueNum->SetText(FText::AsNumber(StatueCount));
-	}
-
-	if (HiddenQuestOutline)
-	{
-		HiddenQuestOutline->SetVisibility(ESlateVisibility::Visible);
-	}
-}
-
 void UHUDWidget::ShowHitMarker()
 {
 	
@@ -109,21 +96,22 @@ void UHUDWidget::ShowHitMarker()
 		}
 
 		GetWorld()->GetTimerManager().ClearTimer(HitMarkerTimerHandle);
-		if (!GetWorld()->GetTimerManager().IsTimerActive(HitMarkerTimerHandle))
-		{
-			GetWorld()->GetTimerManager().SetTimer(
-				HitMarkerTimerHandle,
-				this,
-				&UHUDWidget::HideHitMarker,
-				0.2f,
-				false
+		GetWorld()->GetTimerManager().SetTimer(
+			HitMarkerTimerHandle,
+			this,
+			&UHUDWidget::HideHitMarker,
+			0.2f,
+			false
 			);
-		}
 	}
 }
 
 void UHUDWidget::HideHitMarker()
 {
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(HitMarkerTimerHandle);
+	}
 	if (HitMarkerImage)
 	{
 		HitMarkerImage->SetVisibility(ESlateVisibility::Hidden);
