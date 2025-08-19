@@ -49,9 +49,7 @@ void ABaseRangedWeapon::Attack()
 							);
 						}
 
-						FHitResult Hit;
 						FCollisionQueryParams Params;
-
 						Params.AddIgnoredActor(WeaponOwner);
 
 						FVector Location;
@@ -59,33 +57,59 @@ void ABaseRangedWeapon::Attack()
 						WeaponOwner->GetMyPlayerController()->GetPlayerViewPoint(Location, Rotation);
 						FVector End = Location + (Rotation.Vector() * ShootingRange);
 
-						bool bHit = GetWorld()->LineTraceSingleByChannel(
-							Hit,
+						TArray<FHitResult> HitResults;
+
+						bool bDidHit = GetWorld()->LineTraceMultiByChannel(
+							HitResults,
 							Location,
 							End,
-							ECC_GameTraceChannel2,
+							ECC_GameTraceChannel4,
 							Params
 						);
 
-						if (ShootHitEffect)
+						if (bDidHit)
 						{
-							UGameplayStatics::SpawnEmitterAtLocation(
-								GetWorld(),
-								ShootHitEffect,
-								Hit.ImpactPoint,
-								Hit.ImpactNormal.Rotation()
-							);
-						}
+							AActor* FirstHitActor = nullptr;
+							bool bHeadshotFound = false;
+														
+							for (int32 i = 0; i < HitResults.Num(); i++)
+							{
+								const FHitResult& Hit = HitResults[i];
 
-						if (bHit)
-						{
-							AActor* HitActor = Hit.GetActor();
+								if (i == 0)
+								{
+									if (Hit.GetActor() && Hit.GetActor()->ActorHasTag("Enemy"))
+									{
+										FirstHitActor = Hit.GetActor();
+									}
+									else
+									{
+										break;
+									}
+								}
+								else
+								{
+									if (Hit.GetActor() != FirstHitActor)
+									{
+										break;
+									}
+								}
 
-							if (HitActor && HitActor->ActorHasTag("Enemy"))
+								if (Hit.GetComponent() && Hit.GetComponent()->ComponentHasTag("Head"))
+								{
+									if (UDamageComponent* OwnerDamageComp = WeaponOwner->DamageComp)
+									{
+										OwnerDamageComp->TransDamageCritical(FirstHitActor);
+										bHeadshotFound = true; // 헤드샷이 발견되었음을 표시
+									}
+									break;
+								}
+							}
+							if (!bHeadshotFound && FirstHitActor)
 							{
 								if (UDamageComponent* OwnerDamageComp = WeaponOwner->DamageComp)
 								{
-									OwnerDamageComp->TransDamage(HitActor);
+									OwnerDamageComp->TransDamage(FirstHitActor);
 								}
 							}
 						}
