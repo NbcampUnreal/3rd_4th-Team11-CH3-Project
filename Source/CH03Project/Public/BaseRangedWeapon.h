@@ -51,6 +51,7 @@ public:
 	ABaseRangedWeapon();
 
 	virtual void Attack() override;
+	virtual void HitScan(AMyCharacter* WeaponOwner) override;
 	virtual void Equip() override;
 	virtual void Unequip() override;
 	UFUNCTION(BlueprintCallable, Category = "Behavior")

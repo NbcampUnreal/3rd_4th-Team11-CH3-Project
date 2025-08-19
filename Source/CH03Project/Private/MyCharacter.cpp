@@ -48,7 +48,6 @@ AMyCharacter::AMyCharacter()
 	bIsAiming = false;
 	bBugFixFlag = false;
 
-
 	WeaponClass = nullptr;
 
 	PlayerController = nullptr;
@@ -118,8 +117,8 @@ void AMyCharacter::PossessedBy(AController* NewController)
 
 void AMyCharacter::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
-
+	Super::Tick(DeltaTime);	
+	
 }
 
 AMyPlayerController* AMyCharacter::GetMyPlayerController() const
@@ -390,7 +389,7 @@ void AMyCharacter::StartRun(const FInputActionValue& value)
 {
 	if (ActionState != EActionState::Jumping && ActionState != EActionState::Crouching && ActionState != EActionState::Cling)
 	{
-		if (MoveState != EMoveState::Running)
+		if (MoveState != EMoveState::Running && bIsMoving)
 		{
 			MoveState = EMoveState::Running;
 
@@ -556,7 +555,7 @@ void AMyCharacter::StartAim(const FInputActionValue& value)
 							BaseRangedWeapon->SetWeaponState(EWeaponState::Aiming);
 
 							bBugFixFlag = false;
-
+							
 							if (!bIsAiming)
 							{
 								bIsAiming = true;
@@ -589,10 +588,10 @@ void AMyCharacter::StartAim(const FInputActionValue& value)
 						if (GetCharacterMovement())
 						{
 							NormalSpeed *= 2.0f;
-							GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 
 							if (MoveState != EMoveState::Running)
 							{
+								GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 								StepInterval *= 0.5f;
 							}
 						}
@@ -628,7 +627,11 @@ void AMyCharacter::StopAim(const FInputActionValue& value)
 							if (!FMath::IsNearlyEqual(NormalSpeed, 600.0f))
 							{
 								NormalSpeed *= 2.0f;
-								GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+
+								if (MoveState != EMoveState::Running)
+								{
+									GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+								}
 							}
 
 							if (MoveState != EMoveState::Running)
