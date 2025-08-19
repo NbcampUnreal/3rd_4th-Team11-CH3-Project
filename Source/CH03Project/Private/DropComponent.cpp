@@ -112,26 +112,25 @@ bool UDropComponent::FindGround(const FVector& Around, FVector& Out) const
         const FVector Start = Around + Offset + FVector(0, 0, ProbeUp);
         const FVector End = Around + Offset - FVector(0, 0, ProbeDown);
 
-        FCollisionQueryParams Q(SCENE_QUERY_STAT(DropGround), false, GetOwner());
+        FCollisionQueryParams Params(SCENE_QUERY_STAT(DropGround), false, GetOwner());
+        Params.bReturnPhysicalMaterial = false;
 
-        // "Item" 태그를 가진 모든 액터를 찾아서 무시 목록에 추가합니다.
-        TArray<AActor*> ActorsToIgnore;
-        UGameplayStatics::GetAllActorsWithTag(World, TEXT("Item"), ActorsToIgnore);
-        Q.AddIgnoredActors(ActorsToIgnore);
+        // "Item" 태그를 가진 액터는 무시
+        TArray<AActor*> ItemsToIgnore;
+        UGameplayStatics::GetAllActorsWithTag(World, FName("Item"), ItemsToIgnore);
+        Params.AddIgnoredActors(ItemsToIgnore);
 
-        FCollisionObjectQueryParams Obj;
-        Obj.AddObjectTypesToQuery(ECC_WorldStatic);
-        Obj.AddObjectTypesToQuery(ECC_WorldDynamic);
+        // 오브젝트 타입: 바닥만 체크
+        FCollisionObjectQueryParams ObjParams;
+        ObjParams.AddObjectTypesToQuery(ECC_WorldStatic);   // 지형, 건물
+        ObjParams.AddObjectTypesToQuery(ECC_WorldDynamic);  // 움직이는 플랫폼 같은 거
 
-        TArray<FHitResult> Hits;
-        if (World->LineTraceMultiByObjectType(Hits, Start, End, Obj, Q))
+        FHitResult Hit;
+        if (World->LineTraceSingleByObjectType(Hit, Start, End, ObjParams, Params))
         {
-            // 여러 충돌 결과 중 가장 첫 번째 충돌 지점을 사용합니다.
-            for (const FHitResult& Hit : Hits)
-            {
-                Out = Hit.ImpactPoint + FVector(0, 0, 2.f);
-                return true;
-            }
+            // 바닥 충돌 지점 그대로 사용
+            Out = Hit.Location;
+            return true;
         }
     }
     return false;
