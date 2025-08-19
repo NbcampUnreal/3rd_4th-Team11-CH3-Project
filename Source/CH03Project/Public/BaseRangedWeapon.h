@@ -35,6 +35,13 @@ protected:
 	UAnimMontage* CharacterReloadMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* WeaponReloadMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* FireSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* DryFireSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* ReloadSound;
+
 
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")

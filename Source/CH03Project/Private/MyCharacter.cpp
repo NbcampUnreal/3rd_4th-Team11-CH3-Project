@@ -36,9 +36,14 @@ AMyCharacter::AMyCharacter()
 	CharacterAnimInstance = nullptr;
 	WeaponAnimInstance = nullptr;
 
+	MoveSound = nullptr;
+	JumpingSound = nullptr;
+	LandingSound = nullptr;
+
 	MoveState = EMoveState::Idle;
 	ActionState = EActionState::Idle;
 
+	bIsMoving = false;
 	bIsCrouching = false;
 	bIsAiming = false;
 	bBugFixFlag = false;
@@ -53,6 +58,7 @@ AMyCharacter::AMyCharacter()
 	NormalSpeed = 600.0f;
 	RunSpeedMultiplier = 1.7f;
 	RunSpeed = NormalSpeed * RunSpeedMultiplier;
+	StepInterval = 0.44f;
 }
 
 void AMyCharacter::BeginPlay()
@@ -157,6 +163,11 @@ void AMyCharacter::EndReload()
 			if (bIsAiming)
 			{
 				BaseRangedWeapon->SetWeaponState(EWeaponState::Aiming);
+
+				if (MoveState != EMoveState::Running)
+				{
+					StepInterval *= 2.0f;
+				}
 			}
 			else
 			{
@@ -168,6 +179,15 @@ void AMyCharacter::EndReload()
 
 void AMyCharacter::Landed(const FHitResult& Hit)
 {
+	if (LandingSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			LandingSound,
+			SkeletalMeshComp1->GetSocketLocation("root")
+		);
+	}
+
 	if (bIsCrouching)
 	{
 		ActionState = EActionState::Crouching;
@@ -176,6 +196,29 @@ void AMyCharacter::Landed(const FHitResult& Hit)
 	{
 		ActionState = EActionState::Idle;
 	}
+}
+
+void AMyCharacter::MoveSoundPlay()
+{
+	if (!bIsMoving || ActionState == EActionState::Jumping) return;
+
+	if (MoveSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			MoveSound,
+			SkeletalMeshComp1->GetSocketLocation("root"),
+			1.3f
+		);
+	}
+
+	GetWorldTimerManager().SetTimer(
+		MoveSoundTimerHandle,
+		this,
+		&AMyCharacter::MoveSoundPlay,
+		StepInterval,
+		false
+	);
 }
 
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -192,7 +235,14 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					PlayerController->MoveAction,
 					ETriggerEvent::Triggered,
 					this,
-					&AMyCharacter::Move
+					&AMyCharacter::StartMove
+				);
+
+				EnhancedInput->BindAction(
+					PlayerController->MoveAction,
+					ETriggerEvent::Completed,
+					this,
+					&AMyCharacter::StopMove
 				);
 			}
 
@@ -307,7 +357,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 }
 
-void AMyCharacter::Move(const FInputActionValue& value)
+void AMyCharacter::StartMove(const FInputActionValue& value)
 {
 	if (!PlayerController) return;
 
@@ -322,30 +372,62 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	{
 		AddMovementInput(GetActorRightVector(), MoveInput.X);
 	}
+
+	if (!bIsMoving && ActionState != EActionState::Jumping)
+	{
+		bIsMoving = true;
+
+		MoveSoundPlay();
+	}
+}
+
+void AMyCharacter::StopMove(const FInputActionValue& value)
+{
+	bIsMoving = false;
 }
 
 void AMyCharacter::StartRun(const FInputActionValue& value)
 {
 	if (ActionState != EActionState::Jumping && ActionState != EActionState::Crouching && ActionState != EActionState::Cling)
 	{
-		MoveState = EMoveState::Running;
-
-		if (GetCharacterMovement())
+		if (MoveState != EMoveState::Running)
 		{
-			GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+			MoveState = EMoveState::Running;
+
+			if (GetCharacterMovement())
+			{
+				GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+			}
+
+			StepInterval *= 0.5f;
+
+			if (Cast<ABaseRangedWeapon>(EquippedWeapon)->GetWeaponState() == EWeaponState::Aiming)
+			{
+				StepInterval *= 0.5f;
+			}
 		}
 	}
 }
 
 void AMyCharacter::StopRun(const FInputActionValue& value)
 {
-	MoveState = EMoveState::Idle;
-
-	if (ActionState != EActionState::Crouching)
+	if (MoveState == EMoveState::Running)
 	{
-		if (GetCharacterMovement())
+		MoveState = EMoveState::Idle;
+
+		if (ActionState != EActionState::Crouching)
 		{
-			GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+			if (GetCharacterMovement())
+			{
+				GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+			}
+
+			StepInterval *= 2.0f;
+
+			if (Cast<ABaseRangedWeapon>(EquippedWeapon)->GetWeaponState() == EWeaponState::Aiming)
+			{
+				StepInterval *= 2.0f;
+			}
 		}
 	}
 }
@@ -354,8 +436,18 @@ void AMyCharacter::StartJump(const FInputActionValue& value)
 {
 	if (value.Get<bool>())
 	{
-		MoveState = EMoveState::Idle;
+		bIsMoving = false;	
+
 		ActionState = EActionState::Jumping;
+
+		if (JumpingSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				JumpingSound,
+				SkeletalMeshComp1->GetSocketLocation("root")
+			);
+		}
 
 		Jump();
 	}
@@ -375,7 +467,24 @@ void AMyCharacter::Crouch(const FInputActionValue& value)
 	{
 		if (!bIsCrouching)
 		{
-			MoveState = EMoveState::Idle;
+			if (MoveState == EMoveState::Running)
+			{
+				MoveState = EMoveState::Idle;
+
+				if (Cast<ABaseRangedWeapon>(EquippedWeapon)->GetWeaponState() == EWeaponState::Aiming)
+				{
+					StepInterval *= 8.0f;
+				}
+				else
+				{
+					StepInterval *= 4.0f;
+				}
+			}
+			else
+			{
+				StepInterval *= 2.0f;
+			}
+
 			ActionState = EActionState::Crouching;
 
 			bIsCrouching = true;
@@ -406,6 +515,8 @@ void AMyCharacter::Crouch(const FInputActionValue& value)
 			{
 				NormalSpeed *= 2.0f;
 				GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+
+				StepInterval *= 0.5f;
 			}
 		}
 	}
@@ -445,7 +556,13 @@ void AMyCharacter::StartAim(const FInputActionValue& value)
 							BaseRangedWeapon->SetWeaponState(EWeaponState::Aiming);
 
 							bBugFixFlag = false;
-							bIsAiming = true;
+
+							if (!bIsAiming)
+							{
+								bIsAiming = true;
+
+								StepInterval *= 2.0f;
+							}
 
 							if (GetCharacterMovement())
 							{
@@ -473,6 +590,11 @@ void AMyCharacter::StartAim(const FInputActionValue& value)
 						{
 							NormalSpeed *= 2.0f;
 							GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+
+							if (MoveState != EMoveState::Running)
+							{
+								StepInterval *= 0.5f;
+							}
 						}
 
 						bBugFixFlag = true;
@@ -503,8 +625,16 @@ void AMyCharacter::StopAim(const FInputActionValue& value)
 					{
 						if (GetCharacterMovement())
 						{
-							NormalSpeed *= 2.0f;
-							GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+							if (!FMath::IsNearlyEqual(NormalSpeed, 600.0f))
+							{
+								NormalSpeed *= 2.0f;
+								GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+							}
+
+							if (MoveState != EMoveState::Running)
+							{
+								StepInterval *= 0.5f;
+							}
 						}
 					}
 				}

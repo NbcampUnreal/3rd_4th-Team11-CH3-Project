@@ -20,6 +20,9 @@ ABaseRangedWeapon::ABaseRangedWeapon()
 	CharacterFireMontage = nullptr;
 	CharacterReloadMontage = nullptr;
 	WeaponReloadMontage = nullptr;
+	FireSound = nullptr;
+	DryFireSound = nullptr;
+	ReloadSound = nullptr;
 }
 
 void ABaseRangedWeapon::Attack()
@@ -35,6 +38,16 @@ void ABaseRangedWeapon::Attack()
 					if (WeaponOwner->GetCharacterAnimInstance() && CharacterFireMontage)
 					{
 						WeaponOwner->GetCharacterAnimInstance()->Montage_Play(CharacterFireMontage, 1.0f);
+
+						if (FireSound)
+						{
+							UGameplayStatics::PlaySoundAtLocation(
+								this,
+								FireSound,
+								WeaponOwner->SkeletalMeshComp2->GetSocketLocation("magazine"),
+								0.7f
+							);
+						}
 
 						FHitResult Hit;
 						FCollisionQueryParams Params;
@@ -83,6 +96,17 @@ void ABaseRangedWeapon::Attack()
 					CurrentAmmo--;
 
 					OnChangeCurrentAmmo.Broadcast(CurrentAmmo);
+				}
+				else if (CurrentAmmo == 0)
+				{
+					if (DryFireSound)
+					{
+						UGameplayStatics::PlaySoundAtLocation(
+							this,
+							DryFireSound,
+							WeaponOwner->SkeletalMeshComp2->GetSocketLocation("magazine")
+						);
+					}
 				}
 			}
 		}
@@ -136,8 +160,8 @@ void ABaseRangedWeapon::AddRecoilPitchYaw(float RecoilPitchRange, float RecoilYa
 	{
 		if (AMyCharacter* WeaponOwner = Cast<AMyCharacter>(GetOwner()))
 		{
-			float RandomRecoilPitchScale = FMath::FRandRange(RecoilPitchScale - RecoilPitchRange, RecoilPitchScale + RecoilPitchRange);
-			float RandomRecoilYawScale = FMath::FRandRange(RecoilYawScale - RecoilYawRange, RecoilYawScale + RecoilYawRange);
+			float RandomRecoilPitchScale = FMath::FRandRange(RecoilPitchScale - RecoilPitchRange, RecoilPitchScale + RecoilPitchRange) * PlusHandle;
+			float RandomRecoilYawScale = FMath::FRandRange(RecoilYawScale - RecoilYawRange, RecoilYawScale + RecoilYawRange) * PlusHandle;
 			if (FMath::RandRange(0, 1) == 0)
 			{
 				RandomRecoilYawScale *= -1.0f;
@@ -159,16 +183,14 @@ void ABaseRangedWeapon::AddRecoilPitchYaw(float RecoilPitchRange, float RecoilYa
 				RandomRecoilYawScale *= 0.7f;
 			}
 
-			WeaponOwner->AddControllerPitchInput(RandomRecoilPitchScale * PlusHandle);
-			WeaponOwner->AddControllerYawInput(RandomRecoilYawScale * PlusHandle);
+			WeaponOwner->AddControllerPitchInput(RandomRecoilPitchScale);
+			WeaponOwner->AddControllerYawInput(RandomRecoilYawScale);
 
 			FRotator CurrentRotation = WeaponOwner->SceneComp->GetRelativeRotation();
 			float NewPitch = CurrentRotation.Pitch + RandomRecoilPitchScale;
-			float NewYaw = CurrentRotation.Yaw + RandomRecoilYawScale;
 			NewPitch = FMath::ClampAngle(NewPitch, NewPitch, 80.0f);
-			NewYaw = FMath::ClampAngle(NewYaw, -30.0f, 30.0f);
 
-			WeaponOwner->SceneComp->SetRelativeRotation(FRotator(NewPitch, NewYaw, CurrentRotation.Roll));
+			WeaponOwner->SceneComp->SetRelativeRotation(FRotator(NewPitch, CurrentRotation.Yaw, CurrentRotation.Roll));
 		}
 	}
 }
@@ -197,6 +219,15 @@ void ABaseRangedWeapon::Reload()
 
 			WeaponOwner->GetCharacterAnimInstance()->Montage_Play(CharacterReloadMontage, 1.0f);
 			WeaponOwner->GetWeaponAnimInstance()->Montage_Play(WeaponReloadMontage, 1.0f);
+
+			if (ReloadSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					this,
+					ReloadSound,
+					WeaponOwner->SkeletalMeshComp2->GetSocketLocation("magazine")
+				);
+			}
 
 			CurrentAmmo = MaxAmmo + PlusAmmo;
 
