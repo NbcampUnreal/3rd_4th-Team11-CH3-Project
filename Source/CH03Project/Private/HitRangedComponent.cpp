@@ -63,7 +63,12 @@ void UHitRangedComponent::StartAttack()
 	}
 
 	const FVector StartLocation = SkeletalMeshComp->GetSocketLocation(SocketName);
-	const FVector EndLocation = CachedPlayerLocation;
+	const FVector PlayerLocation = CachedPlayerLocation;
+
+	FVector Direction = (PlayerLocation - StartLocation).GetSafeNormal();
+
+	const float ShootingRange = 2000.0f;
+	const FVector EndLocation = StartLocation + (Direction * ShootingRange);
 
 	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(FireTrace), false, GetOwner());
 	TraceParams.bTraceComplex = false;
@@ -76,19 +81,6 @@ void UHitRangedComponent::StartAttack()
 		ECollisionChannel::ECC_GameTraceChannel1,
 		TraceParams
 	);
-
-#if WITH_EDITOR
-
-	DrawDebugLine(
-		GetWorld(),
-		StartLocation,
-		EndLocation,
-		bHit ? FColor::Red : FColor::Green,
-		false,
-		2.0f
-	);
-#endif
-
 	
 	if (bHit && HitResult.GetActor() && HitResult.GetActor()->ActorHasTag("Player"))
 	{
