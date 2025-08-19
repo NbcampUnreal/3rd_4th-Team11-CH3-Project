@@ -219,6 +219,8 @@ void UBaseStatComponent::OnDeath()
 			MenuWidget->SetScoreNumText(true, FinalScore);
 			PC->SetInputMode(FInputModeUIOnly());
 			PC->bShowMouseCursor = true;
+
+			MenuWidget->PlayGameOverSound();
 		}
 	}
 

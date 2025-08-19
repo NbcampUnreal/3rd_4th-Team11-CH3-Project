@@ -13,7 +13,6 @@
 #include "BaseEnemy.h"
 #include "AI/EnemyAIController.h"
 #include "Engine/TriggerVolume.h"
-
 #include "TimerManager.h"
 
 AQuestTypeA::AQuestTypeA()
@@ -467,7 +466,7 @@ void AQuestTypeA::GameEnding()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("게임 엔딩 처리 시작"));
 		ProgressStage++;
-		
+
 		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 		AMyPlayerController* MyController = Cast<AMyPlayerController>(PC);
 		if (MyController)

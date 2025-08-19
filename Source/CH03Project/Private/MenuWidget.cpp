@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/PlayerController.h"
+#include "Sound/SoundBase.h"
 
 void UMenuWidget::NativeConstruct()
 {
@@ -89,4 +90,12 @@ void UMenuWidget::SetMenuState(bool bIsGameOver, int score)
     SetTileText(bIsGameOver);
     SetScoreNumText(bIsGameOver, score);
     SetScoreText(bIsGameOver);
+}
+
+void UMenuWidget::PlayGameOverSound()
+{
+    if(GameOverSound)
+    {
+        UGameplayStatics::PlaySound2D(this, GameOverSound);
+    }
 }
