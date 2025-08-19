@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,6 +10,7 @@
 #include "BaseEnemy.generated.h"
 
 class AAIController;
+class USphereComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackEnd);
 
@@ -37,6 +38,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	UBehaviorTree* BehaviorTree;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Headshot")
+	FName HeadBoneSocketName = "head";
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Headshot")
+	USphereComponent* HeadCollisionComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Headshot")
+	FVector HeadCollisionOffset = FVector::ZeroVector;
+
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "AI")
 	void IncrementPatrolRoute();
@@ -58,4 +67,5 @@ public:
 	virtual void SetMovementSpeed_Implementation(ESpeedState SpeedState) override;
 	virtual void GetIdealRadius_Implementation(float& OutAttackRadius, float& OutDefendRadius) override;
 	virtual void Attack_Implementation(AActor* AttackTarget) override;
+	void AttachToHeadSocket();
 };

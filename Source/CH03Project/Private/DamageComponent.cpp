@@ -87,3 +87,29 @@ void UDamageComponent::ReturnAttackToken(int32 Amount)
 {
 	AttackTokenCount += Amount;
 }
+
+void UDamageComponent::TransDamageCritical(AActor* TargetActor)
+{
+	UE_LOG(LogTemp, Warning, TEXT("크리티컬"));
+	if (TargetActor)
+	{
+		UBaseStatComponent* TargetStatComponent = TargetActor->FindComponentByClass<UBaseStatComponent>();
+		if (TargetStatComponent)
+		{
+			TargetStatComponent->AddHpCritical(-(AttackDamage + ItemPlusDamage));
+
+			APawn* InstigatorPawn = Cast<APawn>(GetOwner());
+			if (InstigatorPawn && TargetActor->HasAuthority())
+			{
+				UAISense_Damage::ReportDamageEvent(
+					GetWorld(),
+					TargetActor,
+					InstigatorPawn,
+					static_cast<float>(AttackDamage),
+					TargetActor->GetActorLocation(),
+					InstigatorPawn->GetActorLocation()
+				);
+			}
+		}
+	}
+}

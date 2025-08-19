@@ -36,10 +36,17 @@ void UBaseStatComponent::BeginPlay()
 
 
 
-//void UBaseStatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-//{
-//	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-//}
+void UBaseStatComponent::AddHpCritical(int Point)
+{	
+	int32 lastDamage = (Point * CriticalDamage / 10);
+	UE_LOG(LogTemp, Warning, TEXT("크리티컬 Hp %d"), lastDamage);
+	AddHp(lastDamage);
+	AGameModePlay* GameModePlay = Cast<AGameModePlay>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameModePlay)
+	{
+		GameModePlay->AddScore(HeadShotScore);
+	}
+}
 
 void UBaseStatComponent::AddHp(int Point)
 {

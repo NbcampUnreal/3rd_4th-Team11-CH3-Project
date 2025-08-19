@@ -43,4 +43,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
 	int ItemPlusDamage;
+
+	UFUNCTION(BlueprintCallable)
+	void TransDamageCritical(AActor* TargetActor);
+	
 };
