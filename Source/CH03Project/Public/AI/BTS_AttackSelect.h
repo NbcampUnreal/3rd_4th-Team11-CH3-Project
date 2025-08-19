@@ -6,6 +6,8 @@
 #include "BehaviorTree/BTService.h"
 #include "BTS_AttackSelect.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogAttackSelect, Log, All);
+
 UCLASS()
 class CH03PROJECT_API UBTS_AttackSelect : public UBTService
 {
@@ -20,7 +22,14 @@ protected:
     virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
 private:
-    struct FMem { bool bPrevAttacking = false; };
+    struct FMem 
+    { 
+        bool bPrevAttacking = false; 
+
+        int32 PrevPhase = 0;
+        int32 PrevIndex = -1;
+    };
+
     FORCEINLINE FMem* M(uint8* NodeMemory) const { return reinterpret_cast<FMem*>(NodeMemory); }
 
     void SelectAttackByPattern(UBehaviorTreeComponent& OwnerComp, const TArray<uint8>& Pattern);
@@ -63,4 +72,7 @@ private:
     TArray<uint8> Phase2Pattern;
     UPROPERTY(EditAnywhere, Category = "Pattern", meta = (AllowPrivateAccess = "true"))
     TArray<uint8> Phase3Pattern;
+
+private:
+    int32 GetPatternLength(int32 Phase) const;
 };
