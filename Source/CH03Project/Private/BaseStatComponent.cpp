@@ -159,10 +159,10 @@ void UBaseStatComponent::OnDeath()
 	{
 		if (AEnemyAIController* EnemyAICon = Cast<AEnemyAIController>(AICon))
 		{
-			if (GEngine)
+			/*if (GEngine)
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Enemy is dead!"));
-			}
+			}*/
 			EnemyAICon->SetStateAsDead();
 			if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
 			{
