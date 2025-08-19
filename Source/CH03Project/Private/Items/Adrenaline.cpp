@@ -19,7 +19,7 @@ bool UAdrenaline::Use_Implementation(AActor* User)
 
 	if(!User)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No User!"));
+		//UE_LOG(LogTemp, Warning, TEXT("No User!"));
 		return false;
 	}
 
@@ -35,8 +35,8 @@ bool UAdrenaline::Use_Implementation(AActor* User)
 		{
 			DamageComponent->SetItemPlusDamage(IncreaseDamageStat);
 			StatComponent->SetArmor(IncreaseArmorStat);
-			UE_LOG(LogTemp, Warning, TEXT("%d Damage Stat Increase!"), IncreaseDamageStat);
-			UE_LOG(LogTemp, Warning, TEXT("%d Armor Stat Increase!"), IncreaseArmorStat);
+			//UE_LOG(LogTemp, Warning, TEXT("%d Damage Stat Increase!"), IncreaseDamageStat);
+			//UE_LOG(LogTemp, Warning, TEXT("%d Armor Stat Increase!"), IncreaseArmorStat);
 		}
 
 		// 타이머 델리게이트 생성해서 파라미터 전달
@@ -65,7 +65,7 @@ void UAdrenaline::ResetAdrenalineEffect(AActor* User)
 		{
 			DamageComponent->SetItemPlusDamage(0);
 			StatComponent->SetArmor(-IncreaseArmorStat);
-			UE_LOG(LogTemp, Warning, TEXT("Adrenaline effect reset."));
+			//UE_LOG(LogTemp, Warning, TEXT("Adrenaline effect reset."));
 		}
 
 	}

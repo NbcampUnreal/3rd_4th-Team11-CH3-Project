@@ -16,7 +16,7 @@ bool UHealthPotion::Use_Implementation(AActor* User)
 
 	if(!User)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No User!"));
+		//UE_LOG(LogTemp, Warning, TEXT("No User!"));
 		return false;
 	}
 
@@ -28,7 +28,7 @@ bool UHealthPotion::Use_Implementation(AActor* User)
 		if(StatComponent)
 		{
 			StatComponent->HealHP(HealAmount);
-			UE_LOG(LogTemp, Warning, TEXT("HealHP!"));
+			//UE_LOG(LogTemp, Warning, TEXT("HealHP!"));
 		}
 	}
 	return true;

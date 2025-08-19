@@ -44,7 +44,7 @@ bool UBaseItem::Use_Implementation(AActor* User)
 	// 쿨타임 상태일 때
 	if (bIsOnCooldown)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s: Item is on cooldown. Remaining: %f"), *GetName(), RemainingCooldown);
+		//UE_LOG(LogTemp, Warning, TEXT("%s: Item is on cooldown. Remaining: %f"), *GetName(), RemainingCooldown);
 		return false;
 	}
 
@@ -70,7 +70,7 @@ bool UBaseItem::Use_Implementation(AActor* User)
 				&UBaseItem::UpdateCooldown,
 				0.1f, true
 			);
-			UE_LOG(LogTemp, Log, TEXT("%s: Started %f second cooldown."), *GetName(), CooldownDuration);
+			//UE_LOG(LogTemp, Log, TEXT("%s: Started %f second cooldown."), *GetName(), CooldownDuration);
 		}
 
 		OnCooldownUpdate.Broadcast(RemainingCooldown, ItemDataHandle.RowName);
@@ -116,7 +116,7 @@ bool UBaseItem::Use_Implementation(AActor* User)
 		RemainingCooldown -= 0.1f;
 		if (RemainingCooldown > 0.f)
 		{
-			UE_LOG(LogTemp, Log, TEXT("%s: Cooldown remaining: %f seconds"), *GetName(), RemainingCooldown);
+			//UE_LOG(LogTemp, Log, TEXT("%s: Cooldown remaining: %f seconds"), *GetName(), RemainingCooldown);
 			OnCooldownUpdate.Broadcast(RemainingCooldown, ItemDataHandle.RowName);
 		}
 
@@ -149,6 +149,6 @@ bool UBaseItem::Use_Implementation(AActor* User)
 
 		OnCooldownUpdate.Broadcast(0.f, ItemDataHandle.RowName);
 		RemainingCooldown = 0.f;
-		UE_LOG(LogTemp, Log, TEXT("%s: Cooldown finished."), *GetName());
+		//UE_LOG(LogTemp, Log, TEXT("%s: Cooldown finished."), *GetName());
 		OnCooldownUpdate.Broadcast(RemainingCooldown, ItemDataHandle.RowName);
 	}

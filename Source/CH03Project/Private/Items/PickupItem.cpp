@@ -66,7 +66,7 @@ void APickupItem::Interact()
 {
 	if(!ItemData)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No ItemData"));
+		//UE_LOG(LogTemp, Warning, TEXT("No ItemData"));
 		return;
 	}
 
@@ -74,7 +74,7 @@ void APickupItem::Interact()
 	AActor* PlayerActor = GetWorld()->GetFirstPlayerController()->GetPawn();
 	if(!PlayerActor)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No PlayerActor"));
+		//UE_LOG(LogTemp, Warning, TEXT("No PlayerActor"));
 		return;
 	}
 
@@ -82,7 +82,7 @@ void APickupItem::Interact()
 	auto InventoryComp = PlayerActor->FindComponentByClass<UInventoryComponent>();
 	if(!InventoryComp)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No InventoryComp"));
+		//UE_LOG(LogTemp, Warning, TEXT("No InventoryComp"));
 		return;
 	}
 
@@ -111,7 +111,7 @@ void APickupItem::OnItemOverlap(
 {
 	if(OtherActor && OtherActor->ActorHasTag("Player"))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("overlap")));
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("overlap")));
 		ShowWidget();
 	}
 }

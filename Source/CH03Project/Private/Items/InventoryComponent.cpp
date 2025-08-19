@@ -30,10 +30,10 @@ bool UInventoryComponent::AddItem(UBaseItem* NewItem)
             // 델리게이트 발행
             OnAddItemChanged.Broadcast(Item->GetItemData().ItemID, Item->Quantity);
 
-            UE_LOG(LogTemp, Log, TEXT("[%s] 수량 증가: %d"),
+            /*UE_LOG(LogTemp, Log, TEXT("[%s] 수량 증가: %d"),
                    *Item->GetItemData().ItemName.ToString(),
                    Item->Quantity
-            );
+            );*/
             return true;
         }
     }
@@ -47,14 +47,14 @@ bool UInventoryComponent::AddItem(UBaseItem* NewItem)
         // 델리게이트 발행
         OnAddItemChanged.Broadcast(NewItem->GetItemData().ItemID, NewItem->Quantity);
 
-        UE_LOG(LogTemp, Log, TEXT("[%s] 수량 증가: %d"),
+        /*UE_LOG(LogTemp, Log, TEXT("[%s] 수량 증가: %d"),
                *NewItem->GetItemData().ItemName.ToString(),
                NewItem->Quantity
-        );
+        );*/
         return true;
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("Inventory is full!"));
+    //UE_LOG(LogTemp, Warning, TEXT("Inventory is full!"));
     return false;
 }
 
