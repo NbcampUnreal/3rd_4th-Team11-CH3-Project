@@ -16,6 +16,8 @@
 #include "Engine/Engine.h"
 #include "GameModePlay.h"
 #include "AccDropComponent.h"
+#include "MyCharacter.h"
+#include "InputActionValue.h"
 
 
 UBaseStatComponent::UBaseStatComponent()
@@ -194,6 +196,14 @@ void UBaseStatComponent::OnDeath()
 	AMyPlayerController* PC = Cast<AMyPlayerController>(OwnerCharacter->GetController());
 	if (PC && PC->MainMenuWidgetClass)
 	{
+		AMyCharacter* MyCharacter = Cast<AMyCharacter>(OwnerCharacter);
+		if (MyCharacter)
+		{
+			MyCharacter->StopAttack(FInputActionValue(false));
+		}
+
+
+
 		UMenuWidget* MenuWidget = CreateWidget<UMenuWidget>(PC, PC->MainMenuWidgetClass);
 		if (MenuWidget)
 		{
