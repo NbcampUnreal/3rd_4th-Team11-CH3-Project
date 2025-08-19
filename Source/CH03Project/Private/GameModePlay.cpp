@@ -5,7 +5,11 @@
 #include "GameStatePlay.h"
 #include "QuestTypeA.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
+#include "BaseStatComponent.h"
+#include "BaseEnemy.h"
 #include "BaseActor.h"
+#include "Delegates/DelegateCombinations.h"
 
 AGameModePlay::AGameModePlay()
 {
@@ -50,5 +54,19 @@ void AGameModePlay::SetGameStatePlay()
 	if (GameStatePlays == nullptr)
 	{
 		GameStatePlays = GetGameState<AGameStatePlay>();
+	}
+}
+
+void AGameModePlay::ClearEnemiesOnPlayerDeath()
+{
+	TArray<AActor*> Enemies;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseEnemy::StaticClass(), Enemies);
+
+	for (AActor* Enemy : Enemies)
+	{
+		if (Enemy)
+		{
+			Enemy->Destroy();
+		}
 	}
 }

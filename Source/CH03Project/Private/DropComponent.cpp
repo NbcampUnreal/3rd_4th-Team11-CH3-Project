@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "DropComponent.h"
 #include "BaseStatComponent.h"
@@ -7,6 +7,7 @@
 #include "Engine/World.h"
 #include "Engine/EngineTypes.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 UDropComponent::UDropComponent()
 {
@@ -91,22 +92,32 @@ bool UDropComponent::FindGround(const FVector& Around, FVector& Out) const
     if (UWorld* World = GetWorld())
     {
         const float Angle = RNG.FRandRange(0.f, 360.f);
-        const FVector2D Dir2D(FMath::Cos(FMath::DegreesToRadians(Angle)),FMath::Sin(FMath::DegreesToRadians(Angle)));
+        const FVector2D Dir2D(FMath::Cos(FMath::DegreesToRadians(Angle)), FMath::Sin(FMath::DegreesToRadians(Angle)));
         const FVector Offset = FVector(Dir2D.X, Dir2D.Y, 0.f).GetSafeNormal() * RNG.FRandRange(0.f, ScatterRadius);
 
         const FVector Start = Around + Offset + FVector(0, 0, ProbeUp);
         const FVector End = Around + Offset - FVector(0, 0, ProbeDown);
 
-        FHitResult Hit;
         FCollisionQueryParams Q(SCENE_QUERY_STAT(DropGround), false, GetOwner());
+
+        // "Item" 태그를 가진 모든 액터를 찾아서 무시 목록에 추가합니다.
+        TArray<AActor*> ActorsToIgnore;
+        UGameplayStatics::GetAllActorsWithTag(World, TEXT("Item"), ActorsToIgnore);
+        Q.AddIgnoredActors(ActorsToIgnore);
+
         FCollisionObjectQueryParams Obj;
         Obj.AddObjectTypesToQuery(ECC_WorldStatic);
         Obj.AddObjectTypesToQuery(ECC_WorldDynamic);
 
-        if (World->LineTraceSingleByObjectType(Hit, Start, End, Obj, Q))
+        TArray<FHitResult> Hits;
+        if (World->LineTraceMultiByObjectType(Hits, Start, End, Obj, Q))
         {
-            Out = Hit.ImpactPoint + FVector(0, 0, 2.f);
-            return true;
+            // 여러 충돌 결과 중 가장 첫 번째 충돌 지점을 사용합니다.
+            for (const FHitResult& Hit : Hits)
+            {
+                Out = Hit.ImpactPoint + FVector(0, 0, 2.f);
+                return true;
+            }
         }
     }
     return false;

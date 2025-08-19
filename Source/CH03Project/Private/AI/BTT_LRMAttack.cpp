@@ -322,7 +322,7 @@ void UBTT_LRMAttack::DoImpact(FState& St) const
 			{
 				if (UBaseStatComponent* Stat = A->FindComponentByClass<UBaseStatComponent>())
 				{
-					UE_LOG(LogTemp, Warning, TEXT("LRM Attack hit %s"), *A->GetName());
+					//UE_LOG(LogTemp, Warning, TEXT("LRM Attack hit %s"), *A->GetName());
 					Stat->AddHp(-Damage);
 				}
 			}

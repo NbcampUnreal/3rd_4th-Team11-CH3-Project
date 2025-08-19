@@ -46,4 +46,8 @@ private:
 	
 	
 	AGameStatePlay* GameStatePlays;
+
+public:
+
+	void ClearEnemiesOnPlayerDeath();
 };

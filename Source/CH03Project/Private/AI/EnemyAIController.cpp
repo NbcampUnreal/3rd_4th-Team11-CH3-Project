@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "AI/EnemyAIController.h"
 #include "AIController.h"
@@ -95,11 +95,12 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 		}
 	}
 
+	/*UE_LOG(LogTemp, Warning, TEXT("비긴플레이ㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣ"));
 	if (ControlledEnemy->ActorHasTag(FName("ForceTargetActorBeginning")))
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("ForceTargetActorBeginning tag found on ControlledEnemy. Targeting player..."));
+		UE_LOG(LogTemp, Warning, TEXT("ForceTargetActorBeginning tag found on ControlledEnemy. Targeting player..."));
 		TryForceTargetPlayer();
-	}
+	}*/
 }
 
 void AEnemyAIController::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
@@ -269,9 +270,11 @@ void AEnemyAIController::TryForceTargetPlayer()
 	AActor* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	if (!PlayerPawn)
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("PlayerPawn is null. Retrying in next tick."));
 		GetWorldTimerManager().SetTimerForNextTick(this, &AEnemyAIController::TryForceTargetPlayer);
 		return;
 	}
+	//UE_LOG(LogTemp, Warning, TEXT("PlayerPawn is null. Retrying in next tick.!!!!!!"));
 
 	//(LogTemp, Warning, TEXT("Setting TargetActor to PlayerPawn: %s"), *PlayerPawn->GetName());
 	SetStateAsAttacking(PlayerPawn);

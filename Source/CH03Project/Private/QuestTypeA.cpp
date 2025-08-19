@@ -267,8 +267,13 @@ void AQuestTypeA::SpawnEnemy()
 				if (SpawnedEnemy)
 				{
 					SpawnedEnemy->Tags.AddUnique(FName("ForceTargetActorBeginning"));
+					AEnemyAIController* EnemyAIController = Cast<AEnemyAIController>(SpawnedEnemy->GetController());
+					if (EnemyAIController)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("적 AI 컨트롤러가 유효합니다."));
+						EnemyAIController->TryForceTargetPlayer();
+					}
 				}
-
 			}
 		}
 	}
