@@ -81,30 +81,29 @@
 
 
 
-🔊
-- **사운드 파일 라이선스/제작자**
-    - 사격 :    Famas-1_smoothcriminal_toomuchlel.wav by quinte_besa -- https://freesound.org/s/369124/ -- License: Attribution 3.0
-    - 빈 탄창 사격 : Rifle clip empty by michorvath -- https://freesound.org/s/427603/ -- License: Creative Commons 0
-    - 플레이어 발소리 : footstep-concrete.wav by swuing -- https://freesound.org/s/38873/ -- License: Attribution 3.0
-    - 플레이어 점프 :  jump.wav by acebrian -- https://freesound.org/s/380471/ -- License: Creative Commons 0
-    - 플레이어 착지 : The sound of the jump by Ziggler_Games -- https://freesound.org/s/464336/ -- License: Attribution NonCommercial 4.0
-    - 재장전 : MP5 Reloading by KeshaFilm -- https://freesound.org/s/628694/ -- License: Creative Commons 0
-    - 보스레벨 bgm :
-    Hydra And Ash by Makai Symphony | https://soundcloud.com/makai-symphony
-    Music promoted by https://www.chosic.com/free-music/all/
-    Creative Commons CC BY-SA 3.0
-    https://creativecommons.org/licenses/by-sa/3.0/
-    - 메인레벨 bgm :
-    Sci-Fi Dramatic Theme by Twisterium | https://www.twisterium.com/
-    Music promoted by https://www.chosic.com/free-music/all/
-    Licensed under Creative Commons: Attribution 3.0 Unported (CC BY 3.0)
-    https://creativecommons.org/licenses/by/3.0/
-    - 메인메뉴레벨 bgm :
-    Terminus by Scott Buckley | [www.scottbuckley.com.au](http://www.scottbuckley.com.au/)
-    Music promoted by https://www.chosic.com/free-music/all/
-    Creative Commons CC BY 4.0
-    https://creativecommons.org/licenses/by/4.0/
-    - 고양이 동상 사용 효과음 : https://pixabay.com/ko/users/soulfuljamtracks-46363515/
-    - 아드레날린 사용 효과음 : https://pixabay.com/ko/users/nahtt-49618517/
-    - 체력 포션 사용 효과음 : https://pixabay.com/ko/users/freesound_community-46691455/
+🔊 **사운드 파일 라이선스/제작자**
+- 사격 :    Famas-1_smoothcriminal_toomuchlel.wav by quinte_besa -- https://freesound.org/s/369124/ -- License: Attribution 3.0
+- 빈 탄창 사격 : Rifle clip empty by michorvath -- https://freesound.org/s/427603/ -- License: Creative Commons 0
+- 플레이어 발소리 : footstep-concrete.wav by swuing -- https://freesound.org/s/38873/ -- License: Attribution 3.0
+- 플레이어 점프 :  jump.wav by acebrian -- https://freesound.org/s/380471/ -- License: Creative Commons 0
+- 플레이어 착지 : The sound of the jump by Ziggler_Games -- https://freesound.org/s/464336/ -- License: Attribution NonCommercial 4.0
+- 재장전 : MP5 Reloading by KeshaFilm -- https://freesound.org/s/628694/ -- License: Creative Commons 0
+- 보스레벨 bgm :
+  Hydra And Ash by Makai Symphony | https://soundcloud.com/makai-symphony
+  Music promoted by https://www.chosic.com/free-music/all/
+  Creative Commons CC BY-SA 3.0
+  https://creativecommons.org/licenses/by-sa/3.0/
+- 메인레벨 bgm :
+  Sci-Fi Dramatic Theme by Twisterium | https://www.twisterium.com/
+  Music promoted by https://www.chosic.com/free-music/all/
+  Licensed under Creative Commons: Attribution 3.0 Unported (CC BY 3.0)
+  https://creativecommons.org/licenses/by/3.0/
+- 메인메뉴레벨 bgm :
+  Terminus by Scott Buckley | [www.scottbuckley.com.au](http://www.scottbuckley.com.au/)
+  Music promoted by https://www.chosic.com/free-music/all/
+  Creative Commons CC BY 4.0
+  https://creativecommons.org/licenses/by/4.0/
+- 고양이 동상 사용 효과음 : https://pixabay.com/ko/users/soulfuljamtracks-46363515/
+- 아드레날린 사용 효과음 : https://pixabay.com/ko/users/nahtt-49618517/
+- 체력 포션 사용 효과음 : https://pixabay.com/ko/users/freesound_community-46691455/
 
