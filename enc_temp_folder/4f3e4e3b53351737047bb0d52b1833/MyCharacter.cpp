@@ -177,7 +177,7 @@ void AMyCharacter::WeaponEquip(ABaseWeapon* SpawnedWeapon)
 
 		if (PlayerController)
 		{
-			PlayerController->BindDeligateToSpawnedWeapon(EquippedWeapon);
+			//PlayerController->BindDeligateToSpawnedWeapon(EquippedWeapon);
 		}
 	}
 }

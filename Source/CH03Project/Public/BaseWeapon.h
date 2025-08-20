@@ -11,7 +11,7 @@ class CH03PROJECT_API ABaseWeapon : public AActor, public IBaseWeaponInterface
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component")
 	USceneComponent* SceneComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component")
 	USkeletalMeshComponent* SkeletalMeshComp;

@@ -38,82 +38,19 @@ void ABaseRangedWeapon::Attack()
 					if (WeaponOwner->GetCharacterAnimInstance() && CharacterFireMontage)
 					{
 						WeaponOwner->GetCharacterAnimInstance()->Montage_Play(CharacterFireMontage, 1.0f);
-
-						if (FireSound)
-						{
-							UGameplayStatics::PlaySoundAtLocation(
-								this,
-								FireSound,
-								WeaponOwner->SkeletalMeshComp2->GetSocketLocation("magazine"),
-								0.7f
-							);
-						}
-
-						FCollisionQueryParams Params;
-						Params.AddIgnoredActor(WeaponOwner);
-
-						FVector Location;
-						FRotator Rotation;
-						WeaponOwner->GetMyPlayerController()->GetPlayerViewPoint(Location, Rotation);
-						FVector End = Location + (Rotation.Vector() * ShootingRange);
-
-						TArray<FHitResult> HitResults;
-
-						bool bDidHit = GetWorld()->LineTraceMultiByChannel(
-							HitResults,
-							Location,
-							End,
-							ECC_GameTraceChannel4,
-							Params
-						);
-
-						if (bDidHit)
-						{
-							AActor* FirstHitActor = nullptr;
-							bool bHeadshotFound = false;
-														
-							for (int32 i = 0; i < HitResults.Num(); i++)
-							{
-								const FHitResult& Hit = HitResults[i];
-
-								if (i == 0)
-								{
-									if (Hit.GetActor() && Hit.GetActor()->ActorHasTag("Enemy"))
-									{
-										FirstHitActor = Hit.GetActor();
-									}
-									else
-									{
-										break;
-									}
-								}
-								else
-								{
-									if (Hit.GetActor() != FirstHitActor)
-									{
-										break;
-									}
-								}
-
-								if (Hit.GetComponent() && Hit.GetComponent()->ComponentHasTag("Head"))
-								{
-									if (UDamageComponent* OwnerDamageComp = WeaponOwner->DamageComp)
-									{
-										OwnerDamageComp->TransDamageCritical(FirstHitActor);
-										bHeadshotFound = true; // 헤드샷이 발견되었음을 표시
-									}
-									break;
-								}
-							}
-							if (!bHeadshotFound && FirstHitActor)
-							{
-								if (UDamageComponent* OwnerDamageComp = WeaponOwner->DamageComp)
-								{
-									OwnerDamageComp->TransDamage(FirstHitActor);
-								}
-							}
-						}
 					}
+
+					if (FireSound)
+					{
+						UGameplayStatics::PlaySoundAtLocation(
+							this,
+							FireSound,
+							SkeletalMeshComp->GetSocketLocation("magazine"),
+							0.7f
+						);
+					}
+				
+					HitScan(WeaponOwner);
 
 					AddRecoilPitchYaw(0.5f, 0.1f);
 
@@ -128,10 +65,80 @@ void ABaseRangedWeapon::Attack()
 						UGameplayStatics::PlaySoundAtLocation(
 							this,
 							DryFireSound,
-							WeaponOwner->SkeletalMeshComp2->GetSocketLocation("magazine")
+							SkeletalMeshComp->GetSocketLocation("magazine")
 						);
 					}
 				}
+			}
+		}
+	}
+}
+
+void ABaseRangedWeapon::HitScan(AMyCharacter* WeaponOwner)
+{
+	if (!IsValid(WeaponOwner)) return;
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(WeaponOwner);
+
+	FVector Location;
+	FRotator Rotation;
+	WeaponOwner->GetMyPlayerController()->GetPlayerViewPoint(Location, Rotation);
+	FVector End = Location + (Rotation.Vector() * ShootingRange);
+
+	TArray<FHitResult> HitResults;
+
+	bool bDidHit = GetWorld()->LineTraceMultiByChannel(
+		HitResults,
+		Location,
+		End,
+		ECC_GameTraceChannel4,
+		Params
+	);
+
+	if (bDidHit)
+	{
+		AActor* FirstHitActor = nullptr;
+		bool bHeadshotFound = false;
+
+		for (int32 i = 0; i < HitResults.Num(); i++)
+		{
+			const FHitResult& Hit = HitResults[i];
+
+			if (i == 0)
+			{
+				if (Hit.GetActor() && Hit.GetActor()->ActorHasTag("Enemy"))
+				{
+					FirstHitActor = Hit.GetActor();
+				}
+				else
+				{
+					break;
+				}
+			}
+			else
+			{
+				if (Hit.GetActor() != FirstHitActor)
+				{
+					break;
+				}
+			}
+
+			if (Hit.GetComponent() && Hit.GetComponent()->ComponentHasTag("Head"))
+			{
+				if (UDamageComponent* OwnerDamageComp = WeaponOwner->DamageComp)
+				{
+					OwnerDamageComp->TransDamageCritical(FirstHitActor);
+					bHeadshotFound = true; // 헤드샷이 발견되었음을 표시
+				}
+				break;
+			}
+		}
+		if (!bHeadshotFound && FirstHitActor)
+		{
+			if (UDamageComponent* OwnerDamageComp = WeaponOwner->DamageComp)
+			{
+				OwnerDamageComp->TransDamage(FirstHitActor);
 			}
 		}
 	}
@@ -145,29 +152,16 @@ void ABaseRangedWeapon::Equip()
 		{
 			if (IsValid(SkeletalMeshComp->SkeletalMesh))
 			{
-				WeaponOwner->SkeletalMeshComp2->SetSkeletalMesh(SkeletalMeshComp->SkeletalMesh);
+				if (IsValid(StaticMeshComp))
+				{
+					if (IsValid(StaticMeshComp->GetStaticMesh()))
+					{
+						WeaponOwner->WeaponSkeletalMeshComp->SetSkeletalMesh(SkeletalMeshComp->SkeletalMesh);
+						WeaponOwner->WeaponStaticMeshComp->SetStaticMesh(StaticMeshComp->GetStaticMesh());
+					}
+				}
 			}
 		}
-
-		if (IsValid(StaticMeshComp))
-		{
-			if (IsValid(StaticMeshComp->GetStaticMesh()))
-			{
-				WeaponOwner->StaticMeshComp->SetStaticMesh(StaticMeshComp->GetStaticMesh());
-			}
-		}
-
-		WeaponOwner->SkeletalMeshComp2->AttachToComponent(
-			WeaponOwner->SkeletalMeshComp1,
-			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-			TEXT("ik_hand_gun")
-		);
-
-		WeaponOwner->StaticMeshComp->AttachToComponent(
-			WeaponOwner->SkeletalMeshComp2,
-			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-			TEXT("magazine")
-		);
 
 		WeaponOwner->DamageComp->SetAttackDamage(this);
 	}
@@ -249,7 +243,7 @@ void ABaseRangedWeapon::Reload()
 				UGameplayStatics::PlaySoundAtLocation(
 					this,
 					ReloadSound,
-					WeaponOwner->SkeletalMeshComp2->GetSocketLocation("magazine")
+					SkeletalMeshComp->GetSocketLocation("magazine")
 				);
 			}
 
