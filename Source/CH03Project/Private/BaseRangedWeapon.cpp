@@ -45,7 +45,7 @@ void ABaseRangedWeapon::Attack()
 						UGameplayStatics::PlaySoundAtLocation(
 							this,
 							FireSound,
-							WeaponOwner->SkeletalMeshComp2->GetSocketLocation("magazine"),
+							SkeletalMeshComp->GetSocketLocation("magazine"),
 							0.7f
 						);
 					}
@@ -65,7 +65,7 @@ void ABaseRangedWeapon::Attack()
 						UGameplayStatics::PlaySoundAtLocation(
 							this,
 							DryFireSound,
-							WeaponOwner->SkeletalMeshComp2->GetSocketLocation("magazine")
+							SkeletalMeshComp->GetSocketLocation("magazine")
 						);
 					}
 				}
@@ -152,29 +152,16 @@ void ABaseRangedWeapon::Equip()
 		{
 			if (IsValid(SkeletalMeshComp->SkeletalMesh))
 			{
-				WeaponOwner->SkeletalMeshComp2->SetSkeletalMesh(SkeletalMeshComp->SkeletalMesh);
+				if (IsValid(StaticMeshComp))
+				{
+					if (IsValid(StaticMeshComp->GetStaticMesh()))
+					{
+						WeaponOwner->WeaponSkeletalMeshComp->SetSkeletalMesh(SkeletalMeshComp->SkeletalMesh);
+						WeaponOwner->WeaponStaticMeshComp->SetStaticMesh(StaticMeshComp->GetStaticMesh());
+					}
+				}
 			}
 		}
-
-		if (IsValid(StaticMeshComp))
-		{
-			if (IsValid(StaticMeshComp->GetStaticMesh()))
-			{
-				WeaponOwner->StaticMeshComp->SetStaticMesh(StaticMeshComp->GetStaticMesh());
-			}
-		}
-
-		WeaponOwner->SkeletalMeshComp2->AttachToComponent(
-			WeaponOwner->SkeletalMeshComp1,
-			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-			TEXT("ik_hand_gun")
-		);
-
-		WeaponOwner->StaticMeshComp->AttachToComponent(
-			WeaponOwner->SkeletalMeshComp2,
-			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-			TEXT("magazine")
-		);
 
 		WeaponOwner->DamageComp->SetAttackDamage(this);
 	}
@@ -256,7 +243,7 @@ void ABaseRangedWeapon::Reload()
 				UGameplayStatics::PlaySoundAtLocation(
 					this,
 					ReloadSound,
-					WeaponOwner->SkeletalMeshComp2->GetSocketLocation("magazine")
+					SkeletalMeshComp->GetSocketLocation("magazine")
 				);
 			}
 

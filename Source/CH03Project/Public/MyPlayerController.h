@@ -43,6 +43,8 @@ public:
 	UInputAction* PauseAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* InvAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* WeaponChangeAction;
 	//-----------------UI--------------------
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<class UHUDWidget> HUDWidgetClass;

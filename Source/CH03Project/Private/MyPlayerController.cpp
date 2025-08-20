@@ -29,6 +29,7 @@ AMyPlayerController::AMyPlayerController()
 	InteractionAction = nullptr;
 	PauseAction = nullptr;
 	InvAction = nullptr;
+	WeaponChangeAction = nullptr;
 }
 
 void AMyPlayerController::BeginPlay()
