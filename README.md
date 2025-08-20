@@ -80,6 +80,8 @@
 
 
 
+
+🔊
 - **사운드 파일 라이선스/제작자**
     - 사격 :    Famas-1_smoothcriminal_toomuchlel.wav by quinte_besa -- https://freesound.org/s/369124/ -- License: Attribution 3.0
     - 빈 탄창 사격 : Rifle clip empty by michorvath -- https://freesound.org/s/427603/ -- License: Creative Commons 0
