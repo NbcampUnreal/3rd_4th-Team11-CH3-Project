@@ -41,13 +41,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	USceneComponent* SceneComp;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
-	USkeletalMeshComponent* SkeletalMeshComp1;
+	USkeletalMeshComponent* CharacterArmsSkeletalMeshComp;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	USkeletalMeshComponent* WeaponSkeletalMeshComp;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* WeaponStaticMeshComp;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComp;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
-	USkeletalMeshComponent* SkeletalMeshComp2;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaticMeshComponent* StaticMeshComp;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UBaseStatComponent* BaseStatComp;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
@@ -84,14 +84,17 @@ protected:
 	bool bIsCrouching;
 	bool bIsAiming;
 	bool bBugFixFlag;
+	bool bIsChangeWeapon;
 
 	// TSubclassOf Valiable
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<class ABaseWeapon> WeaponClass;
+	TArray<TSubclassOf<class ABaseWeapon>> WeaponClasses;
 
 	// Pointer Valiable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerController")
 	AMyPlayerController* PlayerController;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TArray<ABaseWeapon*> SpawnedWeapons;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	ABaseWeapon* EquippedWeapon;
 
@@ -105,6 +108,7 @@ protected:
 	FTimerHandle MoveSoundTimerHandle;
 	FTimerHandle AttackTimerHandle;
 	FTimerHandle ReloadTimerHandle;
+	FTimerHandle ChangeWeaponTimerHandle;
 
 public:
 	AMyCharacter();
@@ -117,6 +121,8 @@ public:
 	UAnimInstance* GetWeaponAnimInstance() const;
 
 	// General Function
+	void WeaponEquip(ABaseWeapon* SpawnedWeapon);
+
 	void Attack();
 
 	void EndReload();
@@ -125,6 +131,7 @@ public:
 
 	void MoveSoundPlay();
 
+	void EndChangeWeapon();
 
 protected:
 	virtual void BeginPlay() override;
@@ -161,6 +168,8 @@ public:
 	void StartAttack(const FInputActionValue& value);
 
 	void StopAttack(const FInputActionValue& value);
+
+	void ChangeWeapon(const FInputActionValue& value);
 
 	void OnInteract(const FInputActionValue& Value);
 
